@@ -36,15 +36,13 @@ try
 
 catch (err)
 {
-	console.log( "ERROR => Cannot connect to Redis message broker: URL => " + REDIS_URL + "; Port => " + REDIS_PORT );
+	console.log( "ERROR => Cannot connect to Redis message broker: URL => " + rtg.hostname + "; Port => " + rtg.port );
 	console.log(err);
 }
 	 
 var express = require('express');
 
 var app = express.createServer(express.logger());
-
-var test_users = [{ name: 'Sylvio' }, { name: 'Martin' }];
 
 app.all('/donate/:user_id/:recipient_id', function(req, res, next){
   req.user_id = req.params.user_id;

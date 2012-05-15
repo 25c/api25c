@@ -1,4 +1,4 @@
-web: node web.js
+web: node button.js
 
 
 
