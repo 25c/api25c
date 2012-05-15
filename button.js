@@ -60,7 +60,7 @@ app.get('/donate/:user_id/:recipient_id', function(req, res){
 	// here we gonna process the message
 	// validate user ID and donation ID and any other data we need
 	// format a REDIS message and push into the DB
-	redisClient.publish(channelName, req.user_id + ':' + 
+	redis.publish(channelName, req.user_id + ':' + 
 						req.recipient_id + ':' + debug_key + ':' + generated_key);
 //	res.writeHead(404);
 //	res.end();
