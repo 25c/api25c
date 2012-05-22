@@ -12,7 +12,8 @@
 //
 
 var http = require('http');
-var redis = require("redis");
+var redis = require('redis');
+var rails = require('./rails');
 	 
 var channelName = '25c_mode_debug';
 
@@ -43,6 +44,8 @@ catch (err)
 var express = require('express');
 
 var app = express.createServer(express.logger());
+app.use(express.cookieParser());
+app.use(rails.signedCookieParser('c840c106474dfbeaf185447b436839c0d80a4bc5441ed78b7e1d816e2e47440502a6ff8fd3f85343e110548e7f814fdfddfc06e32fb5ff73090236cfbbe3b546'));
 
 app.all('/donate/:user_id/:recipient_id', function(req, res, next){
   req.user_id = req.params.user_id;
