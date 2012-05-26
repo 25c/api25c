@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "dependencies": {
     "express": ">=2.2.0",
-	"redis": ">=0.0.0"
+		"redis": ">=0.0.0",
+		"connect-redis": ">=1.0.0",
+		"jade": ">=0.26.0"
   }
 }

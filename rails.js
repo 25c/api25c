@@ -45,7 +45,7 @@ exports.parseSignedCookies = function(obj, secret){
 exports.signedCookieParser = function(secret){
   return function signedCookieParser(req, res, next) {
     var cookies = req.cookies;
-    if (req.railsSignedCookies) return next();
+    if (req.signedRailsCookies) return next();
 
     req.signedRailsCookies = {};
     if (cookies && secret) {

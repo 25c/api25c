@@ -1,0 +1,8 @@
+doctype 5
+html(lang="en")
+	head
+	body
+		form(method="POST", target="_blank", action="/button/" + req.params.publisher_uuid + (req.params.content_uuid !== undefined ? "/" + req.params.content_uuid : ""))
+			input(type="hidden", name="_csrf", value=req.session._csrf)
+			input(type="hidden", name="_referrer", value=req.header("referrer"))
+			button(type="submit") Tip me +25c!
