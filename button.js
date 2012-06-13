@@ -64,6 +64,9 @@ app.set('view options', {
   layout: false
 });
 
+// Set up the static file directory.
+app.use('/public', express.static(__dirname + '/public'));
+
 app.get('/button/:publisher_uuid/:content_uuid?', function(req, res) {	
 	res.render('index.jade', { req: req });
 });
