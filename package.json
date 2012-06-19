@@ -9,6 +9,7 @@
     "express": "latest",
 		"redis": "latest",
 		"connect-redis": "latest",
-		"jade": "latest"
+		"jade": "latest",
+		"node-uuid": "latest"
   }
 }

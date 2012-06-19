@@ -20,6 +20,7 @@ var http = require('http');
 var redis = require('redis');
 var rails = require('./rails');
 var url = require('url');
+var uuid = require('node-uuid');
 
 var redisDataClient;
 var redisWebClient;
@@ -67,11 +68,11 @@ app.set('view options', {
 // Set up the static file directory.
 app.use('/public', express.static(__dirname + '/public'));
 
-app.get('/button/:publisher_uuid/:content_uuid?', function(req, res) {	
+app.get('/button/:button_uuid', function(req, res) {	
 	res.render('index.jade', { req: req });
 });
 
-app.post('/button/:publisher_uuid/:content_uuid?', function(req, res) {
+app.post('/button/:button_uuid', function(req, res) {
 	data = {};
 	if (req.signedRailsCookies['_25c_session']) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
@@ -88,18 +89,15 @@ app.post('/button/:publisher_uuid/:content_uuid?', function(req, res) {
 			    ipAddress = req.connection.remoteAddress;
 			  }
 				data = {
+					uuid: uuid.v1(),
 					user_uuid: user_uuid,
-					publisher_uuid: req.params.publisher_uuid,
+					button_uuid: req.params.button_uuid,
 					referrer: req.param('_referrer'),
 					user_agent: req.header('user-agent'),
 					ip_address: ipAddress,
 					created_at: new Date()
 				};
-				var counterKey = user_uuid + ":" + req.params.publisher_uuid;
-				if (req.params.content_uuid) {
-					data.content_uuid = req.params.content_uuid;
-					counterKey += ":" + req.params.content_uuid;
-				}
+				var counterKey = user_uuid + ":" + req.params.button_uuid;
 				redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
 					if (err == null) {
 						data.counter = count;

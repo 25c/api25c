@@ -35,6 +35,6 @@ html(lang="en")
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4a38e', endColorstr='#996855',GradientType=0 ); /* IE6-9 */
       }
   body
-    a(id="button", data-csrf=req.session._csrf, data-referrer=req.header('referrer'), href="/button/" + req.params.publisher_uuid + (req.params.content_uuid !== undefined ? "/" + req.params.content_uuid : ""))
+    a(id="button", data-csrf=req.session._csrf, data-referrer=req.header('referrer'), href="/button/" + req.params.button_uuid)
       span
 
