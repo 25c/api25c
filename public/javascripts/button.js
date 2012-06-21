@@ -21,7 +21,7 @@ _tip25c_jquery(document).ready(function($) {
 	src = src.substr(0, src.indexOf("/public"));
 	$.receiveMessage(function(e) {
 		refreshTooltip(e.data);
-	}, location.protocol + src);
+	}, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
 	$("a.tip-25c-button").each(function() {
 		var a = $(this);
 		var url = a.attr("href");
@@ -30,7 +30,7 @@ _tip25c_jquery(document).ready(function($) {
 		if ((size != "icon") && (size != "medium") && (size != "large")) {
 			size = "medium";
 		}
-		var src_url = src + '/button/' + button_uuid + '?size=' + size;
+		var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + button_uuid + '?size=' + size;
 		a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:180px; height:' + (size == "large" ? "43" : "28") + 'px;"></iframe>');
 		var iframe = a.next();
 		iframe.on({
