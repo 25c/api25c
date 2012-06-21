@@ -127,7 +127,10 @@ app.post('/button/:button_uuid', function(req, res) {
 	data = {};
 	if (req.signedRailsCookies['_25c_session']) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
-			if (err == null) {
+			if (err != null) {
+				console.log("POST error fetching session user_uuid: " + err);
+				res.json(data);				
+			} else {
 			  var ipAddress;
 				//// first check for proxy forwarded ip
 			  var forwardedIpsStr = req.header('x-forwarded-for'); 
@@ -150,21 +153,25 @@ app.post('/button/:button_uuid', function(req, res) {
 				};
 				var counterKey = user_uuid + ":" + req.params.button_uuid;
 				redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
-					if (err == null) {
+					if (err != null) {
+						console.log("POST err incrementing counter for key " + counterKey + ": " + err);
+					} else {
 						data.counter = count;
 					}
 				}).exec(function(err, result) {					
 					if (err == null) {
 						res.json(data);			
 					} else {
+						console.log("POST err: " + err);
 						res.json({ err: err });
 					}
 				});
 			}
 		});
-		return;
+	} else {
+		console.log("POST not signed in");
+		res.json(data);
 	}
-	res.json(data);
 });
 
 var port = process.env.PORT || 5000;
