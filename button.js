@@ -73,11 +73,7 @@ app.set('view options', {
 });
 
 // Set up the static file directory.
-if (process.env.NODE_ENV) {
-	app.use('/public', express.static(__dirname + '/public/' + process.env.NODE_ENV));
-} else {
-	app.use('/public', express.static(__dirname + '/public'));
-}
+app.use('/public', express.static(__dirname + '/public'));
 
 function renderTooltip(res, data) {
 	res.render('tooltip.jade', data, function(err, html) {

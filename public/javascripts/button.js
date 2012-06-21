@@ -14,11 +14,13 @@ _tip25c_jquery(document).ready(function($) {
 		});				
 	}
 	function refreshTooltip(button_uuid) {
-		$.getJSON("http://localhost:5000/tooltip/" + button_uuid + "?callback=?", null, function(response) {
+		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 			$("#tip-25c-tooltip").html(response);
 			refreshTimer = setTimeout(function() { refreshTooltip(button_uuid) }, 250);
 		});
 	}
+	var src = $("script#tip-25c-js").attr("src");
+	src = src.substr(0, src.indexOf("/public"));
 	$("a.tip-25c-button").each(function() {
 		var a = $(this);
 		var url = a.attr("href");
@@ -27,7 +29,7 @@ _tip25c_jquery(document).ready(function($) {
 		if ((size != "icon") && (size != "medium") && (size != "large")) {
 			size = "medium";
 		}
-		a.after('<iframe src="http://localhost:5000/button/' + button_uuid + '?size=' + size + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:180px; height:' + (size == "large" ? "43" : "28") + 'px;"></iframe>');
+		a.after('<iframe src="' + src + '/button/' + button_uuid + '?size=' + size + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:180px; height:' + (size == "large" ? "43" : "28") + 'px;"></iframe>');
 		var iframe = a.next();
 		iframe.on({
 			mouseenter: function() {
