@@ -16,7 +16,7 @@ _tip25c_jquery(document).ready(function($) {
 	function refreshTooltip(button_uuid) {
 		$.getJSON("https://api.plus25c.com/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 			$("#tip-25c-tooltip").html(response);
-			refreshTimer = setTimeout("refreshTooltip('" + button_uuid + "')", 250);
+			refreshTimer = setTimeout(function() { refreshTooltip(button_uuid) }, 250);
 		});
 	}
 	$("a.tip-25c-button").each(function() {
