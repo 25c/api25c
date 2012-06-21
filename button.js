@@ -21,6 +21,7 @@ var redis = require('redis');
 var rails = require('./rails');
 var url = require('url');
 var uuid = require('node-uuid');
+var pg = require('pg').native;
 
 var redisDataClient;
 var redisWebClient;
@@ -52,10 +53,16 @@ catch (err)
 	console.log(err);
 }
 
+var pgWebUrl = process.env.DATABASE_WEB_URL;
+if (pgWebUrl == undefined) {
+	pgWebUrl = "tcp://localhost/web25c_development";
+}
+
 var express = require('express');
 var RedisStore = require('connect-redis')(express);
 	 
 var app = express.createServer(express.logger());
+app.enable("jsonp callback");
 app.use(express.bodyParser());
 app.use(express.cookieParser());
 app.use(express.session({ secret: NODE_COOKIE_SECRET, key: NODE_COOKIE_SESSION_KEY, store: new RedisStore({ client: redisApiClient })}));
@@ -66,10 +73,58 @@ app.set('view options', {
 });
 
 // Set up the static file directory.
-app.use('/public', express.static(__dirname + '/public'));
+if (process.env.NODE_ENV) {
+	app.use('/public', express.static(__dirname + '/public/' + process.env.NODE_ENV));
+} else {
+	app.use('/public', express.static(__dirname + '/public'));
+}
+
+function renderTooltip(res, data) {
+	res.render('tooltip.jade', data, function(err, html) {
+		res.json(html);
+	});
+}
+
+app.get('/tooltip/:button_uuid', function(req, res) {
+	if (req.signedRailsCookies['_25c_session']) {
+		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
+			if (err != null) {
+				renderTooltip(res, { user: null });
+			} else {
+				pg.connect(pgWebUrl, function(err, pgWebClient) {
+					if (err != null) {
+						renderTooltip(res, { user: null });
+					} else {
+						pgWebClient.query("SELECT * FROM users WHERE LOWER(uuid)=LOWER($1)", [ user_uuid ], function(err, result) {
+							if (err != null) {
+								console.log("could not query for user_uuid: " + err);
+								renderTooltip(res, { user: null });
+							} else if (result.rows.length == 0) {
+								console.log("not found user_uuid=" +user_uuid);
+								renderTooltip(res, { user: null });
+							} else if (result.rows.length == 1) {
+								var user = result.rows[0];
+								var counterKey = user_uuid + ":" + req.params.button_uuid;
+								redisDataClient.get(counterKey, function(err, count) {
+									if (err != null) {
+										renderTooltip(res, { user: user, count: 0 });
+									} else {
+										renderTooltip(res, { user: user, count: count });
+									}
+								})
+							}
+						});
+					}
+				});
+			}
+		});
+	} else {
+		renderTooltip(res, { user: null });
+	}
+});
 
 app.get('/button/:button_uuid', function(req, res) {	
-	res.render('index.jade', { req: req });
+	res.render("button.jade", { req: req })
 });
 
 app.post('/button/:button_uuid', function(req, res) {
@@ -108,7 +163,7 @@ app.post('/button/:button_uuid', function(req, res) {
 					} else {
 						res.json({ err: err });
 					}
-				})
+				});
 			}
 		});
 		return;
@@ -116,7 +171,7 @@ app.post('/button/:button_uuid', function(req, res) {
 	res.json(data);
 });
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 5000;
 app.listen(port, function() {
   console.log("Listening on " + port);
 });
