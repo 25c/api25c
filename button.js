@@ -124,12 +124,11 @@ app.get('/button/:button_uuid', function(req, res) {
 });
 
 app.post('/button/:button_uuid', function(req, res) {
-	data = {};
 	if (req.signedRailsCookies['_25c_session']) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
 			if (err != null) {
 				console.log("POST error fetching session user_uuid: " + err);
-				res.json(data);				
+				res.json({ error: true });				
 			} else {
 			  var ipAddress;
 				//// first check for proxy forwarded ip
@@ -142,7 +141,7 @@ app.post('/button/:button_uuid', function(req, res) {
 			  if (!ipAddress) {
 			    ipAddress = req.connection.remoteAddress;
 			  }
-				data = {
+				var data = {
 					uuid: uuid.v1(),
 					user_uuid: user_uuid,
 					button_uuid: req.params.button_uuid,
@@ -155,22 +154,20 @@ app.post('/button/:button_uuid', function(req, res) {
 				redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
 					if (err != null) {
 						console.log("POST err incrementing counter for key " + counterKey + ": " + err);
-					} else {
-						data.counter = count;
 					}
 				}).exec(function(err, result) {					
 					if (err == null) {
-						res.json(data);			
+						res.json({});			
 					} else {
 						console.log("POST err: " + err);
-						res.json({ err: err });
+						res.json({ error: true });
 					}
 				});
 			}
 		});
 	} else {
 		console.log("POST not signed in");
-		res.json(data);
+		res.json({ redirect: true });
 	}
 });
 
