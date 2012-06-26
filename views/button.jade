@@ -19,7 +19,7 @@ html(lang="en")
               data: data,
               success: function(data) {
                 if (data.redirect) {
-                  window.open("#{WEB_URL_BASE}//tip/#{req.params.button_uuid}", "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
+                  window.open("#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}", "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
                 } else {
                   $.postMessage(
                     "#{req.params.button_uuid}",
@@ -38,7 +38,7 @@ html(lang="en")
       script
         $(function() {
           $("form").submit(function() {
-            window.open("#{WEB_URL_BASE}/tip/#{req.params.button_uuid}", "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
+            window.open("#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}", "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
             return false;
           });
         });
