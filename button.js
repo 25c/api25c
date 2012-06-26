@@ -58,6 +58,11 @@ if (pgWebUrl == undefined) {
 	pgWebUrl = "tcp://localhost/web25c_development";
 }
 
+var WEB_URL_BASE = "http://localhost:3000";
+if (process.env.NODE_ENV == "production") {
+	WEB_URL_BASE = "https://www.plus25c.com"
+}
+
 var express = require('express');
 var RedisStore = require('connect-redis')(express);
 	 
@@ -76,6 +81,7 @@ app.set('view options', {
 app.use('/public', express.static(__dirname + '/public'));
 
 function renderTooltip(res, data) {
+	data.WEB_URL_BASE = WEB_URL_BASE;
 	res.render('tooltip.jade', data, function(err, html) {
 		res.json(html);
 	});
@@ -120,7 +126,7 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 });
 
 app.get('/button/:button_uuid', function(req, res) {	
-	res.render("button.jade", { req: req })
+	res.render("button.jade", { req: req, WEB_URL_BASE: WEB_URL_BASE })
 });
 
 app.post('/button/:button_uuid', function(req, res) {
