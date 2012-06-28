@@ -126,7 +126,20 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 });
 
 app.get('/button/:button_uuid', function(req, res) {	
-	res.render("button.jade", { req: req, WEB_URL_BASE: WEB_URL_BASE })
+	var size = req.param("size");
+	var height;
+	if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small)$/i) == null)) {
+		size = "btn-small";
+	}
+	size = size.toLowerCase();
+	if (size.match(/-large/)) {
+		height = 70;
+	} else if (size.match(/-medium/)) {
+		height = 50;
+	} else {
+		height = 35;
+	}
+	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE })
 });
 
 app.post('/button/:button_uuid', function(req, res) {

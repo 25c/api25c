@@ -44,11 +44,12 @@ html(lang="en")
         });
     style(type="text/css")
       body{margin:0;padding:0;}
-      button{-webkit-appearance:none;margin:0;padding:0;border:1px solid transparent;background-color:transparent;height:#{req.param("size") == "large" ? 43 : 28}px;}
-      button:hover{border-color:#ffbda0;background-color:#ffeae1;}
+      button{-webkit-appearance:none;margin:0;padding:0;border:1px solid transparent;background-color:transparent;height:#{height}px;}
+      button img{padding:5px;}
+      button:hover{border-radius:10px;background-color:#ffeae1;}
   body
     form(method="POST", target="_blank", action="/button/" + req.params.button_uuid)
       input(type="hidden", name="_csrf", value=req.session._csrf)
       input(type="hidden", name="_referrer", value=req.header("referrer"))
       button(type="submit")
-        img(src="/public/images/25c-button-#{req.param("size")}.png", alt="Tip me +25c!")
+        img(src="/public/images/25c-#{size}.png", alt="Tip me +25c!")

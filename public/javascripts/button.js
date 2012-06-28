@@ -27,11 +27,36 @@ _tip25c_jquery(document).ready(function($) {
 		var url = a.attr("href");
 		var button_uuid = url.substr(url.lastIndexOf("/") + 1);
 		var size = a.attr("data-size");
-		if ((size != "icon") && (size != "medium") && (size != "large")) {
-			size = "medium";
+		var height;
+		var width;
+		if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small)$/i) == null)) {
+			size = "btn-small";
+		}
+		size = size.toLowerCase();
+		if (size.match(/-large/)) {
+			height = 70;
+			if (size.match(/btn-/)) {
+				width = 136;
+			} else {
+				width = 68;
+			}
+		} else if (size.match(/-medium/)) {
+			height = 50;
+			if (size.match(/btn-/)) {
+				width = 94;
+			} else {
+				width = 49;
+			}
+		} else {
+			height = 35;
+			if (size.match(/btn-/)) {
+				width = 63;
+			} else {
+				width = 34;
+			}
 		}
 		var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + button_uuid + '?tooltip=true&size=' + size;
-		a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:180px; height:' + (size == "large" ? "43" : "28") + 'px;"></iframe>');
+		a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:' + width + 'px; height:' + height + 'px;"></iframe>');
 		var iframe = a.next();
 		iframe.on({
 			mouseenter: function() {
@@ -41,7 +66,7 @@ _tip25c_jquery(document).ready(function($) {
 				tooltip.css({
 					visibility: "visible",
 					left: offset.left,
-					top: offset.top + (size == "large" ? 44 : 29)
+					top: offset.top + height
 				});
 				refreshTooltip(button_uuid);
 			},
