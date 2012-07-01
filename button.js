@@ -63,6 +63,11 @@ if (process.env.NODE_ENV == "production") {
 	WEB_URL_BASE = "https://www.plus25c.com"
 }
 
+var ASSETS_URL_BASE = "http://localhost:3000/s3";
+if (process.env.NODE_ENV == "production") {
+	ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
+}
+
 var express = require('express');
 var RedisStore = require('connect-redis')(express);
 	 
@@ -81,7 +86,6 @@ app.set('view options', {
 app.use('/public', express.static(__dirname + '/public'));
 
 function renderTooltip(res, data) {
-	data.WEB_URL_BASE = WEB_URL_BASE;
 	res.render('tooltip.jade', data, function(err, html) {
 		res.json(html);
 	});
@@ -106,6 +110,33 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 								renderTooltip(res, { user: null });
 							} else if (result.rows.length == 1) {
 								var user = result.rows[0];
+								var displayName = "";
+								if (user.first_name && user.first_name != "") {
+									displayName = user.first_name;
+								}
+								if (user.last_name && user.last_name != "") {
+									if (displayName != "") {
+										displayName += " ";
+									}
+									displayName += user.last_name;
+								}
+								if (displayName == "" && user.nickname && user.nickname != "") {
+									displayName = user.nickname;
+								}
+								if (displayName == "" && user.email && user.email != "") {
+									displayName = user.email;
+								}
+								user.displayName = displayName;
+								var pictureUrl = "";
+								if (user.picture_file_name && user.picture_file_name != "") {
+									pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/original" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
+								}
+								user.pictureUrl = pictureUrl;
+								var nicknameUrl = "";
+								if (user.nickname && user.nickname != "") {
+									nicknameUrl = WEB_URL_BASE + "/" + user.nickname;
+								}
+								user.nicknameUrl = nicknameUrl;
 								var counterKey = user_uuid + ":" + req.params.button_uuid;
 								redisDataClient.get(counterKey, function(err, count) {
 									if (err != null) {
