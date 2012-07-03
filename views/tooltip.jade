@@ -1,6 +1,6 @@
 if user != null
 	if count > 0
-		| <b>#{count * 25}c donated</b> -- Thank you! Click again to micro-donate another 25c.
+		| <b>#{count} &times; 25c (= $#{(count * 25 / 100).toFixed(2)}) donated</b> -- Thank you! Click again to micro-donate another 25c.
 	else
 		b Super-like it?
 		| &nbsp;Click to like & micro-donate 25c!
