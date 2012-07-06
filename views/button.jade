@@ -13,6 +13,12 @@ html(lang="en")
           $("form").submit(function() {
             var form = $(this);
             var data = form.serialize();
+            console.log($("form"));   
+            console.log("hello jinglz");
+            $(this).find("button>img").fadeOut(100).delay(150).fadeIn(100);
+              // $('#picOne').fadeIn(10).delay(15).fadeOut(10);
+              // $('#picTwo').delay(25).fadeIn(10);
+
             $.ajax({
               type: "POST",
               url: form.attr("action"),
@@ -43,10 +49,10 @@ html(lang="en")
           });
         });
     style(type="text/css")
-      body{margin:0;padding:0;}
+      //body{margin: 0; padding: 0;}
       button{-webkit-appearance:none;margin:0;padding:0;border:1px solid transparent;background-color:transparent;height:#{height}px;}
-      button img{padding:5px;}
-      button:hover{border-radius:10px;background-color:#ffeae1;}
+      button img{padding: 5px;}
+      button:hover{border-radius:10px;background-color:#f9861b88;}
   body
     form(method="POST", target="_blank", action="/button/" + req.params.button_uuid)
       input(type="hidden", name="_csrf", value=req.session._csrf)
