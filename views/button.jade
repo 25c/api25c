@@ -47,13 +47,14 @@ html(lang="en")
       body{margin: 0; padding: 0;}
       button{-webkit-appearance:none;margin:0;padding:0;border:1px solid transparent;background-color:transparent;height:#{height}px;}
       button:hover{border-radius:10px;background-color:#f9861b88;}
-      \\#rot{display: none;}
-      \\#rot{position: relative;}
+      button{position: absolute; left: 0; top: -3px;}
+      
   body
     form(method="POST", target="_blank", action="/button/" + req.params.button_uuid)
       input(type="hidden", name="_csrf", value=req.session._csrf)
       input(type="hidden", name="_referrer", value=req.header("referrer"))
       button(type="submit")
-        img(src="/public/images/25c-#{size}.png", alt="Tip me +25c!", id: "notrot")
-        img(src="/public/images/25c-rot-#{size}.png", id: "rot")
+        img(src="/public/images/25c-#{size}.png", alt="Tip me +25c!")
+      rot-button(type="submit")
+        img(src="/public/images/25c-rot-#{size}.png")
         
