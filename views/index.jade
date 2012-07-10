@@ -7,7 +7,6 @@ html(lang="en")
         display: block;
         width: 25px;
         height: 25px;
-        padding: 3px;
         border-radius: 5px;
         background: #f0b7a1; /* Old browsers */
         background: -moz-linear-gradient(top, #f0b7a1 0%, #8c3310 50%, #752201 51%, #bf6e4e 100%); /* FF3.6+ */
@@ -37,4 +36,3 @@ html(lang="en")
   body
     a(id="button", data-csrf=req.session._csrf, data-referrer=req.header('referrer'), href="/button/" + req.params.button_uuid)
       span
-
