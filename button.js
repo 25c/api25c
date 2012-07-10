@@ -87,6 +87,7 @@ app.use('/public', express.static(__dirname + '/public'));
 
 function renderTooltip(res, data) {
 	res.render('tooltip.jade', data, function(err, html) {
+	  if (err) console.log(err);
 		res.json(html);
 	});
 }
@@ -129,7 +130,7 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 								user.displayName = displayName;
 								var pictureUrl = "";
 								if (user.picture_file_name && user.picture_file_name != "") {
-									pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/original" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
+									pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
 								}
 								user.pictureUrl = pictureUrl;
 								var nicknameUrl = "";

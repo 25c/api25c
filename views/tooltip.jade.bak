@@ -1,0 +1,24 @@
+if user != null
+	if count > 0
+		| <b>#{count} &times; 25c (= $#{(count * 25 / 100).toFixed(2)}) donated</b> -- Thank you! 
+		| Click again to micro-donate another 25c.
+	else
+    b Super-like it?
+    | &nbsp;Click to like & micro-donate 25c!
+	div(style="padding-top:8px;")
+		if user.pictureUrl != ""
+			div(style="float:left;margin-right:4px;width:32px;height:32px;overflow:hidden;line-height:1;")
+				if user.nickname != ""
+					a(href=user.nicknameUrl, style="text-decoration:none;")
+						img(src=user.pictureUrl, style="display:block;border:0;max-width:100%;margin-left:auto;margin-right:auto;vertical-align:middle;")
+				else
+					img(src=user.pictureUrl, style="display:block;border:0;max-width:100%;margin-left:auto;margin-right:auto;vertical-align:middle;")
+		div(style="float:left;padding-top:8px;") 
+			if user.nickname != ""
+				a(href=user.nicknameUrl, style="text-decoration:none;") #{user.displayName}
+			else
+				#{user.displayName}
+		div(style="clear:both;")
+else
+	b Super-like it?
+	| &nbsp;Click to like & micro-donate 25c!
