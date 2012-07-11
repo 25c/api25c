@@ -17,7 +17,7 @@ _tip25c_jquery(document).ready(function($) {
 		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
 			if (button_title) {
-			  $tooltip.children('#button-title').html(button_title);
+			  // $tooltip.children('#button-title').html(button_title);
 		  }
 		});
 	}
