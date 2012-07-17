@@ -22,6 +22,9 @@ var rails = require('./rails');
 var url = require('url');
 var uuid = require('node-uuid');
 var pg = require('pg').native;
+var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a900');
+airbrake.developmentEnvironments = ['development'];
+airbrake.handleExceptions();
 
 var redisDataClient;
 var redisWebClient;
@@ -51,6 +54,7 @@ catch (err)
 {
 	console.log( "ERROR => Cannot connect to Redis message broker: URL => " + redisURL.hostname + "; Port => " + redisURL.port );
 	console.log(err);
+	airbrake.notify(err);
 }
 
 var pgWebUrl = process.env.DATABASE_WEB_URL;
@@ -87,7 +91,10 @@ app.use('/public', express.static(__dirname + '/public'));
 
 function renderTooltip(res, data) {
 	res.render('tooltip.jade', data, function(err, html) {
-	  if (err) console.log(err);
+	  if (err) {
+			console.log(err);
+			airbrake.notify(err);
+		}
 		res.json(html);
 	});
 }
@@ -105,6 +112,7 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 						pgWebClient.query("SELECT * FROM users WHERE LOWER(uuid)=LOWER($1)", [ user_uuid ], function(err, result) {
 							if (err != null) {
 								console.log("could not query for user_uuid: " + err);
+								airbrake.notify(err);
 								renderTooltip(res, { user: null });
 							} else if (result.rows.length == 0) {
 								console.log("not found user_uuid=" +user_uuid);
@@ -179,6 +187,7 @@ app.post('/button/:button_uuid', function(req, res) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
 			if (err != null) {
 				console.log("POST error fetching session user_uuid: " + err);
+				airbrake.notify(err);
 				res.json({ error: true });				
 			} else {
 			  var ipAddress;
@@ -205,12 +214,14 @@ app.post('/button/:button_uuid', function(req, res) {
 				redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
 					if (err != null) {
 						console.log("POST err incrementing counter for key " + counterKey + ": " + err);
+						airbrake.notify(err);
 					}
 				}).exec(function(err, result) {					
 					if (err == null) {
 						res.json({});			
 					} else {
 						console.log("POST err: " + err);
+						airbrake.notify(err);
 						res.json({ error: true });
 					}
 				});
