@@ -191,7 +191,7 @@ app.post('/button/:button_uuid', function(req, res) {
 				res.json({ error: true });				
 			} else {
 				//// fetch user and check balance
-				redisWebClient.get("user:" + user_uuid, function(err, balance_str) {
+				redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
 					if (err != null) {
 						console.log("POST error fetching user balance: " + err);
 						airbrake.notify(err);
