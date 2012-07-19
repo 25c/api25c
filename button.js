@@ -190,39 +190,57 @@ app.post('/button/:button_uuid', function(req, res) {
 				airbrake.notify(err);
 				res.json({ error: true });				
 			} else {
-			  var ipAddress;
-				//// first check for proxy forwarded ip
-			  var forwardedIpsStr = req.header('x-forwarded-for'); 
-			  if (forwardedIpsStr) {
-			    var forwardedIps = forwardedIpsStr.split(',');
-			    ipAddress = forwardedIps[0];
-			  }
-				//// fall back to connection ip
-			  if (!ipAddress) {
-			    ipAddress = req.connection.remoteAddress;
-			  }
-				var data = {
-					uuid: uuid.v1(),
-					user_uuid: user_uuid,
-					button_uuid: req.params.button_uuid,
-					referrer: req.param('_referrer'),
-					user_agent: req.header('user-agent'),
-					ip_address: ipAddress,
-					created_at: new Date()
-				};
-				var counterKey = user_uuid + ":" + req.params.button_uuid;
-				redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
+				//// fetch user and check balance
+				redisWebClient.get("user:" + user_uuid, function(err, balance_str) {
 					if (err != null) {
-						console.log("POST err incrementing counter for key " + counterKey + ": " + err);
+						console.log("POST error fetching user balance: " + err);
 						airbrake.notify(err);
-					}
-				}).exec(function(err, result) {					
-					if (err == null) {
-						res.json({});			
+						res.json({ error: true });				
 					} else {
-						console.log("POST err: " + err);
-						airbrake.notify(err);
-						res.json({ error: true });
+						if (balance_str == null) {
+							balance = 0;
+						} else {
+							balance = parseInt(balance_str);
+						}
+						if (balance > -40) {
+						  var ipAddress;
+							//// first check for proxy forwarded ip
+						  var forwardedIpsStr = req.header('x-forwarded-for'); 
+						  if (forwardedIpsStr) {
+						    var forwardedIps = forwardedIpsStr.split(',');
+						    ipAddress = forwardedIps[0];
+						  }
+							//// fall back to connection ip
+						  if (!ipAddress) {
+						    ipAddress = req.connection.remoteAddress;
+						  }
+							var data = {
+								uuid: uuid.v1(),
+								user_uuid: user_uuid,
+								button_uuid: req.params.button_uuid,
+								referrer: req.param('_referrer'),
+								user_agent: req.header('user-agent'),
+								ip_address: ipAddress,
+								created_at: new Date()
+							};
+							var counterKey = user_uuid + ":" + req.params.button_uuid;
+							redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
+								if (err != null) {
+									console.log("POST err incrementing counter for key " + counterKey + ": " + err);
+									airbrake.notify(err);
+								}
+							}).exec(function(err, result) {					
+								if (err == null) {
+									res.json({});			
+								} else {
+									console.log("POST err: " + err);
+									airbrake.notify(err);
+									res.json({ error: true });
+								}
+							});
+						} else {
+							res.json({ redirect: true });
+						}
 					}
 				});
 			}
