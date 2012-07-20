@@ -2,10 +2,10 @@ if user != null
   if count > 0
     div <b>#{count} &times; 25c (= $#{(count * 25 / 100).toFixed(2)}) donated</b>
     span Click again to donate another 25c
-    span#button-title
+    span#button-title!
   else
     span Donate 25c
-    span#button-title
+    span#button-title &nbsp;and reward this content!
   div(style="padding-top:8px;")
     if user.pictureUrl != ""
       if user.nickname != ""
@@ -21,4 +21,6 @@ if user != null
     div(style="clear:both;")
 else
   span Donate 25c
-  span#button-title
+  span#button-title &nbsp;and reward this content!
+  //- div(style="padding-top:8px;")
+    //- a(href="https://www.plus25c.com/", target="_blank") Learn more about 25c
