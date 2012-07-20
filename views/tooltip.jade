@@ -1,10 +1,11 @@
 if user != null
   if count > 0
-    | <b>#{count} &times; 25c (= $#{(count * 25 / 100).toFixed(2)}) donated.</b>
-    #button-title Thank you! Click again to micro-donate another 25c.
+    div <b>#{count} &times; 25c (= $#{(count * 25 / 100).toFixed(2)}) donated</b>
+    span Click again to donate another 25c
+    span#button-title
   else
-    #button-title
-      | &nbsp;Click to micro-donate 25c!
+    span Donate 25c
+    span#button-title
   div(style="padding-top:8px;")
     if user.pictureUrl != ""
       if user.nickname != ""
@@ -19,5 +20,5 @@ if user != null
         #{user.displayName}
     div(style="clear:both;")
 else
-  #button-title
-    | &nbsp;Click to micro-donate 25c!
+  span Donate 25c
+  span#button-title
