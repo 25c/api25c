@@ -13,7 +13,7 @@ html(lang="en")
           $("form").submit(function() {
             var form = $(this);
             var data = form.serialize();
-            $(this).find("button>img").fadeOut(50).delay(50).fadeIn(50);
+            form.find("button>img").fadeOut(50).delay(50).fadeIn(50);
             $.ajax({
               type: "POST",
               url: form.attr("action"),
@@ -39,7 +39,23 @@ html(lang="en")
       script
         $(function() {
           $("form").submit(function() {
-            window.open("#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}", "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
+            var form = $(this);
+            var data = form.serialize();
+            form.find("button>img").fadeOut(50).delay(50).fadeIn(50);
+            $.ajax({
+              type: "POST",
+              url: form.attr("action"),
+              data: data,
+              success: function(data) {
+                var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
+                if (data.overdraft) {
+                  url = url + "&overdraft=true";
+                }
+                window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
+              },
+              dataType: "json",
+              async: false
+            });
             return false;
           });
         });

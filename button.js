@@ -239,7 +239,7 @@ app.post('/button/:button_uuid', function(req, res) {
 								}
 							});
 						} else {
-							res.json({ redirect: true });
+							res.json({ redirect: true, overdraft: true });
 						}
 					}
 				});
