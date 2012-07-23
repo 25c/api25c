@@ -45,11 +45,11 @@ html(lang="en")
         });
     else
       script
-        $("#submit-button").click(function() {
-          $(this).children("img").fadeOut(50).delay(50).fadeIn(50);
-          $("form").submit();
-        });
         $(function() {
+          $("#submit-button").click(function() {
+            $(this).children("img").fadeOut(50).delay(50).fadeIn(50);
+            $("form").submit();
+          });
           $("form").submit(function() {
             var form = $(this);
             var data = form.serialize();

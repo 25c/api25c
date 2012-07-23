@@ -10,7 +10,7 @@ _tip25c_jquery(document).ready(function($) {
 		var tooltip = $("#tip-25c-tooltip");
 		tooltip.css({
 			visibility: "hidden"
-		});				
+		});
 	}
 	function refreshTooltip(button_uuid) {
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
