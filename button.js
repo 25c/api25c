@@ -173,11 +173,11 @@ app.get('/button/:button_uuid', function(req, res) {
 	}
 	size = size.toLowerCase();
 	if (size.match(/-large/)) {
-		height = 70;
+		height = 40;
 	} else if (size.match(/-medium/)) {
-		height = 50;
+		height = 32;
 	} else {
-		height = 35;
+		height = 24;
 	}
 	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE })
 });

@@ -10,10 +10,14 @@ html(lang="en")
     if req.param("tooltip") == "true"
       script
         $(function() {
+          $("#submit-button").click(function() {
+            $(this).children("img").fadeOut(50).delay(50).fadeIn(50);
+            $("form").submit();
+          });
           $("form").submit(function() {
             var form = $(this);
             var data = form.serialize();
-            form.find("button>img").fadeOut(50).delay(50).fadeIn(50);
+            form
             $.ajax({
               type: "POST",
               url: form.attr("action"),
@@ -41,11 +45,14 @@ html(lang="en")
         });
     else
       script
+        $("#submit-button").click(function() {
+          $(this).children("img").fadeOut(50).delay(50).fadeIn(50);
+          $("form").submit();
+        });
         $(function() {
           $("form").submit(function() {
             var form = $(this);
             var data = form.serialize();
-            form.find("button>img").fadeOut(50).delay(50).fadeIn(50);
             $.ajax({
               type: "POST",
               url: form.attr("action"),
@@ -64,17 +71,19 @@ html(lang="en")
           });
         });
     style(type="text/css")
+      form{position: relative; height:#{height}px;}
       body{margin: 0; padding: 0;}
-      button{-webkit-appearance: none; margin: 0; padding: 0; border: 0px solid transparent; background-color: transparent; height:#{height}px; cursor:pointer;}
-      button{display: block;}
-      button{position: absolute; left: 0px; top: -13px;}
+      .button{-webkit-appearance: none; margin: 0; padding: 0; border: 0px none transparent; background-color: transparent; height:#{height}px; cursor:pointer;}
+      .button{display: block; position: absolute; left: 0px; top: 0px;}
+      #submit-button.button{z-index: 5;}
+      img{padding:0; margin:0;}
       
   body
     form(method="POST", target="_blank", action="/button/" + req.params.button_uuid)
       input(type="hidden", name="_csrf", value=req.session._csrf)
       input(type="hidden", name="_referrer", value=req.header("referrer"))
-      button(type="submit")
+      #submit-button.button
         img(src="/public/images/25c-#{size}.png", alt="Tip me +25c!")
-      rot-button(type="submit")
+      .button
         img(src="/public/images/25c-rot-#{size}.png")
         

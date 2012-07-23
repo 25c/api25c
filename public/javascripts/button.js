@@ -40,25 +40,25 @@ _tip25c_jquery(document).ready(function($) {
 		}
 		size = size.toLowerCase();
 		if (size.match(/-large/)) {
-			height = 70;
+			height = 40;
 			if (size.match(/btn-/)) {
-				width = 136;
+				width = 80;
 			} else {
-				width = 68;
+				width = 40;
 			}
 		} else if (size.match(/-medium/)) {
-			height = 50;
+			height = 32;
 			if (size.match(/btn-/)) {
-				width = 94;
+				width = 64;
 			} else {
-				width = 49;
+				width = 32;
 			}
 		} else {
-			height = 35;
+			height = 24;
 			if (size.match(/btn-/)) {
-				width = 63;
+				width = 48;
 			} else {
-				width = 34;
+				width = 24;
 			}
 		}
 		var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + button_uuid + '?tooltip=true&size=' + size;
