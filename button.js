@@ -116,6 +116,8 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 								renderTooltip(res, { user: null });
 							} else if (result.rows.length == 0) {
 								console.log("not found user_uuid=" +user_uuid);
+								//// delete the cookie
+								res.clearCookie('_25c_session');
 								renderTooltip(res, { user: null });
 							} else if (result.rows.length == 1) {
 								var user = result.rows[0];
@@ -182,6 +184,34 @@ app.get('/button/:button_uuid', function(req, res) {
 	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE })
 });
 
+function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
+	var data = {
+		'uuid': uuid,
+		'user_uuid': user_uuid,
+		'button_uuid': button_uuid,
+		'referrer_user_uuid': referrer_user_uuid,
+		'referrer': referrer,
+		'user_agent': user_agent,
+		'ip_address': ip_address,
+		'created_at': new Date()
+	};
+	var counterKey = user_uuid + ":" + button_uuid;
+	redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
+		if (err != null) {
+			console.log("POST err incrementing counter for key " + counterKey + ": " + err);
+			airbrake.notify(err);
+		}
+	}).exec(function(err, result) {					
+		if (err == null) {
+			res.json({});			
+		} else {
+			console.log("POST err: " + err);
+			airbrake.notify(err);
+			res.json({ error: true });
+		}
+	});
+}
+
 app.post('/button/:button_uuid', function(req, res) {
 	if (req.signedRailsCookies['_25c_session']) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
@@ -214,30 +244,20 @@ app.post('/button/:button_uuid', function(req, res) {
 						  if (!ipAddress) {
 						    ipAddress = req.connection.remoteAddress;
 						  }
-							var data = {
-								uuid: uuid.v1(),
-								user_uuid: user_uuid,
-								button_uuid: req.params.button_uuid,
-								referrer: req.param('_referrer'),
-								user_agent: req.header('user-agent'),
-								ip_address: ipAddress,
-								created_at: new Date()
-							};
-							var counterKey = user_uuid + ":" + req.params.button_uuid;
-							redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
-								if (err != null) {
-									console.log("POST err incrementing counter for key " + counterKey + ": " + err);
-									airbrake.notify(err);
-								}
-							}).exec(function(err, result) {					
-								if (err == null) {
-									res.json({});			
-								} else {
-									console.log("POST err: " + err);
-									airbrake.notify(err);
-									res.json({ error: true });
-								}
-							});
+						  //// check for a button referrer
+						  if (req.cookies['_25c_referrer']) {
+						    redisApiClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
+						      var button_referrer = JSON.parse(button_referrer_data);
+						      //// verify host match
+						      if (url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname) {
+						        enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, button_referrer['referrer_user_uuid'], req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+						      } else {
+						        enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);						        
+						      }
+						    });
+						  } else {
+						    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+						  }
 						} else {
 							res.json({ redirect: true, overdraft: true });
 						}
