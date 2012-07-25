@@ -260,7 +260,7 @@ app.post('/button/:button_uuid', function(req, res) {
 						  }
 						  //// check for a button referrer
 						  if (req.cookies['_25c_referrer']) {
-						    redisApiClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
+						    redisWebClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
 						      var button_referrer = JSON.parse(button_referrer_data);
 						      //// verify host match
 						      if (url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname) {
