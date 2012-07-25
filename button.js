@@ -26,6 +26,9 @@ var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a90
 airbrake.developmentEnvironments = ['development'];
 airbrake.handleExceptions();
 
+var nus_config = require('./lib/short25c/lib/get-config.js');
+var nus = require('./lib/short25c/lib/nus.js');
+
 var redisDataClient;
 var redisWebClient;
 var redisApiClient;
@@ -148,13 +151,24 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 									nicknameUrl = WEB_URL_BASE + "/" + user.nickname;
 								}
 								user.nicknameUrl = nicknameUrl;
+								//// get cached click count
 								var counterKey = user_uuid + ":" + req.params.button_uuid;
 								redisDataClient.get(counterKey, function(err, count) {
-									if (err != null) {
-										renderTooltip(res, { user: user, count: 0 });
-									} else {
-										renderTooltip(res, { user: user, count: count });
-									}
+								  //// get shortened referrer url
+                  nus.shorten(req.header("referrer")+'/'+user.uuid+'/0', function (err, reply) {
+                      var referrer_url = null;
+                      if (err) {
+                        console.log(err);
+                        airbrake.notify(err);
+                      } else {
+                        referrer_url = nus_config.url + '/' + reply.hash;
+                      }
+    									if (err != null) {
+    										renderTooltip(res, { user: user, count: 0, referrer_url: referrer_url });
+    									} else {
+    										renderTooltip(res, { user: user, count: count, referrer_url: referrer_url });
+    									}
+                  });								  
 								})
 							}
 						});
