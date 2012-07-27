@@ -67,12 +67,12 @@ if (pgWebUrl == undefined) {
 
 var WEB_URL_BASE = "http://localhost:3000";
 if (process.env.NODE_ENV == "production") {
-	WEB_URL_BASE = "https://www.plus25c.com"
+	WEB_URL_BASE = "https://www.25c.com"
 }
 
 var ASSETS_URL_BASE = "http://localhost:3000/s3";
 if (process.env.NODE_ENV == "production") {
-	ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
+	ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
 }
 
 var express = require('express');
