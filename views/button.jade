@@ -28,7 +28,7 @@ html(lang="en")
                   if (data.overdraft) {
                     url = url + "&overdraft=true";
                   }
-                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
+                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,location=no,width=640,height=500");
                 } else {
                   $.postMessage(
                     "#{req.params.button_uuid}",
