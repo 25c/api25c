@@ -16,7 +16,37 @@ _tip25c_jquery(document).ready(function($) {
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
-			if (button_title) {
+			
+			if (window.location.hostname.indexOf('25c.com') != -1) {
+			  appId = "403609836335934";
+			  redirectURI = "https://www.25c.com/fb_share_callback";
+		  } else {
+		    appId = "259751957456159";
+		    redirectURI = "http://localhost:3000/fb_share_callback";
+	    }
+	    
+	    var name = userName + " pledged 25c to ";
+	    
+	    console.log(/^\s+$/.test(button_title));
+	    
+	    if (!button_title || /^\s+$/.test(button_title)) name += "this page";
+	    else name += button_title;
+	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
+      
+			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
+			  + "&app_id=" + appId
+			  + "&link=" + referrerUrl
+        + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/25c-logo-medium.png"
+			  + "&name=" + encodeURI(name)
+        + "&caption=" + " "
+			  + "&description=" + encodeURI(description)
+			  + "&redirect_uri=" + redirectURI;
+			
+			$('#fb-share-link').click(function() {
+			  window.open(fbShareHref,'name','height=400,width=580');
+			})
+						
+			if (button_title || /^\s+$/.test(button_title)) {
         $tooltip.children('#button-title').html(' to <b>' + button_title + '</b>');
 		  }
 		});
