@@ -18,11 +18,12 @@ if user != null
         img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:5px;margin-right:5px;border-radius:2px;max-width:25px;max-height:25px;")
     div(style="float:left;padding-top:8px;") 
       if user.nickname != ""
-        a(href=user.nicknameUrl, style="text-decoration:none;") #{user.displayName}
+        a(href=user.nicknameUrl, target="_blank", style="text-decoration:none;") #{user.displayName}
       else
         #{user.displayName}
     div(style="clear:both;")
     img#fb-share-link(src="http://assets.25c.com.s3.amazonaws.com/logos/facebook.png", style="cursor:pointer;padding-top:5px;height:20px;width:20px;")
+    img#tw-share-link(src="http://assets.25c.com.s3.amazonaws.com/logos/twitter.png", style="cursor:pointer;padding-top:5px;height:20px;width:20px;margin-left:5px;")
 else
   span Pledge 25c
   span#button-title &nbsp;and reward this content!

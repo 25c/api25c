@@ -26,9 +26,7 @@ _tip25c_jquery(document).ready(function($) {
 	    }
 	    
 	    var name = userName + " pledged 25c to ";
-	    
-	    console.log(/^\s+$/.test(button_title));
-	    
+	  	    
 	    if (!button_title || /^\s+$/.test(button_title)) name += "this page";
 	    else name += button_title;
 	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
@@ -43,10 +41,16 @@ _tip25c_jquery(document).ready(function($) {
 			  + "&redirect_uri=" + redirectURI;
 			
 			$('#fb-share-link').click(function() {
-			  window.open(fbShareHref,'name','height=400,width=580');
-			})
-						
-			if (button_title || /^\s+$/.test(button_title)) {
+			  window.open(fbShareHref, 'name', 'height=400,width=580');
+			});
+			
+			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
+			
+			$('#tw-share-link').click(function() {
+			  window.open(twShareHref, 'name', 'height=400,width=580');
+		  });
+
+			if (button_title && !(/^\s+$/.test(button_title))) {
         $tooltip.children('#button-title').html(' to <b>' + button_title + '</b>');
 		  }
 		});
