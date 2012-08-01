@@ -24,34 +24,34 @@ _tip25c_jquery(document).ready(function($) {
 		    appId = "259751957456159";
 		    redirectURI = "http://localhost:3000/fb_share_callback";
 	    }
-	    
-	    var name = userName + " pledged 25c to ";
+	    if (loggedIn) {
+  	    var name = userName + " pledged 25c ";
 	  	    
-	    if (!button_title || /^\s+$/.test(button_title)) name += "this page";
-	    else name += button_title;
-	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
+  	    if (!button_title || /^\s+$/.test(button_title)) name += "to this page";
+  	    else name += button_title;
+  	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
       
-			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
-			  + "&app_id=" + appId
-			  + "&link=" + referrerUrl
-        + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/25c-logo-medium.png"
-			  + "&name=" + encodeURI(name)
-        + "&caption=" + " "
-			  + "&description=" + encodeURI(description)
-			  + "&redirect_uri=" + redirectURI;
+  			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
+  			  + "&app_id=" + appId
+  			  + "&link=" + referrerUrl
+          + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/25c-logo-medium.png"
+  			  + "&name=" + encodeURI(name)
+          + "&caption=" + " "
+  			  + "&description=" + encodeURI(description)
+  			  + "&redirect_uri=" + redirectURI;
 			
-			$('#fb-share-link').click(function() {
-			  window.open(fbShareHref, 'name', 'height=400,width=580');
-			});
+  			$('#fb-share-link').click(function() {
+  			  window.open(fbShareHref, 'name', 'height=400,width=580');
+  			});
 			
-			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
+  			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
 			
-			$('#tw-share-link').click(function() {
-			  window.open(twShareHref, 'name', 'height=400,width=580');
-		  });
-
-			if (button_title && !(/^\s+$/.test(button_title))) {
-        $tooltip.children('#button-title').html(' to <b>' + button_title + '</b>');
+  			$('#tw-share-link').click(function() {
+  			  window.open(twShareHref, 'name', 'height=400,width=580');
+  		  });
+  			if (button_title && !(/^\s+$/.test(button_title))) {
+          $tooltip.children('#button-title').html(' <b>' + button_title + '</b>');
+  		  }
 		  }
 		});
 	}

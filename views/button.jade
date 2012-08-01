@@ -17,7 +17,6 @@ html(lang="en")
           $("form").submit(function() {
             var form = $(this);
             var data = form.serialize();
-            form
             $.ajax({
               type: "POST",
               url: form.attr("action"),
@@ -27,8 +26,13 @@ html(lang="en")
                   var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
                   if (data.overdraft) {
                     url = url + "&overdraft=true";
+                    windowHeight = 312;
+                    windowWidth = 430;
+                  } else {
+                    windowHeight = 410;
+                    windowWidth = 550;
                   }
-                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,location=no,width=640,height=500");
+                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width="+ windowWidth + ",height=" + windowHeight);
                 } else {
                   $.postMessage(
                     "#{req.params.button_uuid}",
@@ -61,8 +65,13 @@ html(lang="en")
                 var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
                 if (data.overdraft) {
                   url = url + "&overdraft=true";
+                  windowHeight = 312;
+                  windowWidth = 430;
+                } else {
+                  windowHeight = 410;
+                  windowWidth = 550;
                 }
-                window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=640,height=500");
+                window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width="+ windowWidth + ",height=" + windowHeight);
               },
               dataType: "json",
               async: false
