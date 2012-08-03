@@ -5,8 +5,8 @@ if user != null
     window.userName = "#{user.displayName}"
   if count > 0
     div <b>#{count} &times; 25c (= $#{(count * 25 / 100).toFixed(2)}) pledged</b>
-    span Click again to pledge another 25c
-    span#button-title!
+    span Click again to pledge more <br>
+    span#button-title
   else
     span Pledge 25c
     span#button-title &nbsp;and reward this content!

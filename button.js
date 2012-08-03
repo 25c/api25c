@@ -195,7 +195,16 @@ app.get('/button/:button_uuid', function(req, res) {
 	} else {
 		height = 24;
 	}
-	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE })
+	
+	
+	// LJ: if coming from tip page, use original referrer
+	if (req.header("referrer").indexOf(WEB_URL_BASE + '/tip/') != -1) {
+	  referrer = url.parse(req.header("referrer"), true).query.referrer;
+  } else {
+    referrer = req.header('referrer');
+  }
+	
+	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE, referrer: referrer })
 });
 
 function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {

@@ -14,6 +14,7 @@ html(lang="en")
             $(this).children("img").fadeOut(50).delay(50).fadeIn(50);
             $("form").submit();
           });
+          
           $("form").submit(function() {
             var form = $(this);
             var data = form.serialize();
@@ -26,13 +27,8 @@ html(lang="en")
                   var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
                   if (data.overdraft) {
                     url = url + "&overdraft=true";
-                    windowHeight = 312;
-                    windowWidth = 430;
-                  } else {
-                    windowHeight = 410;
-                    windowWidth = 550;
                   }
-                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width="+ windowWidth + ",height=" + windowHeight);
+                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + 480 + ",height=" + 320);
                 } else {
                   $.postMessage(
                     "#{req.params.button_uuid}",
@@ -65,13 +61,8 @@ html(lang="en")
                 var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
                 if (data.overdraft) {
                   url = url + "&overdraft=true";
-                  windowHeight = 312;
-                  windowWidth = 430;
-                } else {
-                  windowHeight = 410;
-                  windowWidth = 550;
                 }
-                window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width="+ windowWidth + ",height=" + windowHeight);
+                window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + 480 + ",height=" + 320);
               },
               dataType: "json",
               async: false
@@ -88,11 +79,11 @@ html(lang="en")
       img{padding:0; margin:0;}
       
   body
-    form(method="POST", target="_blank", action="/button/" + req.params.button_uuid)
+    form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
       input(type="hidden", name="_csrf", value=req.session._csrf)
-      input(type="hidden", name="_referrer", value=req.header("referrer"))
+      input(type="hidden", name="_referrer", value=referrer)
       #submit-button.button
-        img(src="/public/images/25c-#{size}.png", alt="Tip me +25c!")
+        img(src="/public/images/25c-#{size}.png", alt="Pledge 25c!")
       .button
         img(src="/public/images/25c-rot-#{size}.png")
         
