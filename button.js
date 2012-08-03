@@ -143,7 +143,8 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 								user.displayName = displayName;
 								var pictureUrl = "";
 								if (user.picture_file_name && user.picture_file_name != "") {
-									pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
+                  // pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
+                  pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
 								}
 								user.pictureUrl = pictureUrl;
 								var nicknameUrl = "";
