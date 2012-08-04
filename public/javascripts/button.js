@@ -69,7 +69,7 @@ _tip25c_jquery(document).ready(function($) {
 		var size = a.attr("data-size");
 		var height;
 		var width;
-		if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small)$/i) == null)) {
+		if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|icon-text)$/i) == null)) {
 			size = "btn-small";
 		}
 		size = size.toLowerCase();

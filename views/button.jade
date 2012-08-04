@@ -11,7 +11,7 @@ html(lang="en")
       script
         $(function() {
           $("#submit-button").click(function() {
-            $(this).children("img").fadeOut(50).delay(50).fadeIn(50);
+            $(this).children("img:first-child").fadeOut(50).delay(50).fadeIn(50);
             $("form").submit();
           });
           
@@ -47,7 +47,7 @@ html(lang="en")
       script
         $(function() {
           $("#submit-button").click(function() {
-            $(this).children("img").fadeOut(50).delay(50).fadeIn(50);
+            $(this).children("img:first-child").fadeOut(50).delay(50).fadeIn(50);
             $("form").submit();
           });
           $("form").submit(function() {
@@ -71,12 +71,12 @@ html(lang="en")
           });
         });
     style(type="text/css")
-      form{position: relative; height:#{height}px;}
-      body{margin: 0; padding: 0;}
-      .button{-webkit-appearance: none; margin: 0; padding: 0; border: 0px none transparent; background-color: transparent; height:#{height}px; cursor:pointer;}
-      .button{display: block; position: absolute; left: 0px; top: 0px;}
-      #submit-button.button{z-index: 5;}
-      img{padding:0; margin:0;}
+      form{ position: relative; height:#{height}px; }
+      body{ margin: 0; padding: 0; }
+      .button{ cursor: pointer; margin: 0; padding: 0; border: 0px none transparent; }
+      .button-text{ position: absolute; left: 25px; top: 4px; font: normal normal 400 15px helvetica,arial,sans-serif; }
+      img{ position: absolute; top: 0; left: 0; padding: 0; margin: 0 }
+      img.rot{ z-index:-10 }
       
   body
     form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
@@ -84,6 +84,6 @@ html(lang="en")
       input(type="hidden", name="_referrer", value=referrer)
       #submit-button.button
         img(src="/public/images/25c-#{size}.png", alt="Pledge 25c!")
-      .button
-        img(src="/public/images/25c-rot-#{size}.png")
-        
+        img.rot(src="/public/images/25c-rot-#{size}.png")
+        if size == 'icon-text'
+          .button-text 25c
