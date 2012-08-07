@@ -296,8 +296,10 @@ app.post('/button/:button_uuid', function(req, res) {
 						  } else {
 						    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
 						  }
+						  // Send initial overdraft email
+						  if (balance == -39) sendOverdraftEmail(user_uuid);
 						} else {
-						  //// Send overdraft email
+						  //// Resend overdraft email
 						  sendOverdraftEmail(user_uuid);
 							res.json({ redirect: true, overdraft: true });
 						}
