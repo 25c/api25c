@@ -22,9 +22,23 @@ var rails = require('./rails');
 var url = require('url');
 var uuid = require('node-uuid');
 var pg = require('pg').native;
+
 var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a900');
 airbrake.developmentEnvironments = ['development'];
 airbrake.handleExceptions();
+
+var nodemailer = require("nodemailer");
+var EMAIL_SERVICE = "SendGrid";
+var EMAIL_USERNAME = "corp25c";
+var EMAIL_PASSWORD = "sup3rl!k3";
+var EMAIL_FROM = "no-reply@25c.com";
+var smtpTransport = nodemailer.createTransport("SMTP", {
+    service: EMAIL_SERVICE,
+    auth: {
+        user: EMAIL_USERNAME,
+        pass: EMAIL_PASSWORD
+    }
+});
 
 var nus_config = require('./lib/short25c/lib/get-config.js');
 var nus = require('./lib/short25c/lib/nus.js');
@@ -225,7 +239,7 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 			console.log("POST err incrementing counter for key " + counterKey + ": " + err);
 			airbrake.notify(err);
 		}
-	}).exec(function(err, result) {					
+	}).exec(function(err, result) {
 		if (err == null) {
 			res.json({});			
 		} else {
@@ -283,6 +297,8 @@ app.post('/button/:button_uuid', function(req, res) {
 						    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
 						  }
 						} else {
+						  //// Send overdraft email
+						  sendOverdraftEmail(user_uuid);
 							res.json({ redirect: true, overdraft: true });
 						}
 					}
@@ -294,6 +310,60 @@ app.post('/button/:button_uuid', function(req, res) {
 		res.json({ redirect: true });
 	}
 });
+
+function sendEmail(to, subject, body) {
+  var mailOptions = {
+    from: EMAIL_FROM,
+    to: to,
+    subject: subject,
+    html: body,
+    generateTextFromHTML: true
+  };
+  smtpTransport.sendMail(mailOptions, function(err, response) {
+    if(err){
+      console.log("Could not send email: " + err);
+    }
+  });
+}
+
+function sendOverdraftEmail(uuid) {
+  pg.connect(pgWebUrl, function(err, pgWebClient) {
+		if (err != null) {
+			console.log("Could not connect to web postgres: " + err);
+			airbrake.notify(err);
+			callback(err);
+		} else {
+      pgWebClient.query("SELECT email, first_name, nickname FROM users WHERE uuid = LOWER($1)", [ uuid ], function(err, result) {
+    	  if (err != null) {
+    	    console.log("Getting user email error: " + err);
+        } else if (result.rows[0] == undefined) {
+          console.log("User not found!");
+        } else if (!result.rows[0].email) {
+          console.log("User does not have an email address!");
+        } else {
+          userEmail = result.rows[0].email;
+          userFirstName = result.rows[0].first_name;
+          userNickname = result.rows[0].nickname;
+      
+          toName = userFirstName || userNickname || userEmail;
+      
+          subject = "Funding the pledges you made";
+          body = "<p>Dear " + toName + ":</p>" +
+            "<p>Thank you for using 25c to support what you value. The pledgees are excited about your pledge and are looking forward to receiving funds.</p>" +
+            "<p>You have now pledged 40 x 25c ($10) to different 25c providers.  We will pay those providers once you have funded these pledges.</p>" +
+            "<p>Please take action now to <a href=\"https://www.25c.com/home/payment/\">fund the pledges you made</a>.</p>" +
+            "<p>If you have changed your mind and would like to withdraw certain pledges, you may do so on <a href=\"https://www.25c.com/home/\">your personal dashboard</a>." +
+            "<p>You either have to withdraw your pledges or fund them.  What you cannot do is do neither.</p>" +
+            "<p>Again thank you for your pledges and helping us changing the world one click a time!</p>" +
+            "<p>(In the event you overlooked this email, we will continue to remind you.)</p>" +
+            "<p>The 25c Team</p>";
+
+    		  sendEmail(userEmail, subject, body);
+        }
+      });
+    }
+  });
+}
 
 var port = process.env.PORT || 5000;
 app.listen(port, function() {
