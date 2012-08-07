@@ -24,6 +24,11 @@ _tip25c_jquery(document).ready(function($) {
 		    appId = "259751957456159";
 		    redirectURI = "http://localhost:3000/fb_share_callback";
 	    }
+	    
+	    if (button_title && !(/^\s+$/.test(button_title))) {
+        $tooltip.children('#button-title').html(' <b>' + button_title + '</b>');
+		  }
+		  
 	    if (loggedIn) {
   	    var name = userName + " pledged 25c ";
 	  	    
@@ -49,9 +54,6 @@ _tip25c_jquery(document).ready(function($) {
   			$('#tw-share-link').click(function() {
   			  window.open(twShareHref, 'name', 'height=400,width=580');
   		  });
-  			if (button_title && !(/^\s+$/.test(button_title))) {
-          $tooltip.children('#button-title').html(' <b>' + button_title + '</b>');
-  		  }
 		  }
 		});
 	}
