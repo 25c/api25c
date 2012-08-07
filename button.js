@@ -22,6 +22,7 @@ var rails = require('./rails');
 var url = require('url');
 var uuid = require('node-uuid');
 var pg = require('pg').native;
+var express = require('express');
 
 var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a900');
 airbrake.developmentEnvironments = ['development'];
@@ -92,7 +93,8 @@ if (process.env.NODE_ENV == "production") {
 var express = require('express');
 var RedisStore = require('connect-redis')(express);
 	 
-var app = express.createServer(express.logger());
+// var app = express.createServer(express.logger());
+var app = express();
 app.enable("jsonp callback");
 app.use(express.bodyParser());
 app.use(express.cookieParser());
