@@ -43,6 +43,7 @@ var smtpTransport = nodemailer.createTransport("SMTP", {
 
 var nus_config = require('./lib/short25c/lib/get-config.js');
 var nus = require('./lib/short25c/lib/nus.js');
+var fs = require('fs');
 
 var redisDataClient;
 var redisWebClient;
@@ -315,20 +316,43 @@ app.post('/button/:button_uuid', function(req, res) {
 	}
 });
 
-function sendEmail(to, subject, body) {
-  var mailOptions = {
-    from: EMAIL_FROM,
-    to: to,
-    subject: subject,
-    html: body,
-    generateTextFromHTML: true
-  };
-  smtpTransport.sendMail(mailOptions, function(err, response) {
-    if(err){
-      console.log("Could not send email: " + err);
+function sendEmail(to, filename, args) {
+  fs.readFile(filename, "utf8", function(err, data) {
+    if (err) {
+      "Error reading email file: " + console.log(err);
+    } else {
+      subject = data.split("#{", 2)[1].split("}", 1)[0];
+      body = data.substring(data.indexOf("}")).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+      
+      parts = body.split("#{");
+      for (key in args) {
+        for (i = 1; i < parts.length; i++) {
+          if (parts[i].split("}", 1)[0].indexOf(key) != -1) {
+            parts[i] = parts[i].replace(/.*}/, args[key]);
+          }
+        }
+      }
+      if (parts.length > 1) {
+        parts[0] = parts[0].replace(/.*}\s*/, '');
+        body = parts.join("");
+      }
+      var mailOptions = {
+        from: EMAIL_FROM,
+        to: to,
+        subject: subject,
+        html: body,
+        generateTextFromHTML: true
+      };
+      smtpTransport.sendMail(mailOptions, function(err, response) {
+        if(err){
+          console.log("Could not send email: " + err);
+        }
+      });
     }
   });
 }
+
+sendEmail("lionel@25c.com", "overdraft_email.txt", {name: "Lionel"});
 
 function sendOverdraftEmail(uuid) {
   pg.connect(pgWebUrl, function(err, pgWebClient) {
@@ -350,24 +374,13 @@ function sendOverdraftEmail(uuid) {
           userNickname = result.rows[0].nickname;
       
           toName = userFirstName || userNickname || userEmail;
-      
-          subject = "Funding the pledges you made";
-          body = "<p>Dear " + toName + ":</p>" +
-            "<p>Thank you for using 25c to support what you value. The pledgees are excited about your pledge and are looking forward to receiving funds.</p>" +
-            "<p>You have now pledged 40 x 25c ($10) to different 25c providers.  We will pay those providers once you have funded these pledges.</p>" +
-            "<p>Please take action now to <a href=\"https://www.25c.com/home/payment/\">fund the pledges you made</a>.</p>" +
-            "<p>If you have changed your mind and would like to withdraw certain pledges, you may do so on <a href=\"https://www.25c.com/home/\">your personal dashboard</a>." +
-            "<p>You either have to withdraw your pledges or fund them.  What you cannot do is do neither.</p>" +
-            "<p>Again thank you for your pledges and helping us changing the world one click a time!</p>" +
-            "<p>(In the event you overlooked this email, we will continue to remind you.)</p>" +
-            "<p>The 25c Team</p>";
-
-    		  sendEmail(userEmail, subject, body);
+    		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
         }
       });
     }
   });
 }
+
 
 var port = process.env.PORT || 5000;
 app.listen(port, function() {
