@@ -352,8 +352,6 @@ function sendEmail(to, filename, args) {
   });
 }
 
-sendEmail("lionel@25c.com", "overdraft_email.txt", {name: "Lionel"});
-
 function sendOverdraftEmail(uuid) {
   pg.connect(pgWebUrl, function(err, pgWebClient) {
 		if (err != null) {

@@ -28,7 +28,11 @@ html(lang="en")
                   if (data.overdraft) {
                     url = url + "&overdraft=true";
                   }
-                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + 480 + ",height=" + 320);
+                  var width = 480;
+                  var height = 320;
+                  var left = (screen.width / 2) - (width / 2);
+                  var top = (screen.height / 2) - (height / 2);
+                  window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
                 } else {
                   $.postMessage(
                     "#{req.params.button_uuid}",
@@ -62,7 +66,11 @@ html(lang="en")
                 if (data.overdraft) {
                   url = url + "&overdraft=true";
                 }
-                window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + 480 + ",height=" + 320);
+                var width = 480;
+                var height = 320;
+                var left = (screen.width / 2) - (width / 2);
+                var top = (screen.height / 2) - (height / 2);
+                window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);                
               },
               dataType: "json",
               async: false

@@ -12,6 +12,13 @@ _tip25c_jquery(document).ready(function($) {
 			visibility: "hidden"
 		});
 	}
+	function openPopup(href, name, width, height) {
+	  var width = width || 580;
+    var height = height || 400;
+    var left = (screen.width / 2) - (width / 2);
+    var top = (screen.height / 2) - (height / 2);
+    window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
+  }
 	function refreshTooltip(button_uuid) {
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 		  var $tooltip = $("#tip-25c-tooltip");
@@ -46,13 +53,13 @@ _tip25c_jquery(document).ready(function($) {
   			  + "&redirect_uri=" + redirectURI;
 			
   			$('#fb-share-link').click(function() {
-  			  window.open(fbShareHref, 'name', 'height=400,width=580');
+  			  openPopup(fbShareHref, "Share on Facebook");
   			});
 			
   			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
 			
   			$('#tw-share-link').click(function() {
-  			  window.open(twShareHref, 'name', 'height=400,width=580');
+  			  openPopup(twShareHref, "Share on Twitter");
   		  });
 		  }
 		});
