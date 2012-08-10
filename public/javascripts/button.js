@@ -37,7 +37,8 @@ _tip25c_jquery(document).ready(function($) {
 		  }
 		  
 	    if (loggedIn) {
-  	    var name = userName + " pledged 25c ";
+        // var name = userName + " pledged 25c ";
+        var name = "I just pledged 25c ";
 	  	    
   	    if (!button_title || /^\s+$/.test(button_title)) name += "to this page";
   	    else name += button_title;
