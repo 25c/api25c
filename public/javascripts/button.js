@@ -79,7 +79,7 @@ _tip25c_jquery(document).ready(function($) {
 		var size = a.attr("data-size");
 		var height;
 		var width;
-		if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|icon-text)$/i) == null)) {
+		if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
 			size = "btn-small";
 		}
 		size = size.toLowerCase();
@@ -101,6 +101,8 @@ _tip25c_jquery(document).ready(function($) {
 			height = 24;
 			if (size.match(/btn-/)) {
 				width = 48;
+			} else if (size.match(/icon-/)) {
+			  width = 60;
 			} else {
 				width = 24;
 			}

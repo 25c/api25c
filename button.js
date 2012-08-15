@@ -202,7 +202,7 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 app.get('/button/:button_uuid', function(req, res) {	
 	var size = req.param("size");
 	var height;
-	if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|icon-text)$/i) == null)) {
+	if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
 		size = "btn-small";
 	}
 	size = size.toLowerCase();
