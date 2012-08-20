@@ -3,13 +3,16 @@ if user != null
     window.loggedIn = true;
     window.referrerUrl = "#{referrer_url}"
     window.userName = "#{user.displayName}"
-  if count > 0
-    div <b>#{count} &times; 25c (= $#{(count * 25 / 100).toFixed(2)}) pledged</b>
-    div#button-title
-    div Click again to pledge more!<br>
-  else
-    span Pledge 25c
-    span#button-title &nbsp;and reward this content!
+  div.if-count(style="display:none")
+    b
+      span#count 0 
+      span &nbsp;pledged
+  div
+  span.no-count Pledge 25c&nbsp;
+  span#button-user to this user
+  div#button-title
+  //- div#info-url(style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;")
+  div.if-count(style="display:none") Click again to pledge more!
   div(style="padding-top:8px;")
     if user.pictureUrl != ""
       if user.nickname != ""
@@ -29,8 +32,9 @@ if user != null
 else
   script
     window.loggedIn = false;
-  span Pledge 25c
-  span#button-title &nbsp;and reward this content!
-
+  span Pledge 25c&nbsp;
+  span#button-user to this user
+  div#button-title
+  //- div#info-url(style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;")
   div(style="padding-top:8px;")
     a(href="https://www.25c.com/", target="_blank") Learn more about 25c

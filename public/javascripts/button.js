@@ -6,6 +6,7 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 var _tip25c_jquery = $.noConflict(true);
 _tip25c_jquery(document).ready(function($) {
 	var timer = null;
+	var count = 0;
 	function hideTooltip() {
 		var tooltip = $("#tip-25c-tooltip");
 		tooltip.css({
@@ -32,9 +33,27 @@ _tip25c_jquery(document).ready(function($) {
 		    redirectURI = "http://localhost:3000/fb_share_callback";
 	    }
 	    
+	    if (count > 0) {
+	      $('.if-count').show();
+	      $('.no-count').hide();
+	      $('#count').html(count + " (= $" + (count * 25 / 100).toFixed(2) + ")");
+      }
+	    
 	    if (button_title && !(/^\s+$/.test(button_title))) {
         $tooltip.children('#button-title').html(' <b>' + button_title + '</b>');
 		  }
+		  
+		  if (button_user && !(/^\s+$/.test(button_user))) {
+		    if (profile_url && !(/^\s+$/.test(profile_url))) {
+          $tooltip.find('#button-user').html('to <b><a target="_blank" href="' + profile_url + '">' + button_user + '</a></b>');
+        } else {
+          $tooltip.find('#button-user').html('to <b>' + button_user + '</b>');
+        }
+		  }
+		  
+		  // if (info_url && !(/^\s+$/.test(info_url))) {
+      //         $tooltip.children('#info-url').html('More info: ' + '<a target="_blank" href="' + info_url + '">' + info_url + '</a>');
+      // }
 		  
 	    if (loggedIn) {
         // var name = userName + " pledged 25c ";
@@ -68,13 +87,17 @@ _tip25c_jquery(document).ready(function($) {
 	var src = $("script#tip-25c-js").attr("src");
 	src = src.substr(0, src.indexOf("/public"));
 	$.receiveMessage(function(e) {
+	  count++;
 		refreshTooltip(e.data);
 	}, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
 	var button_title = "";
 	$("a.tip-25c-button").each(function() {
 		var a = $(this);
 		button_title = a.text();
-		var url = a.attr("href");
+		profile_url = a.attr("data-profile");
+		button_user = a.attr("data-user");
+    // info_url = a.attr("data-info-url");
+    var url = a.attr("href");
 		var button_uuid = url.substr(url.lastIndexOf("/") + 1);
 		var size = a.attr("data-size");
 		var height;
