@@ -13,6 +13,7 @@ if user != null
   span#button-title
   //- div#info-url(style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;")
   div.if-count(style="display:none") Click again to pledge more!
+  div.if-self(style="display:none") You cannot pledge to yourself.
   div(style="padding-top:8px;")
     if user.pictureUrl != ""
       if user.nickname != ""

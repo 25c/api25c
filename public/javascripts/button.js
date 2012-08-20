@@ -34,9 +34,13 @@ _tip25c_jquery(document).ready(function($) {
 	    }
 	    
 	    if (count > 0) {
-	      $('.if-count').show();
-	      $('.no-count').hide();
-	      $('#count').html(count + " (= $" + (count * 25 / 100).toFixed(2) + ")");
+	      if (window.userName == button_user) {
+	        $('.if-self').show();
+	      } else {
+  	      $('.if-count').show();
+  	      $('.no-count').hide();
+  	      $('#count').html(count + " (= $" + (count * 25 / 100).toFixed(2) + ")");
+  	    }
       }
 		  
 		  if (button_user && !(/^\s+$/.test(button_user))) {
@@ -113,21 +117,21 @@ _tip25c_jquery(document).ready(function($) {
 		if (size.match(/-large/)) {
 			height = 40;
 			if (size.match(/btn-/)) {
-				width = 80;
+				width = 72;
 			} else {
 				width = 40;
 			}
 		} else if (size.match(/-medium/)) {
 			height = 32;
 			if (size.match(/btn-/)) {
-				width = 64;
+				width = 54;
 			} else {
 				width = 32;
 			}
 		} else {
 			height = 24;
 			if (size.match(/btn-/)) {
-				width = 48;
+				width = 36;
 			} else if (size.match(/icon-/)) {
 			  width = 60;
 			} else {
