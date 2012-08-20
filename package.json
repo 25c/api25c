@@ -2,11 +2,11 @@
   "name": "api25c",
   "version": "0.0.1",
   "engines": {
-    "node": "0.6.x",
+    "node": "0.8.x",
     "npm":  "1.1.x"
   },
   "dependencies": {
-  	"pg": "0.7.2",
+  	"pg": "latest",
     "express": "latest",
 		"redis": "latest",
 		"connect-redis": "latest",
