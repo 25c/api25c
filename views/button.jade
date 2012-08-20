@@ -25,6 +25,7 @@ html(lang="en")
               success: function(data) {
                 if (data.redirect) {
                   var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
+                  url = url + "&source=javascript";
                   if (data.overdraft) {
                     url = url + "&overdraft=true";
                   }
@@ -63,6 +64,7 @@ html(lang="en")
               data: data,
               success: function(data) {
                 var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
+                url = url + "&source=iframe";
                 if (data.overdraft) {
                   url = url + "&overdraft=true";
                 }

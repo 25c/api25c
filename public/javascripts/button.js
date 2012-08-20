@@ -38,10 +38,6 @@ _tip25c_jquery(document).ready(function($) {
 	      $('.no-count').hide();
 	      $('#count').html(count + " (= $" + (count * 25 / 100).toFixed(2) + ")");
       }
-	    
-	    if (button_title && !(/^\s+$/.test(button_title))) {
-        $tooltip.children('#button-title').html(' <b>' + button_title + '</b>');
-		  }
 		  
 		  if (button_user && !(/^\s+$/.test(button_user))) {
 		    if (profile_url && !(/^\s+$/.test(profile_url))) {
@@ -50,19 +46,27 @@ _tip25c_jquery(document).ready(function($) {
           $tooltip.find('#button-user').html('to <b>' + button_user + '</b>');
         }
 		  }
+
+		  if (button_title && !(/^\s+$/.test(button_title))) {
+        $tooltip.children('#button-title').html(' for <b>' + button_title + '</b>');
+		  }
 		  
 		  // if (info_url && !(/^\s+$/.test(info_url))) {
       //         $tooltip.children('#info-url').html('More info: ' + '<a target="_blank" href="' + info_url + '">' + info_url + '</a>');
       // }
-		  
+
 	    if (loggedIn) {
         // var name = userName + " pledged 25c ";
         var name = "I just pledged 25c ";
-	  	    
-  	    if (!button_title || /^\s+$/.test(button_title)) name += "to this page";
-  	    else name += button_title;
+
+  	    if (!button_user || /^\s+$/.test(button_user)) name += "";
+  	    else name += "to " + button_user;
+
+  	    if (!button_title || /^\s+$/.test(button_title)) name += " for this page!";
+  	    else name += " for " + button_title;
+
   	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
-      
+
   			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
   			  + "&app_id=" + appId
   			  + "&link=" + referrerUrl
@@ -71,11 +75,11 @@ _tip25c_jquery(document).ready(function($) {
           + "&caption=" + " "
   			  + "&description=" + encodeURI(description)
   			  + "&redirect_uri=" + redirectURI;
-			
+
   			$('#fb-share-link').click(function() {
   			  openPopup(fbShareHref, "Share on Facebook");
   			});
-			
+
   			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
 			
   			$('#tw-share-link').click(function() {
