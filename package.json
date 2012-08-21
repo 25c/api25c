@@ -12,7 +12,6 @@
 		"connect-redis": "latest",
 		"jade": "0.27.0",
 		"node-uuid": "latest",
-		"airbrake": "0.2.9",
-		"nodemailer": "latest"
+		"airbrake": "0.2.9"
   }
 }
