@@ -200,7 +200,6 @@ app.get('/button/:button_uuid', function(req, res) {
 		height = 24;
 	}
 	
-	
 	// LJ: if coming from tip page, use original referrer
 	if (req.header("referrer") && req.header("referrer").indexOf(WEB_URL_BASE + '/tip/') != -1) {
 	  referrer = url.parse(req.header("referrer"), true).query.referrer;
@@ -237,7 +236,9 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 
 app.post('/button/:button_uuid', function(req, res) {
 	if (req.signedRailsCookies['_25c_session']) {
+    // console.log('**********');
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
+      // console.log('**********');
 			if (err != null) {
 				console.log("POST error fetching session user_uuid: " + err);
 				airbrake.notify(err);
