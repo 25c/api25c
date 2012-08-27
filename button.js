@@ -235,21 +235,18 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 }
 
 app.post('/button/:button_uuid', function(req, res) {
-  console.log("**** POST");
+  console.log('****');
+  console.log(req.signedRailsCookies['_25c_session']);
 	if (req.signedRailsCookies['_25c_session']) {
-	  console.log("**** getting rails cookie");
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
 			if (err != null) {
 				console.log("POST error fetching session user_uuid: " + err);
 				airbrake.notify(err);
 				res.json({ error: true });
-			} else {
-			  console.log("**** + " + user_uuid);
-  		  
+			} else {  		  
 				//// fetch user and check balance
 				redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
 					if (err != null) {
-					  console.log("**** + " + balance_str);
 						console.log("POST error fetching user balance: " + err);
 						airbrake.notify(err);
 						res.json({ error: true });			
