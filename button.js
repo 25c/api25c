@@ -235,13 +235,17 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 }
 
 app.post('/button/:button_uuid', function(req, res) {
+  console.log("**** POST");
 	if (req.signedRailsCookies['_25c_session']) {
+	  console.log("**** getting rails cookie");
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
 			if (err != null) {
 				console.log("POST error fetching session user_uuid: " + err);
 				airbrake.notify(err);
 				res.json({ error: true });
 			} else {
+			  console.log("**** + " + user_uuid);
+  		  
 				//// fetch user and check balance
 				redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
 					if (err != null) {
@@ -249,12 +253,12 @@ app.post('/button/:button_uuid', function(req, res) {
 						airbrake.notify(err);
 						res.json({ error: true });			
 					} else {
+					  console.log("**** + " + balance);
 						if (balance_str == null) {
 							balance = 0;
 						} else {
 							balance = parseInt(balance_str);
 						}
-						console.log("**** balance ****");
   					if (balance > -40) {
   					  var ipAddress;
   						//// first check for proxy forwarded ip
