@@ -253,7 +253,8 @@ app.post('/button/:button_uuid', function(req, res) {
 							balance = 0;
 						} else {
 							balance = parseInt(balance_str);
-						}						
+						}
+						console.log("**** balance ****");
   					if (balance > -40) {
   					  var ipAddress;
   						//// first check for proxy forwarded ip
