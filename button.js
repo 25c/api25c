@@ -202,6 +202,7 @@ app.get('/button/:button_uuid', function(req, res) {
 	
 	// LJ: if coming from tip page, use original referrer
 	console.log("****");
+	console.log(req);
 	console.log(req.header('referrer'));
 	
 	if (req.header("referrer") && req.header("referrer").indexOf(WEB_URL_BASE + '/tip/') != -1) {
