@@ -249,11 +249,11 @@ app.post('/button/:button_uuid', function(req, res) {
 				//// fetch user and check balance
 				redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
 					if (err != null) {
+					  console.log("**** + " + balance_str);
 						console.log("POST error fetching user balance: " + err);
 						airbrake.notify(err);
 						res.json({ error: true });			
 					} else {
-					  console.log("**** + " + balance);
 						if (balance_str == null) {
 							balance = 0;
 						} else {
