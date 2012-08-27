@@ -201,14 +201,15 @@ app.get('/button/:button_uuid', function(req, res) {
 	}
 	
 	// LJ: if coming from tip page, use original referrer
-	console.log("****");
-	console.log(req);
-	console.log(req.header('referrer'));
 	
-	if (req.header("referrer") && req.header("referrer").indexOf(WEB_URL_BASE + '/tip/') != -1) {
+	if (req.header("referrer")) {
+	  if (req.header("referrer").indexOf(WEB_URL_BASE + '/tip/') != -1) {
 	  referrer = url.parse(req.header("referrer"), true).query.referrer;
+    } else {
+      referrer = req.header('referrer');
+    }
   } else {
-    referrer = req.header('referrer');
+    referrer = "";
   }
 	
 	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE, referrer: referrer })
@@ -239,8 +240,6 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 }
 
 app.post('/button/:button_uuid', function(req, res) {
-  console.log('****');
-  console.log(req.signedRailsCookies['_25c_session']);
 	if (req.signedRailsCookies['_25c_session']) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
 			if (err != null) {
