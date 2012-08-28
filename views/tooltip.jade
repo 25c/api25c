@@ -14,22 +14,23 @@ if user != null
   //- div#info-url(style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;")
   div.if-count(style="display:none") Click again to pledge more!
   div.if-self(style="display:none;color:#308014;") You cannot pledge to yourself.
-  div(style="padding-top:8px;")
+  div(style="clear:both;")
+  div(style="float:left;margin:5px 5px 0 0;") Share Your Pledge:
+  img#fb-share-link(src="http://assets.25c.com.s3.amazonaws.com/logos/facebook.png", style="cursor:pointer;padding-top:5px;height:20px;width:20px;")
+  img#tw-share-link(src="http://assets.25c.com.s3.amazonaws.com/logos/twitter.png", style="cursor:pointer;padding-top:5px;height:20px;width:20px;margin-left:5px;")
+  div(style="clear:both;padding-top:0px;")
     if user.pictureUrl != ""
       if user.nickname != ""
         a(href=user.nicknameUrl, style="text-decoration:none;")
-          img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:5px;margin-right:5px;border-radius:2px;max-width:25px;max-height:25px;")
+          img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:7px;margin-right:5px;border-radius:2px;max-width:20px;max-height:20px;")
       else
-        img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:5px;margin-right:5px;border-radius:2px;max-width:25px;max-height:25px;")
+        img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:7px;margin-right:5px;border-radius:2px;max-width:20px;max-height:20px;")
     div(style="float:left;padding-top:8px;") 
       if user.nickname != ""
         a(href=user.nicknameUrl, target="_blank", style="text-decoration:none;") #{user.displayName}
       else
         #{user.displayName}
     div(style="clear:both;")
-    div(style="float:left;margin:5px 5px 0 0;") Share:
-    img#fb-share-link(src="http://assets.25c.com.s3.amazonaws.com/logos/facebook.png", style="cursor:pointer;padding-top:5px;height:20px;width:20px;")
-    img#tw-share-link(src="http://assets.25c.com.s3.amazonaws.com/logos/twitter.png", style="cursor:pointer;padding-top:5px;height:20px;width:20px;margin-left:5px;")
 else
   script
     window.loggedIn = false;
@@ -37,5 +38,5 @@ else
   span#button-user to this user
   span#button-title
   //- div#info-url(style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;")
-  div(style="padding-top:8px;")
+  div(style="padding-top:5px;")
     a(href="https://www.25c.com/", target="_blank") Learn more about 25c
