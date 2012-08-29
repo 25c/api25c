@@ -25,7 +25,7 @@ if user != null
           img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:7px;margin-right:5px;border-radius:2px;max-width:20px;max-height:20px;")
       else
         img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:7px;margin-right:5px;border-radius:2px;max-width:20px;max-height:20px;")
-    div(style="float:left;padding-top:8px;") 
+    div(style="float:left;padding-top:8px;")
       if user.nickname != ""
         a(href=user.nicknameUrl, target="_blank", style="text-decoration:none;") #{user.displayName}
       else

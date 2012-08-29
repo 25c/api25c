@@ -202,16 +202,46 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 app.get('/button/:button_uuid', function(req, res) {	
 	var size = req.param("size");
 	var height;
+	var width;
+	var fontSize;
 	if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
 		size = "btn-small";
 	}
 	size = size.toLowerCase();
 	if (size.match(/-large/)) {
 		height = 40;
+		fontSize = 18;
+		textPadding = 0;
+		if (size.match(/btn-/)) {
+		  width = 72;
+		  textPadding = 4;
+	  } else {
+	    width = 40;
+	    textPadding = 4;
+    }
 	} else if (size.match(/-medium/)) {
-		height = 32;
-	} else {
-		height = 24;
+		height = 30;
+		fontSize = 15;
+		if (size.match(/btn-/)) {
+	    width = 54;
+		  textPadding = 4;
+	  } else {
+	    width = 30;
+	    textPadding = 4;
+    }
+	} else {	  
+		height = 20;
+		fontSize = 15;
+		if (size.match(/btn-/)) {
+		  width = 36;
+		  textPadding = 2;
+	  } else if (size.match(/-text/)) {
+	      width = 60;
+	      textPadding = 1;
+	  } else {
+	    width = 20;
+	    textPadding = 1;
+    }
 	}
 	
 	// LJ: if coming from tip page, use original referrer
@@ -226,7 +256,16 @@ app.get('/button/:button_uuid', function(req, res) {
     referrer = "";
   }
 	
-	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE, referrer: referrer })
+	res.render("button.jade", { 
+	  req: req, 
+	  size: size, 
+	  height: height, 
+	  width: width, 
+	  fontSize: fontSize, 
+	  textPadding: textPadding, 
+	  WEB_URL_BASE: WEB_URL_BASE, 
+	  referrer: referrer 
+	})
 });
 
 function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
