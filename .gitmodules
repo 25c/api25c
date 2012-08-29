@@ -1,0 +1,3 @@
+[submodule "lib/short25c"]
+	path = lib/short25c
+	url = https://superlike25c:sup3rl!k3@github.com/25c/short25c.git

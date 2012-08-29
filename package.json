@@ -2,13 +2,17 @@
   "name": "api25c",
   "version": "0.0.1",
   "engines": {
-    "node": "0.6.x",
+    "node": "0.8.x",
     "npm":  "1.1.x"
-  },	
+  },
   "dependencies": {
+  	"pg": "latest",
     "express": "latest",
 		"redis": "latest",
 		"connect-redis": "latest",
-		"jade": "latest"
+		"jade": "0.27.0",
+		"node-uuid": "latest",
+		"airbrake": "0.2.9",
+		"nodemailer": "latest"
   }
 }

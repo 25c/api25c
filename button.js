@@ -20,6 +20,30 @@ var http = require('http');
 var redis = require('redis');
 var rails = require('./rails');
 var url = require('url');
+var uuid = require('node-uuid');
+var pg = require('pg').native;
+var express = require('express');
+
+var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a900');
+airbrake.developmentEnvironments = ['development'];
+airbrake.handleExceptions();
+
+var nus_config = require('./lib/short25c/lib/get-config.js');
+var nus = require('./lib/short25c/lib/nus.js');
+
+var fs = require('fs');
+var nodemailer = require("nodemailer");
+var EMAIL_SERVICE = "SendGrid";
+var EMAIL_USERNAME = "corp25c";
+var EMAIL_PASSWORD = "sup3rl!k3";
+var EMAIL_FROM = "no-reply@25c.com";
+var smtpTransport = nodemailer.createTransport("SMTP", {
+    service: EMAIL_SERVICE,
+    auth: {
+        user: EMAIL_USERNAME,
+        pass: EMAIL_PASSWORD
+    }
+});
 
 var redisDataClient;
 var redisWebClient;
@@ -49,12 +73,30 @@ catch (err)
 {
 	console.log( "ERROR => Cannot connect to Redis message broker: URL => " + redisURL.hostname + "; Port => " + redisURL.port );
 	console.log(err);
+	airbrake.notify(err);
+}
+
+var pgWebUrl = process.env.DATABASE_WEB_URL;
+if (pgWebUrl == undefined) {
+	pgWebUrl = "tcp://localhost/web25c_development";
+}
+
+var WEB_URL_BASE = "http://localhost:3000";
+if (process.env.NODE_ENV == "production") {
+	WEB_URL_BASE = "https://www.25c.com"
+}
+
+var ASSETS_URL_BASE = "http://localhost:3000/s3";
+if (process.env.NODE_ENV == "production") {
+	ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
 }
 
 var express = require('express');
 var RedisStore = require('connect-redis')(express);
 	 
-var app = express.createServer(express.logger());
+// var app = express.createServer(express.logger());
+var app = express();
+app.enable("jsonp callback");
 app.use(express.bodyParser());
 app.use(express.cookieParser());
 app.use(express.session({ secret: NODE_COOKIE_SECRET, key: NODE_COOKIE_SESSION_KEY, store: new RedisStore({ client: redisApiClient })}));
@@ -67,58 +109,278 @@ app.set('view options', {
 // Set up the static file directory.
 app.use('/public', express.static(__dirname + '/public'));
 
-app.get('/button/:publisher_uuid/:content_uuid?', function(req, res) {	
-	res.render('index.jade', { req: req });
-});
+function renderTooltip(res, data) {
+	res.render('tooltip.jade', data, function(err, html) {
+	  if (err) {
+			console.log(err);
+			airbrake.notify(err);
+		}
+		res.json(html);
+	});
+}
 
-app.post('/button/:publisher_uuid/:content_uuid?', function(req, res) {
-	data = {};
+app.get('/tooltip/:button_uuid', function(req, res) {
 	if (req.signedRailsCookies['_25c_session']) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
-			if (err == null) {
-			  var ipAddress;
-				//// first check for proxy forwarded ip
-			  var forwardedIpsStr = req.header('x-forwarded-for'); 
-			  if (forwardedIpsStr) {
-			    var forwardedIps = forwardedIpsStr.split(',');
-			    ipAddress = forwardedIps[0];
-			  }
-				//// fall back to connection ip
-			  if (!ipAddress) {
-			    ipAddress = req.connection.remoteAddress;
-			  }
-				data = {
-					user_uuid: user_uuid,
-					publisher_uuid: req.params.publisher_uuid,
-					referrer: req.param('_referrer'),
-					user_agent: req.header('user-agent'),
-					ip_address: ipAddress,
-					created_at: new Date()
-				};
-				var counterKey = user_uuid + ":" + req.params.publisher_uuid;
-				if (req.params.content_uuid) {
-					data.content_uuid = req.params.content_uuid;
-					counterKey += ":" + req.params.content_uuid;
-				}
-				redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
-					if (err == null) {
-						data.counter = count;
-					}
-				}).exec(function(err, result) {					
-					if (err == null) {
-						res.json(data);			
+			if (err != null) {
+				renderTooltip(res, { user: null });
+			} else {
+				pg.connect(pgWebUrl, function(err, pgWebClient) {
+					if (err != null) {
+						renderTooltip(res, { user: null });
 					} else {
-						res.json({ err: err });
+						pgWebClient.query("SELECT * FROM users WHERE LOWER(uuid)=LOWER($1)", [ user_uuid ], function(err, result) {
+							if (err != null) {
+								console.log("could not query for user_uuid: " + err);
+								airbrake.notify(err);
+								renderTooltip(res, { user: null });
+							} else if (result.rows.length == 0) {
+								console.log("not found user_uuid=" +user_uuid);
+								//// delete the cookie
+								res.clearCookie('_25c_session');
+								renderTooltip(res, { user: null });
+							} else if (result.rows.length == 1) {
+								var user = result.rows[0];
+								var displayName = "";
+								if (user.first_name && user.first_name != "") {
+									displayName = user.first_name;
+								}
+								if (user.last_name && user.last_name != "") {
+									if (displayName != "") {
+										displayName += " ";
+									}
+									displayName += user.last_name;
+								}
+								if (displayName == "" && user.nickname && user.nickname != "") {
+									displayName = user.nickname;
+								}
+								if (displayName == "" && user.email && user.email != "") {
+									displayName = user.email;
+								}
+								user.displayName = displayName;
+								var pictureUrl = "";
+								if (user.picture_file_name && user.picture_file_name != "") {
+                  // pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
+                  pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
+								}
+								user.pictureUrl = pictureUrl;
+								var nicknameUrl = "";
+								if (user.nickname && user.nickname != "") {
+									nicknameUrl = WEB_URL_BASE + "/" + user.nickname;
+								}
+								user.nicknameUrl = nicknameUrl;
+								//// get cached click count
+								var counterKey = user_uuid + ":" + req.params.button_uuid;
+								redisDataClient.get(counterKey, function(err, count) {
+								  //// get shortened referrer url
+                  nus.shorten(req.header("referrer")+'/'+user.uuid+'/0', function (err, reply) {
+                      var referrer_url = null;
+                      if (err) {
+                        console.log(err);
+                        airbrake.notify(err);
+                      } else {
+                        referrer_url = nus_config.url + '/' + reply.hash;
+                      }
+    									if (err != null) {
+    										renderTooltip(res, { user: user, count: 0, referrer_url: referrer_url });
+    									} else {
+    										renderTooltip(res, { user: user, count: count, referrer_url: referrer_url });
+    									}
+                  });								  
+								})
+							}
+						});
 					}
-				})
+				});
 			}
 		});
-		return;
+	} else {
+		renderTooltip(res, { user: null });
 	}
-	res.json(data);
 });
 
-var port = process.env.PORT || 3000;
+app.get('/button/:button_uuid', function(req, res) {	
+	var size = req.param("size");
+	var height;
+	if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
+		size = "btn-small";
+	}
+	size = size.toLowerCase();
+	if (size.match(/-large/)) {
+		height = 40;
+	} else if (size.match(/-medium/)) {
+		height = 32;
+	} else {
+		height = 24;
+	}
+	
+	// LJ: if coming from tip page, use original referrer
+	
+	if (req.header("referrer")) {
+	  if (req.header("referrer").indexOf(WEB_URL_BASE + '/tip/') != -1) {
+	  referrer = url.parse(req.header("referrer"), true).query.referrer;
+    } else {
+      referrer = req.header('referrer');
+    }
+  } else {
+    referrer = "";
+  }
+	
+	res.render("button.jade", { req: req, size: size, height: height, WEB_URL_BASE: WEB_URL_BASE, referrer: referrer })
+});
+
+function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
+	var data = {
+		'uuid': uuid,
+		'user_uuid': user_uuid,
+		'button_uuid': button_uuid,
+		'referrer_user_uuid': referrer_user_uuid,
+		'referrer': referrer,
+		'user_agent': user_agent,
+		'ip_address': ip_address,
+		'created_at': new Date()
+	};
+	var counterKey = user_uuid + ":" + button_uuid;
+  // redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
+  redisDataClient.lpush(QUEUE_KEY, JSON.stringify(data), function(err, count) {
+		if (err == null) {
+			res.json({});			
+		} else {
+			console.log("POST err: " + err);
+			airbrake.notify(err);
+			res.json({ error: true });
+		}
+	});
+}
+
+app.post('/button/:button_uuid', function(req, res) {
+	if (req.signedRailsCookies['_25c_session']) {
+		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
+			if (err != null) {
+				console.log("POST error fetching session user_uuid: " + err);
+				airbrake.notify(err);
+				res.json({ error: true });
+			} else {  		  
+				//// fetch user and check balance
+				redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
+					if (err != null) {
+						console.log("POST error fetching user balance: " + err);
+						airbrake.notify(err);
+						res.json({ error: true });			
+					} else {
+						if (balance_str == null) {
+							balance = 0;
+						} else {
+							balance = parseInt(balance_str);
+						}		
+  					if (balance > -40) {
+  					  var ipAddress;
+  						//// first check for proxy forwarded ip
+  					  var forwardedIpsStr = req.header('x-forwarded-for'); 
+  					  if (forwardedIpsStr) {
+  					    var forwardedIps = forwardedIpsStr.split(',');
+  					    ipAddress = forwardedIps[0];
+  					  }
+  						//// fall back to connection ip
+  					  if (!ipAddress) {
+  					    ipAddress = req.connection.remoteAddress;
+  					  }
+  					  //// check for a button referrer
+  					  if (req.cookies['_25c_referrer']) {
+  					    redisWebClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
+  					      var button_referrer = JSON.parse(button_referrer_data);
+  					      //// verify host match
+  					      if (url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname) {
+  					        enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, button_referrer['referrer_user_uuid'], req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+  					      } else {
+  					        enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);						        
+  					      }
+  					    });
+  					  } else {
+  					    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+  					  }
+  					  // Send initial overdraft email
+              if (balance == -39) sendOverdraftEmail(user_uuid);
+					  } else {
+					    // Send repeating overdraft email
+              sendOverdraftEmail(user_uuid);
+              // Send to overdraft popup
+              res.json({ redirect: true, overdraft: true });
+				    }
+					}
+				});
+			}
+		});
+	} else {
+		console.log("POST not signed in");
+		res.json({ redirect: true });
+	}
+});
+
+function sendEmail(to, filename, args) {
+  fs.readFile(filename, "utf8", function(err, data) {
+    if (err) {
+      "Error reading email file: " + console.log(err);
+    } else {
+      subject = data.split("#{", 2)[1].split("}", 1)[0];
+      body = data.substring(data.indexOf("}")).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+      
+      parts = body.split("#{");
+      for (key in args) {
+        for (i = 1; i < parts.length; i++) {
+          if (parts[i].split("}", 1)[0].indexOf(key) != -1) {
+            parts[i] = parts[i].replace(/.*}/, args[key]);
+          }
+        }
+      }
+      if (parts.length > 1) {
+        parts[0] = parts[0].replace(/.*}\s*/, '');
+        body = parts.join("");
+      }
+      var mailOptions = {
+        from: EMAIL_FROM,
+        to: to,
+        subject: subject,
+        html: body,
+        generateTextFromHTML: true
+      };
+      smtpTransport.sendMail(mailOptions, function(err, response) {
+        if(err){
+          console.log("Could not send email: " + err);
+        }
+      });
+    }
+  });
+}
+
+function sendOverdraftEmail(uuid) {
+  pg.connect(pgWebUrl, function(err, pgWebClient) {
+		if (err != null) {
+			console.log("Could not connect to web postgres: " + err);
+			airbrake.notify(err);
+			callback(err);
+		} else {
+      pgWebClient.query("SELECT email, first_name, nickname FROM users WHERE uuid = LOWER($1)", [ uuid ], function(err, result) {
+    	  if (err != null) {
+    	    console.log("Getting user email error: " + err);
+        } else if (result.rows[0] == undefined) {
+          console.log("User not found!");
+        } else if (!result.rows[0].email) {
+          console.log("User does not have an email address!");
+        } else {
+          userEmail = result.rows[0].email;
+          userFirstName = result.rows[0].first_name;
+          userNickname = result.rows[0].nickname;
+      
+          toName = userFirstName || userNickname || userEmail;
+    		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
+        }
+      });
+    }
+  });
+}
+
+var port = process.env.PORT || 5000;
 app.listen(port, function() {
   console.log("Listening on " + port);
 });
