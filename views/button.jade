@@ -13,8 +13,14 @@ html(lang="en")
       
       $(function() {
         $("#submit-button").click(function() {
+          // debug timer
+          startTime = new Date().getTime();
           $(this).children("img:first-child").fadeOut(50).delay(50).fadeIn(50);
           $("form").submit();
+          var endTime = new Date().getTime();
+          console.log("****");
+          console.log(endTime - startTime);
+          console.log("****");
         });
         $("form").submit(function() {
           var form = $(this);

@@ -280,7 +280,6 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 		'created_at': new Date()
 	};
 	var counterKey = user_uuid + ":" + button_uuid;
-  // redisDataClient.multi().lpush(QUEUE_KEY, JSON.stringify(data)).incr(counterKey, function(err, count) {
   redisDataClient.lpush(QUEUE_KEY, JSON.stringify(data), function(err, count) {
 		if (err == null) {
 			res.json({});			
@@ -294,62 +293,99 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 
 app.post('/button/:button_uuid', function(req, res) {
 	if (req.signedRailsCookies['_25c_session']) {
-		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
-			if (err != null) {
-				console.log("POST error fetching session user_uuid: " + err);
-				airbrake.notify(err);
-				res.json({ error: true });
-			} else {  		  
-				//// fetch user and check balance
-				redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
-					if (err != null) {
-						console.log("POST error fetching user balance: " + err);
-						airbrake.notify(err);
-						res.json({ error: true });			
-					} else {
-						if (balance_str == null) {
-							balance = 0;
-						} else {
-							balance = parseInt(balance_str);
-						}		
-  					if (balance > -40) {
-  					  var ipAddress;
-  						//// first check for proxy forwarded ip
-  					  var forwardedIpsStr = req.header('x-forwarded-for'); 
-  					  if (forwardedIpsStr) {
-  					    var forwardedIps = forwardedIpsStr.split(',');
-  					    ipAddress = forwardedIps[0];
-  					  }
-  						//// fall back to connection ip
-  					  if (!ipAddress) {
-  					    ipAddress = req.connection.remoteAddress;
-  					  }
-  					  //// check for a button referrer
-  					  if (req.cookies['_25c_referrer']) {
-  					    redisWebClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
-  					      var button_referrer = JSON.parse(button_referrer_data);
-  					      //// verify host match
-  					      if (url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname) {
-  					        enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, button_referrer['referrer_user_uuid'], req.param('_referrer'), req.header('user-agent'), ipAddress, res);
-  					      } else {
-  					        enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);						        
-  					      }
-  					    });
-  					  } else {
-  					    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
-  					  }
-  					  // Send initial overdraft email
-              if (balance == -39) sendOverdraftEmail(user_uuid);
-					  } else {
-					    // Send repeating overdraft email
+    redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
+      if (err != null) {
+        console.log("POST error fetching session user_uuid: " + err);
+        airbrake.notify(err);
+        res.json({ error: true });
+      } else {        
+        //// fetch user and check balance
+        redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
+          if (err != null) {
+            console.log("POST error fetching user balance: " + err);
+            airbrake.notify(err);
+            res.json({ error: true });      
+          } else {
+            if (balance_str == null) {
+              balance = 0;
+            } else {
+              balance = parseInt(balance_str);
+            }   
+            if (balance > -40) {
+              var ipAddress;
+              //// first check for proxy forwarded ip
+              var forwardedIpsStr = req.header('x-forwarded-for'); 
+              if (forwardedIpsStr) {
+                var forwardedIps = forwardedIpsStr.split(',');
+                ipAddress = forwardedIps[0];
+              }
+              //// fall back to connection ip
+              if (!ipAddress) {
+                ipAddress = req.connection.remoteAddress;
+              }
+              //// check for a button referrer
+              if (req.cookies['_25c_referrer']) {
+                redisWebClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
+                  var button_referrer = JSON.parse(button_referrer_data);
+                  //// verify host match
+                  if (url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname) {
+                    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, button_referrer['referrer_user_uuid'], req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+                  } else {
+                    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);                   
+                  }
+                });
+              } else {
+                enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+              }
+              // Send initial overdraft email
+               if (balance == -39) sendOverdraftEmail(user_uuid);
+            } else {
+              // Send repeating overdraft email
               sendOverdraftEmail(user_uuid);
               // Send to overdraft popup
               res.json({ redirect: true, overdraft: true });
-				    }
-					}
-				});
-			}
-		});
+            }
+          }
+        });
+      }
+    });
+    
+    //     redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
+    //       if (err != null) {
+    //         console.log("POST error fetching session user_uuid: " + err);
+    //         airbrake.notify(err);
+    //         res.json({ error: true });
+    //       } else {        
+    //         // add click to event
+    //         var ipAddress;
+    //         //// first check for proxy forwarded ip
+    //         var forwardedIpsStr = req.header('x-forwarded-for'); 
+    //         if (forwardedIpsStr) {
+    //           var forwardedIps = forwardedIpsStr.split(',');
+    //           ipAddress = forwardedIps[0];
+    //         }
+    //         //// fall back to connection ip
+    //         if (!ipAddress) {
+    //           ipAddress = req.connection.remoteAddress;
+    //         }
+    //         //// check for a button referrer
+    //         if (req.cookies['_25c_referrer']) {
+    //           redisWebClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
+    //             var button_referrer = JSON.parse(button_referrer_data);
+    //             //// verify host match
+    //             if (url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname) {
+    //               enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, button_referrer['referrer_user_uuid'], req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+    //             } else {
+    //               enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);                   
+    //             }
+    //           });
+    //         } else {
+    //           enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+    //         }
+    //       }
+    // });
+		
+		
 	} else {
 		console.log("POST not signed in");
 		res.json({ redirect: true });
