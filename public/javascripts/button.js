@@ -29,7 +29,7 @@ _tip25c_jquery(document).ready(function($) {
       console.log(XMLHttpRequest.responseText);
     }});
     
-    $().jquery;
+    console.log($().jquery);
 	  
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 		  var $tooltip = $("#tip-25c-tooltip");
