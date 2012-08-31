@@ -25,6 +25,9 @@ _tip25c_jquery(document).ready(function($) {
 		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
 			
+			console.log("******");
+			console.log(response);
+			
 			if (window.location.hostname.indexOf('25c.com') != -1) {
 			  appId = "403609836335934";
 			  redirectURI = "https://www.25c.com/fb_share_callback";
@@ -157,6 +160,8 @@ _tip25c_jquery(document).ready(function($) {
 					top: offset.top + height
 				});
 				refreshTooltip(button_uuid);
+				console.log("******");
+				console.log(button_uuid);
 			},
 			mouseleave: function() {
 				timer = setTimeout(hideTooltip, 500);
