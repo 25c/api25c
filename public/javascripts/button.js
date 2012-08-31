@@ -34,7 +34,8 @@ _tip25c_jquery(document).ready(function($) {
 	    }
 	    
 	    if (count > 0) {
-	      if (window.userName == button_user) {
+        if (window.userName == button_user) {
+        // if (false) {
 	        $('.if-self').show();
 	      } else {
   	      $('.if-count').show();
@@ -96,6 +97,10 @@ _tip25c_jquery(document).ready(function($) {
 	src = src.substr(0, src.indexOf("/public"));
 	$.receiveMessage(function(e) {
 	  count++;
+	  if (count > 40) {
+	    // something went wrong
+	    count = 40;
+    }
 		refreshTooltip(e.data);
 	}, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
 	var button_title = "";
@@ -122,20 +127,20 @@ _tip25c_jquery(document).ready(function($) {
 				width = 40;
 			}
 		} else if (size.match(/-medium/)) {
-			height = 32;
+			height = 30;
 			if (size.match(/btn-/)) {
 				width = 54;
 			} else {
-				width = 32;
+				width = 30;
 			}
 		} else {
-			height = 24;
+			height = 20;
 			if (size.match(/btn-/)) {
 				width = 36;
-			} else if (size.match(/icon-/)) {
+			} else if (size.match(/-text/)) {
 			  width = 60;
 			} else {
-				width = 24;
+				width = 20;
 			}
 		}
 		var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + button_uuid + '?tooltip=true&size=' + size;
