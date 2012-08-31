@@ -21,8 +21,15 @@ _tip25c_jquery(document).ready(function($) {
     window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
   }
 	function refreshTooltip(button_uuid) {
-	  console.log("*****");
-	  console.log("refresh tooltip called");
+	  
+	  
+	  $.ajaxSetup({"error":function(XMLHttpRequest,textStatus, errorThrown) {
+	    console.log("***** Errors ******");
+      console.log(textStatus);
+      console.log(errorThrown);
+      console.log(XMLHttpRequest.responseText);
+    }});
+	  
 	  console.log((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?");
 	  
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
@@ -164,8 +171,6 @@ _tip25c_jquery(document).ready(function($) {
 					top: offset.top + height
 				});
 				refreshTooltip(button_uuid);
-				console.log("******");
-				console.log(button_uuid);
 			},
 			mouseleave: function() {
 				timer = setTimeout(hideTooltip, 500);
