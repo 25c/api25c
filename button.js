@@ -199,7 +199,9 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 	}
 });
 
-app.get('/button/:button_uuid', function(req, res) {	
+app.get('/button/:button_uuid', function(req, res) {
+  // Duane: once the button page is a static html document public/html/button.html
+  // this handler should be removed.
 	var size = req.param("size");
 	var height;
 	var width;
