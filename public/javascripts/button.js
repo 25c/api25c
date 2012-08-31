@@ -21,20 +21,10 @@ _tip25c_jquery(document).ready(function($) {
     window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
   }
 	function refreshTooltip(button_uuid) {
-	  
-	  $.ajaxSetup({"error":function(XMLHttpRequest,textStatus, errorThrown) {
-	    console.log("***** Errors ******");
-      console.log(textStatus);
-      console.log(errorThrown);
-      console.log(XMLHttpRequest);
-    }});
     	  
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
-			
-			console.log("******");
-			console.log(response);
 			
 			if (window.location.hostname.indexOf('25c.com') != -1) {
 			  appId = "403609836335934";

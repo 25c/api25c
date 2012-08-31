@@ -115,9 +115,7 @@ function renderTooltip(res, data) {
 			console.log(err);
 			airbrake.notify(err);
 		}
-		res.json(html);
-		console.log("**** tooltip response: ****");
-		console.log(res);
+		res.jsonp(html);
 	});
 }
 
