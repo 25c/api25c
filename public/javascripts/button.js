@@ -21,91 +21,91 @@ _tip25c_jquery(document).ready(function($) {
     window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
   }
 	function refreshTooltip(button_uuid) {
-	  
-	  
-	  $.ajaxSetup({"error":function(XMLHttpRequest,textStatus, errorThrown) {
-	    console.log("***** Errors ******");
-      console.log(textStatus);
-      console.log(errorThrown);
-      console.log(XMLHttpRequest.responseText);
-    }});
-	  
-	  console.log((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?");
-	  
-		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
-		  var $tooltip = $("#tip-25c-tooltip");
-			$tooltip.html(response);
-			
-			console.log("******");
-			console.log(response);
-			
-			if (window.location.hostname.indexOf('25c.com') != -1) {
-			  appId = "403609836335934";
-			  redirectURI = "https://www.25c.com/fb_share_callback";
-		  } else {
-		    appId = "259751957456159";
-		    redirectURI = "http://localhost:3000/fb_share_callback";
-	    }
-	    
-	    if (count > 0) {
-        if (window.userName == button_user) {
-        // if (false) {
-	        $('.if-self').show();
-	      } else {
-  	      $('.if-count').show();
-  	      $('.no-count').hide();
-  	      $('#count').html(count + " (= $" + (count * 25 / 100).toFixed(2) + ")");
+	  $.ajax({
+      type: "GET",
+      url: (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?",
+      dataType: "json",
+      success: function (response) {
+        var $tooltip = $("#tip-25c-tooltip");
+  			$tooltip.html(response);
+
+  			console.log("******");
+  			console.log(response);
+
+  			if (window.location.hostname.indexOf('25c.com') != -1) {
+  			  appId = "403609836335934";
+  			  redirectURI = "https://www.25c.com/fb_share_callback";
+  		  } else {
+  		    appId = "259751957456159";
+  		    redirectURI = "http://localhost:3000/fb_share_callback";
   	    }
-      }
-		  
-		  if (button_user && !(/^\s+$/.test(button_user))) {
-		    if (profile_url && !(/^\s+$/.test(profile_url))) {
-          $tooltip.find('#button-user').html('to <b><a target="_blank" href="' + profile_url + '">' + button_user + '</a></b>');
-        } else {
-          $tooltip.find('#button-user').html('to <b>' + button_user + '</b>');
+
+  	    if (count > 0) {
+          if (window.userName == button_user) {
+          // if (false) {
+  	        $('.if-self').show();
+  	      } else {
+    	      $('.if-count').show();
+    	      $('.no-count').hide();
+    	      $('#count').html(count + " (= $" + (count * 25 / 100).toFixed(2) + ")");
+    	    }
         }
-		  }
 
-		  if (button_title && !(/^\s+$/.test(button_title))) {
-        $tooltip.children('#button-title').html(' for <b>' + button_title + '</b>');
-		  }
-		  
-		  // if (info_url && !(/^\s+$/.test(info_url))) {
-      //         $tooltip.children('#info-url').html('More info: ' + '<a target="_blank" href="' + info_url + '">' + info_url + '</a>');
-      // }
+  		  if (button_user && !(/^\s+$/.test(button_user))) {
+  		    if (profile_url && !(/^\s+$/.test(profile_url))) {
+            $tooltip.find('#button-user').html('to <b><a target="_blank" href="' + profile_url + '">' + button_user + '</a></b>');
+          } else {
+            $tooltip.find('#button-user').html('to <b>' + button_user + '</b>');
+          }
+  		  }
 
-	    if (loggedIn) {
-        // var name = userName + " pledged 25c ";
-        var name = "I just pledged 25c ";
+  		  if (button_title && !(/^\s+$/.test(button_title))) {
+          $tooltip.children('#button-title').html(' for <b>' + button_title + '</b>');
+  		  }
 
-  	    if (!button_user || /^\s+$/.test(button_user)) name += "";
-  	    else name += "to " + button_user;
+  		  // if (info_url && !(/^\s+$/.test(info_url))) {
+        //         $tooltip.children('#info-url').html('More info: ' + '<a target="_blank" href="' + info_url + '">' + info_url + '</a>');
+        // }
 
-  	    if (!button_title || /^\s+$/.test(button_title)) name += " for this page!";
-  	    else name += " for " + button_title;
+  	    if (loggedIn) {
+          // var name = userName + " pledged 25c ";
+          var name = "I just pledged 25c ";
 
-  	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
+    	    if (!button_user || /^\s+$/.test(button_user)) name += "";
+    	    else name += "to " + button_user;
 
-  			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
-  			  + "&app_id=" + appId
-  			  + "&link=" + referrerUrl
-          + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/25c-logo-medium.png"
-  			  + "&name=" + encodeURI(name)
-          + "&caption=" + " "
-  			  + "&description=" + encodeURI(description)
-  			  + "&redirect_uri=" + redirectURI;
+    	    if (!button_title || /^\s+$/.test(button_title)) name += " for this page!";
+    	    else name += " for " + button_title;
 
-  			$('#fb-share-link').click(function() {
-  			  openPopup(fbShareHref, "Share on Facebook");
-  			});
+    	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
 
-  			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
-			
-  			$('#tw-share-link').click(function() {
-  			  openPopup(twShareHref, "Share on Twitter");
-  		  });
-		  }
-		});
+    			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
+    			  + "&app_id=" + appId
+    			  + "&link=" + referrerUrl
+            + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/25c-logo-medium.png"
+    			  + "&name=" + encodeURI(name)
+            + "&caption=" + " "
+    			  + "&description=" + encodeURI(description)
+    			  + "&redirect_uri=" + redirectURI;
+
+    			$('#fb-share-link').click(function() {
+    			  openPopup(fbShareHref, "Share on Facebook");
+    			});
+
+    			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
+
+    			$('#tw-share-link').click(function() {
+    			  openPopup(twShareHref, "Share on Twitter");
+    		  });
+  		  }
+		  },
+      error: function (xhr, ajaxOptions, thrownError) {
+  	    console.log("***** Errors ******");
+        console.log(textStatus);
+        console.log(errorThrown);
+        console.log(XMLHttpRequest.responseText);
+      }
+    });
 	}
 	var src = $("script#tip-25c-js").attr("src");
 	src = src.substr(0, src.indexOf("/public"));
