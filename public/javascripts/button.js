@@ -26,11 +26,9 @@ _tip25c_jquery(document).ready(function($) {
 	    console.log("***** Errors ******");
       console.log(textStatus);
       console.log(errorThrown);
-      console.log(XMLHttpRequest.responseText);
+      console.log(XMLHttpRequest);
     }});
-    
-    console.log($().jquery);
-	  
+    	  
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
