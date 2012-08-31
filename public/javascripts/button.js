@@ -101,9 +101,9 @@ _tip25c_jquery(document).ready(function($) {
 		  },
       error: function (xhr, ajaxOptions, thrownError) {
   	    console.log("***** Errors ******");
-        console.log(textStatus);
-        console.log(errorThrown);
-        console.log(XMLHttpRequest.responseText);
+        console.log(xhr.statusText);
+        console.log(xhr.responseText);
+        console.log(xhr.status);
       }
     });
 	}
