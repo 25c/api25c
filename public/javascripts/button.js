@@ -21,6 +21,10 @@ _tip25c_jquery(document).ready(function($) {
     window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
   }
 	function refreshTooltip(button_uuid) {
+	  console.log("*****");
+	  console.log("refresh tooltip called");
+	  console.log((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?");
+	  
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
 		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
