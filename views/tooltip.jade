@@ -3,6 +3,7 @@ if user != null
     window.loggedIn = true;
     window.referrerUrl = "#{referrer_url}"
     window.userName = "#{user.displayName}"
+    window.pledgeName = "#{user.pledge_name}"
   div.if-count(style="display:none")
     b
       span#count 0 

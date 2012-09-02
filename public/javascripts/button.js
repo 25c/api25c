@@ -35,7 +35,7 @@ _tip25c_jquery(document).ready(function($) {
 	    }
 	    
 	    if (count > 0) {
-        if (window.userName == button_user) {
+        if (userName == button_user || pledgeName == button_user) {
         // if (false) {
 	        $('.if-self').show();
 	      } else {
