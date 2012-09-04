@@ -34,8 +34,17 @@ _tip25c_jquery(document).ready(function($) {
 			  redirectURI = "https://www.25c.com/fb_share_callback";
 	    }
 	    
+	    if ((window.location.pathname.indexOf("/home/get_button") != -1 
+	      || window.location.pathname.indexOf("/home/receive_pledges") != -1)
+	      && (window.location.hostname.indexOf("25c.com") != -1 
+	      || window.location.hostname.indexOf("localhost") != -1)) {
+        var testTooltip = true;
+      } else {
+        var testTooltip = false;
+      }
+	    
 	    if (count > 0) {
-        if (userName == button_user || pledgeName == button_user) {
+        if (!testTooltip && (userName == button_user || pledgeName == button_user)) {
         // if (false) {
 	        $('.if-self').show();
 	      } else {
