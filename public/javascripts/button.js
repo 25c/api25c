@@ -53,7 +53,7 @@ _tip25c_jquery(document).ready(function($) {
         }
 		  }
 
-		  if (button_title && !(/^\s+$/.test(button_title))) {
+		  if (button_title && !(/^\s+$/.test(button_title)) && button_title.indexOf("your cause") == -1) {
         $tooltip.children('#button-title').html(' for <b>' + button_title + '</b>');
 		  }
 		  
