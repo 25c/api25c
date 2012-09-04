@@ -68,10 +68,10 @@ _tip25c_jquery(document).ready(function($) {
   	    if (!button_user || /^\s+$/.test(button_user)) name += "";
   	    else name += "to " + button_user;
 
-  	    if (!button_title || /^\s+$/.test(button_title)) name += " for this page!";
-  	    else name += " for " + button_title;
+        // if (!button_title || /^\s+$/.test(button_title)) name += " for this page!";
+        // else name += " for " + button_title;
 
-  	    var description = "Use 25c to pledge and show your appreciation for great content on the web.";
+  	    var description = "Using 25c to pledge one quarter one click.";
 
   			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
   			  + "&app_id=" + appId
