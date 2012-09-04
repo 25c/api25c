@@ -165,7 +165,7 @@ _tip25c_jquery(document).ready(function($) {
 		});
 		a.remove();
 	});
-	$("body").append('<div data-title="' + button_title + '" id="tip-25c-tooltip" style="position:absolute;z-index:1000000000;left:0;top:0;width:180px;visibility:hidden;padding:10px;margin:1px 0 0;background-color:#ffffff;border:1px solid #ccc;border:1px solid rgba(0,0,0,0.2);*border-right-width:2px;*border-bottom-width:2px;-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;-webkit-box-shadow:0 5px 10px rgba(0,0,0,0.2);-moz-box-shadow:0 5px 10px rgba(0,0,0,0.2);box-shadow:0 5px 10px rgba(0,0,0,0.2);-webkit-background-clip:padding-box;-moz-background-clip:padding;background-clip:padding-box;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:13px;line-height:18px">&nbsp;text-align:left;</div>');
+	$("body").append('<div data-title="' + button_title + '" id="tip-25c-tooltip" style="position:absolute;z-index:1000000000;left:0;top:0;width:180px;visibility:hidden;padding:10px;margin:1px 0 0;background-color:#ffffff;border:1px solid #ccc;border:1px solid rgba(0,0,0,0.2);*border-right-width:2px;*border-bottom-width:2px;-webkit-border-radius:5px;-moz-border-radius:5px;border-radius:5px;-webkit-box-shadow:0 5px 10px rgba(0,0,0,0.2);-moz-box-shadow:0 5px 10px rgba(0,0,0,0.2);box-shadow:0 5px 10px rgba(0,0,0,0.2);-webkit-background-clip:padding-box;-moz-background-clip:padding;background-clip:padding-box;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:13px;line-height:18px;text-align:left;">&nbsp;</div>');
 	$("#tip-25c-tooltip").on({
 		mouseenter: function() {
 			clearTimeout(timer);			
