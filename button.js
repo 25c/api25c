@@ -219,17 +219,17 @@ app.get('/button/:button_uuid', function(req, res) {
 		  textPadding = 4;
 	  } else {
 	    width = 40;
-	    textPadding = 4;
+	    textPadding = 0;
     }
 	} else if (size.match(/-medium/)) {
 		height = 30;
 		fontSize = 15;
 		if (size.match(/btn-/)) {
 	    width = 54;
-		  textPadding = 4;
+		  textPadding = 3;
 	  } else {
 	    width = 30;
-	    textPadding = 4;
+	    textPadding = 0;
     }
 	} else {	  
 		height = 20;
@@ -239,7 +239,7 @@ app.get('/button/:button_uuid', function(req, res) {
 		  textPadding = 2;
 	  } else if (size.match(/-text/)) {
 	      width = 60;
-	      textPadding = 1;
+	      textPadding = 0;
 	  } else {
 	    width = 20;
 	    textPadding = 1;
@@ -343,7 +343,7 @@ app.post('/button/:button_uuid', function(req, res) {
                if (balance == -39) sendOverdraftEmail(user_uuid);
             } else {
               // Send repeating overdraft email
-              sendOverdraftEmail(user_uuid);
+              // sendOverdraftEmail(user_uuid);
               // Send to overdraft popup
               res.json({ redirect: true, overdraft: true });
             }

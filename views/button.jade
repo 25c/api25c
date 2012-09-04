@@ -24,7 +24,7 @@ html(lang="en")
             url: form.attr("action"),
             data: data,
             success: function(data) {
-              if (data.redirect) {
+              if (data.redirect || count >= 40) {
                 var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
                 if (hasTooltip) url = url + "&source=javascript";
                 else url = url + "&source=iframe";
@@ -37,13 +37,13 @@ html(lang="en")
                 var top = (screen.height / 2) - (height / 2);
                 window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
               } else {
+                count++;
                 if (hasTooltip) {
                   $.postMessage(
                     "#{req.params.button_uuid}",
                     "#{req.header('Referer')}"
                   );
                 } else {
-                  count++;
                   if (count == 1) $('#counter-box').show();
                   if (count > 40) count = 40; // something went wrong
                   $('#counter-value').text(count);
