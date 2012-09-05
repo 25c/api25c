@@ -85,7 +85,7 @@ _tip25c_jquery(document).ready(function($) {
   			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
   			  + "&app_id=" + appId
   			  + "&link=" + referrerUrl
-          + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/25c-logo-medium.png"
+          + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/icon-50.png"
   			  + "&name=" + encodeURI(name)
           + "&caption=" + " "
   			  + "&description=" + encodeURI(description)

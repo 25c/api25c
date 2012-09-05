@@ -216,7 +216,7 @@ app.get('/button/:button_uuid', function(req, res) {
 		textPadding = 0;
 		if (size.match(/btn-/)) {
 		  width = 72;
-		  textPadding = 4;
+		  textPadding = 3;
 	  } else {
 	    width = 40;
 	    textPadding = 0;
@@ -226,7 +226,7 @@ app.get('/button/:button_uuid', function(req, res) {
 		fontSize = 15;
 		if (size.match(/btn-/)) {
 	    width = 54;
-		  textPadding = 3;
+		  textPadding = 2;
 	  } else {
 	    width = 30;
 	    textPadding = 0;
@@ -236,7 +236,7 @@ app.get('/button/:button_uuid', function(req, res) {
 		fontSize = 15;
 		if (size.match(/btn-/)) {
 		  width = 36;
-		  textPadding = 2;
+		  textPadding = 1;
 	  } else if (size.match(/-text/)) {
 	      width = 60;
 	      textPadding = 0;
@@ -300,7 +300,7 @@ app.post('/button/:button_uuid', function(req, res) {
         console.log("POST error fetching session user_uuid: " + err);
         airbrake.notify(err);
         res.json({ error: true });
-      } else {        
+      } else {
         //// fetch user and check balance
         redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
           if (err != null) {
