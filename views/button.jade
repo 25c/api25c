@@ -33,6 +33,10 @@ html(lang="en")
             );
             return;
           }
+          if (window.location.protocol == "http" && window.location.hostname != "localhost") {
+            var newUrl = "https://" + window.location.hostname + $("form").attr("action");
+            $("form").attr("action", newUrl);
+          }
           $("form").submit();
         });
         $("form").submit(function() {
@@ -99,7 +103,7 @@ html(lang="en")
       .button-text{ 
         position: absolute; 
         left: 25px; 
-        top: 4px; 
+        top: 2px; 
       }
       img{ 
         position: absolute; 
