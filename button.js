@@ -81,16 +81,14 @@ if (pgWebUrl == undefined) {
 	pgWebUrl = "tcp://localhost/web25c_development";
 }
 
-var WEB_URL_BASE = "http://localhost:3000";
 if (process.env.NODE_ENV == "production") {
-	WEB_URL_BASE = "https://www.25c.com"
-}
-
-if (process.env.NODE_ENV == "production") {
+  var WEB_URL_BASE = "https://www.25c.com"
 	var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
 } else if (process.env.NODE_ENV == "staging") {
+  var WEB_URL_BASE = "https://www.plus25c.com"
   var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
 } else {
+  var WEB_URL_BASE = "http://localhost:3000";
   var ASSETS_URL_BASE = "http://localhost:3000/s3";
 }
 
@@ -186,7 +184,7 @@ app.get('/tooltip/:button_uuid', function(req, res) {
   									} else {
   										renderTooltip(res, { user: user, count: 0, referrer_url: referrer_url });
   									}
-                });								  
+                });
 							}
 						});
 					}
