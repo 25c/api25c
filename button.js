@@ -87,7 +87,7 @@ if (process.env.NODE_ENV == "production") {
 }
 
 var ASSETS_URL_BASE = "http://localhost:3000/s3";
-if (process.env.NODE_ENV == "production") {
+if (process.env.NODE_ENV == "production" || process.env.NODE_ENV == "staging") {
 	ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
 }
 
