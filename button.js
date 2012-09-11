@@ -184,7 +184,7 @@ app.get('/tooltip/:button_uuid', function(req, res) {
   									if (err != null) {
   										renderTooltip(res, { user: user, count: 0, referrer_url: referrer_url });
   									} else {
-  										renderTooltip(res, { user: user, count: count, referrer_url: referrer_url });
+  										renderTooltip(res, { user: user, count: 0, referrer_url: referrer_url });
   									}
                 });								  
 							}
