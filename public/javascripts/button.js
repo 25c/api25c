@@ -34,8 +34,17 @@ _tip25c_jquery(document).ready(function($) {
 			  redirectURI = "https://www.25c.com/fb_share_callback";
 	    }
 	    
+	    if ((window.location.pathname.indexOf("/home/get_button") != -1 
+	      || window.location.pathname.indexOf("/home/receive_pledges") != -1)
+	      && (window.location.hostname.indexOf("25c.com") != -1 
+	      || window.location.hostname.indexOf("localhost") != -1)) {
+        var testTooltip = true;
+      } else {
+        var testTooltip = false;
+      }
+	    
 	    if (count > 0) {
-        if (userName == button_user || pledgeName == button_user) {
+        if (!testTooltip && (userName == button_user || pledgeName == button_user)) {
         // if (false) {
 	        $('.if-self').show();
 	      } else {
@@ -53,7 +62,7 @@ _tip25c_jquery(document).ready(function($) {
         }
 		  }
 
-		  if (button_title && !(/^\s+$/.test(button_title))) {
+		  if (button_title && !(/^\s+$/.test(button_title)) && button_title.indexOf("your cause") == -1) {
         $tooltip.children('#button-title').html(' for <b>' + button_title + '</b>');
 		  }
 		  
@@ -76,7 +85,7 @@ _tip25c_jquery(document).ready(function($) {
   			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
   			  + "&app_id=" + appId
   			  + "&link=" + referrerUrl
-          + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/25c-logo-medium.png"
+          + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/icon-50.png"
   			  + "&name=" + encodeURI(name)
           + "&caption=" + " "
   			  + "&description=" + encodeURI(description)
