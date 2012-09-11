@@ -86,9 +86,12 @@ if (process.env.NODE_ENV == "production") {
 	WEB_URL_BASE = "https://www.25c.com"
 }
 
-var ASSETS_URL_BASE = "http://localhost:3000/s3";
-if (process.env.NODE_ENV == "production" || process.env.NODE_ENV == "staging") {
-	ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
+if (process.env.NODE_ENV == "production") {
+	var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
+} else if (process env.NODE_ENV == "staging") {
+  var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
+} else {
+  var ASSETS_URL_BASE = "http://localhost:3000/s3";
 }
 
 var express = require('express');
