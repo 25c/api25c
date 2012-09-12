@@ -23,6 +23,9 @@ style(type="text/css")
     -moz-background-clip:padding;
     background-clip:padding-box;
     line-height: 0;
+    -webkit-box-sizing: border-box;
+  	-moz-box-sizing: border-box;
+  	box-sizing: border-box;
   }
   #tip-25c-tooltip * {
     font-family: Helvetica,Arial,sans-serif !important;
@@ -32,12 +35,15 @@ style(type="text/css")
     color:#333 !important;
     text-decoration: none !important;
     font-weight: 400;
+    padding: 0;
+    margin: 0;
     border: 0px none transparent !important;
     border-radius: 0 !important;
     -moz-border-radius: 0 !important;
     -webkit-border-radius: 0 !important;
-    padding: 0;
-    margin: 0;
+    -webkit-box-sizing: border-box;
+  	-moz-box-sizing: border-box;
+  	box-sizing: border-box;
   }
 
 if user != null
