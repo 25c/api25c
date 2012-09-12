@@ -56,7 +56,7 @@ _tip25c_jquery(document).ready(function($) {
 		  
 		  if (button_user && !(/^\s+$/.test(button_user))) {
 		    if (profile_url && !(/^\s+$/.test(profile_url))) {
-          $tooltip.find('#button-user').html('to <a target="_blank" href="' + profile_url + 'style="font-weight:800;">' + button_user + '</a>');
+          $tooltip.find('#button-user').html('to <a target="_blank" href="' + profile_url + '" style="font-weight:800;">' + button_user + '</a>');
         } else {
           $tooltip.find('#button-user').html('to <span style="font-weight:800;">' + button_user + '</span>');
         }

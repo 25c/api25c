@@ -22,6 +22,7 @@ style(type="text/css")
     -webkit-background-clip:padding-box;
     -moz-background-clip:padding;
     background-clip:padding-box;
+    line-height: 0;
   }
   #tip-25c-tooltip * {
     font-family: Helvetica,Arial,sans-serif !important;
@@ -49,10 +50,9 @@ if user != null
     span(style="font-weight:800;")#count 0 
     span(style="font-weight:800;") &nbsp;pledged
   div
-  span.no-count Pledge 25c&nbsp;
-  span#button-user to this user
-  span#button-title
-  //- div#info-url(style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;")
+    span.no-count Pledge 25c&nbsp;
+    span#button-user to this user
+    span#button-title
   div.if-count(style="display:none") Click again to pledge more!
   div.if-self(style="display:none;color:#308014;") You cannot pledge to yourself.
   div(style="clear:both;")
@@ -75,9 +75,9 @@ if user != null
 else
   script
     window.loggedIn = false;
-  span Pledge 25c&nbsp;
-  span#button-user to this user
-  span#button-title
-  //- div#info-url(style="width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;")
+  div
+    span Pledge 25c&nbsp;
+    span#button-user to this user
+    span#button-title
   div(style="padding-top:5px;")
     a(href="https://www.25c.com/", target="_blank") Learn more about 25c
