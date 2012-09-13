@@ -100,7 +100,7 @@ var app = express();
 app.enable("jsonp callback");
 app.use(express.bodyParser());
 app.use(express.cookieParser());
-app.use(express.session({ secret: NODE_COOKIE_SECRET, key: NODE_COOKIE_SESSION_KEY, store: new RedisStore({ client: redisApiClient })}));
+app.use(express.session({ secret: NODE_COOKIE_SECRET, key: NODE_COOKIE_SESSION_KEY, cookie: { maxAge: 900000 }, store: new RedisStore({ client: redisApiClient })}));
 app.use(express.csrf());
 app.use(rails.signedCookieParser(RAILS_COOKIE_SECRET));
 app.set('view options', {
