@@ -117,11 +117,19 @@ _tip25c_jquery(document).ready(function($) {
 	$("a.tip-25c-button").each(function() {
 		var a = $(this);
 		button_title = a.text();
-		profile_url = a.attr("data-profile");
 		button_user = a.attr("data-user");
-    // info_url = a.attr("data-info-url");
-    var url = a.attr("href");
-		var button_uuid = url.substr(url.lastIndexOf("/") + 1);
+		
+		// new button style has the button uuid as attribute and profile as the link href
+    button_uuid = a.attr("data-id");
+    profile_url = a.attr("href");
+    
+    // support old style of button code with button uuid in the link href and profile url as attribute
+    if (!button_uuid) {
+      var url = a.attr("href");
+		  var button_uuid = url.substr(url.lastIndexOf("/") + 1);
+		  profile_url = a.attr("data-profile");
+		}
+		
 		var size = a.attr("data-size");
 		var height;
 		var width;
