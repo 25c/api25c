@@ -22,11 +22,18 @@ _tip25c_jquery(document).ready(function($) {
     window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
   }
   function setTooltipCount(count, showZero) {
-    if (count > 0 || showZero) {
+    if (count > 0) {
+      $('.if-number').show();
       $('.if-count').show();
       $('.no-count').hide();
       $('#count').text("$" + (count * 25 / 100).toFixed(2));
+    } else if (showZero) {
+      $('.if-number').show();
+      $('.if-count').hide();
+      $('.no-count').hide();
+      $('#count').text("$" + (count * 25 / 100).toFixed(2));
     } else {
+      $('.if-number').hide();
       $('.if-count').hide();
       $('.no-count').show();
       $('#count').text("");
@@ -127,11 +134,11 @@ _tip25c_jquery(document).ready(function($) {
         break;
       case "clear":
         buttons[uuid].count = 0;
-        setTooltipCount(0);
+        setTooltipCount(0, true);
         break;
       case "reset":
         button[uuid].count = 0;
-        setTooltipCount(0, true);
+        setTooltipCount(0);
         break;
     }
 	}, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);

@@ -54,8 +54,8 @@ if user != null
     window.pledgeName = "#{user.pledge_name}"
   div
     span.no-count Pledge 25c 
-    span#count.if-count(style="display:none;font-weight:800;") 0 
-    span.if-count(style="display:none;font-weight:800;") &nbsp;pledged 
+    span#count.if-number(style="display:none;font-weight:800;") 0 
+    span.if-number(style="display:none;font-weight:800;") &nbsp;pledged 
     span#button-user(style="font-weight:800;") to&nbsp;this&nbsp;user
     span#button-title
   div.if-count(style="display:none") Click again to pledge more!
