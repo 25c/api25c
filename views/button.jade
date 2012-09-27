@@ -9,7 +9,9 @@ html(lang="en")
       (function($){var g,d,j=1,a,b=this,f=!1,h="postMessage",e="addEventListener",c,i=b[h]&&!$.browser.opera;$[h]=function(k,l,m){if(!l){return}k=typeof k==="string"?k:$.param(k);m=m||parent;if(i){m[h](k,l.replace(/([^:]+:\/\/[^\/]+).*/,"$1"))}else{if(l){m.location=l.replace(/#.*$/,"")+"#"+(+new Date)+(j++)+"&"+k}}};$.receiveMessage=c=function(l,m,k){if(i){if(l){a&&c();a=function(n){if((typeof m==="string"&&n.origin!==m)||($.isFunction(m)&&m(n.origin)===f)){return f}l(n)}}if(b[e]){b[l?e:"removeEventListener"]("message",a,f)}else{b[l?"attachEvent":"detachEvent"]("onmessage",a)}}else{g&&clearInterval(g);g=null;if(l){k=typeof m==="number"?m:typeof k==="number"?k:100;g=setInterval(function(){var o=document.location.hash,n=/^#?\d+&/;if(o!==d&&n.test(o)){d=o;l({data:o.replace(n,"")})}},k)}}}})(jQuery);
       
       var hasTooltip = false;
-      var count = 0;
+      var totalCount = 0;
+      var maxCount = 399;
+      
       if (document.referrer.indexOf("25c.com/home/get_button") != -1
       || document.referrer.indexOf("localhost:3000/home/get_button") != -1 
       || document.referrer.indexOf("25c.com/home/receive_pledges") != -1
@@ -18,59 +20,151 @@ html(lang="en")
       } else {
         var testButton = false;
       }
-            
+          
       $(function() {
-        $("#submit-button").click(function() {
-          $(this).children("img:first-child").fadeOut(50).delay(0).fadeIn(50);
-          if (testButton) {
-            count++;
-            if (count == 1) $('#counter-box').show();
-            if (count > 40) count = 40;
-            $('#counter-value').text(count);
+        
+        var sendCount = 0;
+        var mouseDown = false;
+        var timer = null;
+        var interval = 400;
+        
+        function incrementCount() {
+          if (totalCount < maxCount) {
+            sendCount++;
+            totalCount++;
+            if (hasTooltip) {
+              $.postMessage(
+                '#{req.params.button_uuid},increment',
+                "#{req.header('Referer')}"
+              );
+            } else {
+              if (totalCount > 0) {
+                $('#counter-box').show();
+                $('#counter-value').text("$" + (totalCount * 25 / 100).toFixed(2));
+              }
+            }
+          }
+        }
+        
+        function zeroCount() {
+          if (hasTooltip) {
             $.postMessage(
-              "#{req.params.button_uuid}",
+              '#{req.params.button_uuid},clear',
               "#{req.header('Referer')}"
             );
-            return;
+          } else {
+            totalCount = 0;
+            sendCount = 0;
+            $('#counter-value').text("$0.00");
           }
-          if (window.location.protocol == "http" && window.location.hostname != "localhost") {
-            var newUrl = "https://" + window.location.hostname + $("form").attr("action");
-            $("form").attr("action", newUrl);
+        }
+        
+        function resetCount() {
+          // use resetCount to set back to initial state, zero count to show $0.00
+          if (hasTooltip) {
+            $.postMessage(
+              '#{req.params.button_uuid},reset',
+              "#{req.header('Referer')}"
+            );
+          } else {
+            totalCount = 0;
+            sendCount = 0;
+            $('#counter-box').hide();
+            $('#counter-value').text("");
           }
-          $("form").submit();
+        }
+        
+        function clickCounter() {
+          if (mouseDown) {
+            incrementCount();
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+              if (mouseDown) {
+                if (interval > 100) interval = interval - 20;
+                // interval = 400 / (sendCount - 1) + 100;
+                clickCounter();
+              }
+            }, interval);
+          } else {
+            clearTimeout(timer);
+            interval = 500;
+          }
+        }
+        
+        $("#submit-button").mousedown(function(event) {
+          sendCount = 0;
+          mouseDown = true;
+          $(this).children("img:first-child").fadeTo(50, 0);
+          incrementCount();
+          clearTimeout(timer);
+          timer = setTimeout(function() {
+            if (mouseDown) {
+              clickCounter();
+            }
+          }, 1000);
         });
+        
+        $(document).bind('mouseup blur', function() {
+          $('#submit-button').children('img:first-child').fadeTo(50, 1);
+          // send post request with clicks
+          if (!testButton && mouseDown && sendCount >= 1) $("form").submit();
+          mouseDown = false;
+        });
+        
+        $("#undo").click(function() {
+          if (totalCount > 0) {
+            zeroCount();
+            sendCount = -1;
+            if (!testButton) $("form").submit();
+          }
+        }).mousedown(function() {
+          $(this).css('background-position', '0% 100%');
+        }).mouseup(function() {
+          $("#undo").css('background-position', '0% 0%');
+        });
+        
+        // if a context menu event (ie right click) interrupt click submission
+        $("#submit-button").bind("contextmenu", function(event) {
+          if (mouseDown) {
+            clearTimeout(timer);
+            mouseDown = false;
+            $('#submit-button').children('img:first-child').stop().fadeTo(0, 1);
+            totalCount = totalCount - sendCount;
+            sendCount = 0;
+            $.postMessage(
+              '#{req.params.button_uuid},decrement',
+              "#{req.header('Referer')}"
+            );
+          }
+        });
+        
         $("form").submit(function() {
           var form = $(this);
           var data = form.serialize();
+          data += '&count=' + sendCount;
           $.ajax({
             type: "POST",
             url: form.attr("action"),
             data: data,
             success: function(data) {
-              if (data.redirect || count >= 40) {
+              if (data.clear) {
+                // zeroCount();
+              } else if (data.redirect) {
                 var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
-                if (hasTooltip) url = url + "&source=javascript";
+                if (hasTooltip) {
+                  url = url + "&source=javascript";
+                }
                 else url = url + "&source=iframe";
                 if (data.overdraft) {
                   url = url + "&overdraft=true";
+                } else {
+                  resetCount();
                 }
                 var width = 480;
                 var height = 358;
                 var left = (screen.width / 2) - (width / 2);
                 var top = (screen.height / 2) - (height / 2);
                 window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
-              } else {
-                count++;
-                if (hasTooltip) {
-                  $.postMessage(
-                    "#{req.params.button_uuid}",
-                    "#{req.header('Referer')}"
-                  );
-                } else {
-                  if (count == 1) $('#counter-box').show();
-                  if (count > 40) count = 40; // something went wrong
-                  $('#counter-value').text(count);
-                }
               }
             },
             dataType: "json",
@@ -92,44 +186,57 @@ html(lang="en")
       body{ 
         margin: 0; 
         padding: 0; 
-        font: normal normal 200 15px helvetica, arial, sans-serif; 
+        font: normal normal 400 13px helvetica, arial, sans-serif;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -o-user-select: none;
+        user-select: none;
       }
-      .button{ 
-        cursor: pointer; 
+      #button-wrapper {
+        position: relative;
+        float: left;
+      }
+      #submit-button {
         margin: 0; 
-        padding: 0; 
+        padding: 0;
         border: 0px none transparent; 
       }
-      .button-text{ 
+      .button-text {
         position: absolute; 
         left: 25px; 
-        top: 2px; 
+        top: 3px;
       }
-      img{ 
-        position: absolute; 
-        top: 0; 
-        left: 0;
+      img{
+        cursor: pointer;
         padding: 0;
         margin: 0;
       }
-      img.rot{ 
-        z-index:-10
+      img.rot{
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -10;
+      }
+      div#undo{
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 10;
       }
       div#counter-box{ 
         position: absolute;
-        left: #{width}px;
-        height: #{height - textPadding}px; 
-        min-width:#{height - 6}px;
-        margin-left: -5px;
-        text-align: left; 
+        left: #{width + 5}px;
+        top: 50%;
+        margin: -#{fontSize/2 + 3}px 0 0 -2px;
+        margin-left: -2px;
+        text-align: left;
         background-color: #fff;
-        //- border: 2px solid #aaa;
-        border-radius: 5px; 
+        border: 1px solid #aaa;
+        border-radius: 5px;
         font-size: #{fontSize}px;
-        line-height: #{height}px;
-        padding-top: #{textPadding}px;
-        padding-left: 8px;
-        padding-right: 3px;
+        padding: 2px 2px 0px 2px;
         z-index: -20;
       }
     script
@@ -147,16 +254,23 @@ html(lang="en")
     form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
       input(type="hidden", name="_csrf", value=req.session._csrf)
       input(type="hidden", name="_referrer", value=referrer)
-      #submit-button.button
-        img(src="/public/images/25c-#{size}.png", alt="Pledge 25c!")
-        img.rot(src="/public/images/25c-rot-#{size}.png")
+      #button-wrapper
+        #submit-button
+          img(src="/public/images/25c-#{size}.png", alt="Pledge 25c!")
+          img.rot(src="/public/images/25c-rot-#{size}.png")
+        if size.indexOf('large') != -1
+          div#undo(style="width: 12px; height: 12px; background-image: url('/public/images/undo-icon-large.png');")
+        else if size.indexOf('medium') != -1
+          div#undo(style="width: 12px; height: 12px; background-image: url('/public/images/undo-icon-medium.png');")
+        else
+          div#undo(style="width: 12px; height: 12px; background-image: url('/public/images/undo-icon-small.png');")
       if size == 'icon-text'
         .button-text 
           span 25c 
           span#counter-box(style="display:none;") 
-            span x&thinsp;
+            span +
             span#counter-value 0
       else
         #counter-box(style="display:none;")
-          span x&thinsp;
+          span +
           span#counter-value 0

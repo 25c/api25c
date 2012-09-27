@@ -209,7 +209,7 @@ app.get('/button/:button_uuid', function(req, res) {
 	size = size.toLowerCase();
 	if (size.match(/-large/)) {
 		height = 40;
-		fontSize = 18;
+		fontSize = 13;
 		textPadding = 0;
 		if (size.match(/btn-/)) {
 		  width = 72;
@@ -220,7 +220,7 @@ app.get('/button/:button_uuid', function(req, res) {
     }
 	} else if (size.match(/-medium/)) {
 		height = 30;
-		fontSize = 15;
+		fontSize = 13;
 		if (size.match(/btn-/)) {
 	    width = 54;
 		  textPadding = 2;
@@ -230,7 +230,7 @@ app.get('/button/:button_uuid', function(req, res) {
     }
 	} else {	  
 		height = 20;
-		fontSize = 15;
+		fontSize = 13;
 		if (size.match(/btn-/)) {
 		  width = 36;
 		  textPadding = 1;
@@ -254,6 +254,9 @@ app.get('/button/:button_uuid', function(req, res) {
   } else {
     referrer = "";
   }
+  
+  // console.log(req.session._csrf);
+  req.session.clickUuids = [];
 	
 	res.render("button.jade", { 
 	  req: req, 
@@ -264,12 +267,11 @@ app.get('/button/:button_uuid', function(req, res) {
 	  textPadding: textPadding, 
 	  WEB_URL_BASE: WEB_URL_BASE, 
 	  referrer: referrer 
-	})
+	});
 });
 
-function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
+function enqueueClicks(count, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
 	var data = {
-		'uuid': uuid,
 		'user_uuid': user_uuid,
 		'button_uuid': button_uuid,
 		'referrer_user_uuid': referrer_user_uuid,
@@ -279,38 +281,55 @@ function enqueueClick(uuid, user_uuid, button_uuid, referrer_user_uuid, referrer
 		'created_at': new Date()
 	};
 	var counterKey = user_uuid + ":" + button_uuid;
-  redisDataClient.lpush(QUEUE_KEY, JSON.stringify(data), function(err, count) {
-		if (err == null) {
-			res.json({});			
+	var multiQueue = redisDataClient.multi();
+	var clickUuids = [];
+	
+	for (i=0; i<count; i++) {
+	  data['uuid'] = uuid.v1();
+    redisDataClient.lpush(QUEUE_KEY, JSON.stringify(data));
+    clickUuids.push(data['uuid']);
+  }
+  
+  multiQueue.exec(function (err, count) {
+    if (err == null) {
+			res.json({});
 		} else {
-			console.log("POST err: " + err);
 			airbrake.notify(err);
 			res.json({ error: true });
 		}
-	});
+  });
+  return clickUuids;
 }
 
 app.post('/button/:button_uuid', function(req, res) {
+
+  //// get number of clicks to send
+  var count = req.param('count') || 1;
+  
 	if (req.signedRailsCookies['_25c_session']) {
     redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
       if (err != null) {
         console.log("POST error fetching session user_uuid: " + err);
         airbrake.notify(err);
         res.json({ error: true });
+      } else if (count == -1) {
+        //// TODO: add click UUIDS to Redis for data25c to remove
+        req.session.clickUuids = [];
+        res.json({ clear: true });
       } else {
         //// fetch user and check balance
         redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
           if (err != null) {
             console.log("POST error fetching user balance: " + err);
             airbrake.notify(err);
-            res.json({ error: true });      
+            res.json({ error: true });
           } else {
             if (balance_str == null) {
               balance = 0;
             } else {
               balance = parseInt(balance_str);
             }   
-            if (balance > -40) {
+            if (balance > -10000) {
               var ipAddress;
               //// first check for proxy forwarded ip
               var forwardedIpsStr = req.header('x-forwarded-for'); 
@@ -322,19 +341,37 @@ app.post('/button/:button_uuid', function(req, res) {
               if (!ipAddress) {
                 ipAddress = req.connection.remoteAddress;
               }
+              
               //// check for a button referrer
               if (req.cookies['_25c_referrer']) {
                 redisWebClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
                   var button_referrer = JSON.parse(button_referrer_data);
                   //// verify host match
-                  if (url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname) {
-                    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, button_referrer['referrer_user_uuid'], req.param('_referrer'), req.header('user-agent'), ipAddress, res);
-                  } else {
-                    enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);                   
-                  }
+                  var includeReferrer = url.parse(button_referrer['url']).hostname == url.parse(req.param('_referrer')).hostname;
+                  var newClickUuids = enqueueClicks(
+                    count, 
+                    user_uuid, 
+                    req.params.button_uuid, 
+                    includeReferrer? button_referrer['referrer_user_uuid'] : null, 
+                    req.param('_referrer'), 
+                    req.header('user-agent'), 
+                    ipAddress, 
+                    res
+                  );
+                  req.session.clickUuids = req.session.clickUuids.concat(newClickUuids);
                 });
               } else {
-                enqueueClick(uuid.v1(), user_uuid, req.params.button_uuid, null, req.param('_referrer'), req.header('user-agent'), ipAddress, res);
+                newClickUuids = enqueueClicks(
+                  count, 
+                  user_uuid, 
+                  req.params.button_uuid, 
+                  null, 
+                  req.param('_referrer'), 
+                  req.header('user-agent'), 
+                  ipAddress, 
+                  res
+                );
+                req.session.clickUuids = req.session.clickUuids.concat(newClickUuids);
               }
               // Send initial overdraft email
                if (balance == -39) sendOverdraftEmail(user_uuid);
@@ -408,7 +445,6 @@ function sendOverdraftEmail(uuid) {
           userEmail = result.rows[0].email;
           userFirstName = result.rows[0].first_name;
           userNickname = result.rows[0].nickname;
-      
           toName = userFirstName || userNickname || userEmail;
     		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
         }

@@ -32,7 +32,7 @@ style(type="text/css")
     font-size: 13px !important;
     line-height: 16px !important;
     text-align: left !important;
-    color: #333 !important;
+    color: #333;
     text-decoration: none !important;
     font-weight: 400;
     padding: 0;
@@ -52,29 +52,28 @@ if user != null
     window.referrerUrl = "#{referrer_url}"
     window.userName = "#{user.displayName}"
     window.pledgeName = "#{user.pledge_name}"
-  div.if-count(style="display:none;")
-    span(style="font-weight:800;")#count 0 
-    span(style="font-weight:800;") &nbsp;pledged
   div
-    span.no-count Pledge 25c&nbsp;
-    span#button-user to this user
+    span.no-count Pledge 25c 
+    span#count.if-count(style="display:none;font-weight:800;") 0 
+    span.if-count(style="display:none;font-weight:800;") &nbsp;pledged 
+    span#button-user(style="font-weight:800;") to&nbsp;this&nbsp;user
     span#button-title
   div.if-count(style="display:none") Click again to pledge more!
   div.if-self(style="display:none;color:#308014;") You cannot pledge to yourself.
   div(style="clear:both;")
   div(style="float:left;margin:5px 5px 0 0;") Share Your Pledge:
-  img#fb-share-link(src="https://s3.amazonaws.com/assets.25c.com/logos/facebook-20.png", style="float:left;cursor:pointer;padding-top:3px;height:auto;width:20px;border-radius:")
-  img#tw-share-link(src="https://s3.amazonaws.com/assets.25c.com/logos/twitter-20.png", style="float:left;cursor:pointer;padding-top:3px;height:auto;width:20px;margin-left:5px;")
+  img#fb-share-link(src="https://s3.amazonaws.com/assets.25c.com/logos/facebook-20.png", style="float:left;cursor:pointer;padding-top:3px;min-height:20px;width:20px;border-radius:")
+  img#tw-share-link(src="https://s3.amazonaws.com/assets.25c.com/logos/twitter-20.png", style="float:left;cursor:pointer;padding-top:3px;min-height:20px;width:20px;margin-left:5px;")
   div(style="clear:both;padding-top:0px;")
     if user.pictureUrl != ""
       if user.nickname != ""
-        a(href=user.nicknameUrl, style="text-decoration:none;")
+        a(href=user.nicknameUrl, style="text-decoration:none;color: #08c;")
           img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:2px;margin-right:5px;border-radius:2px;max-width:20px;max-height:20px;")
       else
         img(src=user.pictureUrl, style="float:left;display:block;border:0;margin-top:2px;margin-right:5px;border-radius:2px;max-width:20px;max-height:20px;")
     div(style="float:left;padding-top:4px;")
       if user.nickname != ""
-        a(href=user.nicknameUrl, target="_blank", style="text-decoration:none;") #{user.displayName}
+        a(href=user.nicknameUrl, target="_blank", style="text-decoration:none;color: #08c;") #{user.displayName}
       else
         #{user.displayName}
     div(style="clear:both;")
@@ -86,4 +85,4 @@ else
     span#button-user to this user
     span#button-title
   div(style="padding-top:5px;")
-    a(href="https://www.25c.com/", target="_blank") Learn more about 25c
+    a(href="https://www.25c.com/", target="_blank", style="color: #08c;") Learn more about 25c.

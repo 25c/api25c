@@ -6,7 +6,8 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 var _tip25c_jquery = $.noConflict(true);
 _tip25c_jquery(document).ready(function($) {
 	var timer = null;
-	var count = 0;
+	var buttons = {}; // for multiple buttons
+	
 	function hideTooltip() {
 		var tooltip = $("#tip-25c-tooltip");
 		tooltip.css({
@@ -20,9 +21,19 @@ _tip25c_jquery(document).ready(function($) {
     var top = (screen.height / 2) - (height / 2);
     window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
   }
-	function refreshTooltip(button_uuid) {
-    	  
-		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + button_uuid + "?callback=?", null, function(response) {
+  function setTooltipCount(count, showZero) {
+    if (count > 0 || showZero) {
+      $('.if-count').show();
+      $('.no-count').hide();
+      $('#count').text("$" + (count * 25 / 100).toFixed(2));
+    } else {
+      $('.if-count').hide();
+      $('.no-count').show();
+      $('#count').text("");
+    }
+  }
+	function refreshTooltip(uuid) {    	  
+		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + uuid + "?callback=?", null, function(response) {
 		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
 			
@@ -42,43 +53,38 @@ _tip25c_jquery(document).ready(function($) {
       } else {
         var testTooltip = false;
       }
+      
+      // DEBUG
+      testTooltip = true;
+      var button = buttons[uuid];
 	    
-	    if (count > 0) {
-        if (!testTooltip && (userName == button_user || pledgeName == button_user)) {
-        // if (false) {
+	    if (button.count > 0) {
+        if (!testTooltip && (userName == button.user || pledgeName == button.user)) {
 	        $('.if-self').show();
 	      } else {
-  	      $('.if-count').show();
-  	      $('.no-count').hide();
-  	      $('#count').html(count + " (= $" + (count * 25 / 100).toFixed(2) + ")");
+          setTooltipCount(button.count);
   	    }
       }
 		  
-		  if (button_user && !(/^\s+$/.test(button_user))) {
-		    if (profile_url && !(/^\s+$/.test(profile_url))) {
-          $tooltip.find('#button-user').html('to <a target="_blank" href="' + profile_url + '" style="font-weight:800;">' + button_user + '</a>');
+		  if (button.user && !(/^\s+$/.test(button.user))) {
+		    var userHTML = button.user.replace(' ', "&nbsp;");
+		    if (button.url && !(/^\s+$/.test(button.url))) {
+          $tooltip.find('#button-user').html('to&nbsp;<a target="_blank" href="' + button.url + '" style="color: #08c;font-weight:800;">' + userHTML + '</a>');
         } else {
-          $tooltip.find('#button-user').html('to <span style="font-weight:800;">' + button_user + '</span>');
+          $tooltip.find('#button-user').html('to&nbsp;' + userHTML);
         }
 		  }
 
-		  if (button_title && !(/^\s+$/.test(button_title)) && button_title.indexOf("your cause") == -1) {
-        $tooltip.children('#button-title').html(' for <span style="font-weight:800;">' + button_title + '</span>');
+		  if (button.title && !(/^\s+$/.test(button.title)) && button.title.indexOf("your cause") == -1) {
+        $tooltip.children('#button-title').html(' for&nbsp;' + button.title);
 		  }
-		  
-		  // if (info_url && !(/^\s+$/.test(info_url))) {
-      //         $tooltip.children('#info-url').html('More info: ' + '<a target="_blank" href="' + info_url + '">' + info_url + '</a>');
-      // }
 
 	    if (loggedIn) {
         // var name = userName + " pledged 25c ";
         var name = "I just pledged 25c ";
 
-  	    if (!button_user || /^\s+$/.test(button_user)) name += "";
-  	    else name += "to " + button_user;
-
-        // if (!button_title || /^\s+$/.test(button_title)) name += " for this page!";
-        // else name += " for " + button_title;
+  	    if (!button.user || /^\s+$/.test(button.user)) name += "";
+  	    else name += "to&nbsp;" + button.user;
 
   	    var description = "Using 25c to pledge one quarter one click.";
 
@@ -103,32 +109,52 @@ _tip25c_jquery(document).ready(function($) {
 		  }
 		});
 	}
+	
 	var src = $("script#tip-25c-js").attr("src");
 	src = src.substr(0, src.indexOf("/public"));
+	
 	$.receiveMessage(function(e) {
-	  count++;
-	  if (count > 40) {
-	    // something went wrong
-	    count = 40;
+	  var uuid = e.data.split(",")[0];
+	  var command = e.data.split(",")[1] || "";
+	  switch (command) {
+	    case "increment":
+	      buttons[uuid].count++;
+	      setTooltipCount(buttons[uuid].count)
+	      break;
+      case "decrement":
+        buttons[uuid].count--;
+        setTooltipCount(buttons[uuid].count)
+        break;
+      case "clear":
+        buttons[uuid].count = 0;
+        setTooltipCount(0);
+        break;
+      case "reset":
+        button[uuid].count = 0;
+        setTooltipCount(0, true);
+        break;
     }
-		refreshTooltip(e.data);
 	}, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
-	var button_title = "";
+	
 	$("a.tip-25c-button").each(function() {
 		var a = $(this);
-		button_title = a.text();
-		button_user = a.attr("data-user");
+	  var uuid = a.attr("data-id");
+	  
+	  var button = {};
+	  if (uuid) {
+	    // new button style has the button uuid as attribute and profile as the link href
+  	  button.url = a.attr("href");
+    } else {
+      // support old style of button code with button uuid in the link href and profile url as attribute
+      uuid = a.attr("href").substr(a.attr("href").lastIndexOf("/") + 1);
+      button.url = a.attr("data-profile");
+    }
+    	  
+		button.title = a.text();
+		button.user = a.attr("data-user");
+		button.count = 0;
 		
-		// new button style has the button uuid as attribute and profile as the link href
-    button_uuid = a.attr("data-id");
-    profile_url = a.attr("href");
-    
-    // support old style of button code with button uuid in the link href and profile url as attribute
-    if (!button_uuid) {
-      var url = a.attr("href");
-		  var button_uuid = url.substr(url.lastIndexOf("/") + 1);
-		  profile_url = a.attr("data-profile");
-		}
+		buttons[uuid] = button;
 		
 		var size = a.attr("data-size");
 		var height;
@@ -140,7 +166,7 @@ _tip25c_jquery(document).ready(function($) {
 		if (size.match(/-large/)) {
 			height = 40;
 			if (size.match(/btn-/)) {
-				width = 72;
+				width = 200;
 			} else {
 				width = 40;
 			}
@@ -161,7 +187,7 @@ _tip25c_jquery(document).ready(function($) {
 				width = 20;
 			}
 		}
-		var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + button_uuid + '?tooltip=true&size=' + size;
+		var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + uuid + '?tooltip=true&size=' + size;
 		a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:' + width + 'px; height:' + height + 'px;"></iframe>');
 		var iframe = a.next();
 		iframe.on({
@@ -174,7 +200,7 @@ _tip25c_jquery(document).ready(function($) {
 					left: offset.left,
 					top: offset.top + height
 				});
-				refreshTooltip(button_uuid);
+				refreshTooltip(uuid);
 			},
 			mouseleave: function() {
 				timer = setTimeout(hideTooltip, 500);
@@ -182,7 +208,7 @@ _tip25c_jquery(document).ready(function($) {
 		});
 		a.remove();
 	});
-	$("body").append('<div data-title="' + button_title + '" id="tip-25c-tooltip">&nbsp;</div>');
+	$("body").append('<div id="tip-25c-tooltip">&nbsp;</div>');
 	$("#tip-25c-tooltip").on({
 		mouseenter: function() {
 			clearTimeout(timer);			
