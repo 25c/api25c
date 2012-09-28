@@ -259,11 +259,11 @@ html(lang="en")
           img(src="/public/images/25c-#{size}.png", alt="Pledge 25c!")
           img.rot(src="/public/images/25c-rot-#{size}.png")
         if size.indexOf('large') != -1
-          div#undo(style="width: 12px; height: 12px; background-image: url('/public/images/undo-icon-large.png');")
+          div#undo(style="width:12px;height:12px;background-image:url('/public/images/undo-icon-large.png');")
         else if size.indexOf('medium') != -1
-          div#undo(style="width: 12px; height: 12px; background-image: url('/public/images/undo-icon-medium.png');")
+          div#undo(style="width:10px;height:10px;background-image:url('/public/images/undo-icon-medium.png');")
         else
-          div#undo(style="width: 12px; height: 12px; background-image: url('/public/images/undo-icon-small.png');")
+          div#undo(style="width:8x;height:8px;background-image:url('/public/images/undo-icon-small.png');")
       if size == 'icon-text'
         .button-text 
           span 25c 
