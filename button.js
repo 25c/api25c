@@ -23,6 +23,7 @@ var url = require('url');
 var uuid = require('node-uuid');
 var pg = require('pg').native;
 var express = require('express');
+var querystring = require('querystring');
 
 var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a900');
 airbrake.developmentEnvironments = ['development'];
@@ -82,19 +83,25 @@ if (pgWebUrl == undefined) {
 }
 
 if (process.env.NODE_ENV == "production") {
-  var WEB_URL_BASE = "https://www.25c.com"
+  var WEB_URL_BASE = "https://www.25c.com";
 	var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
+	var DATA25C_URL = "https://data.25c.com";
+	var DATA25C_PORT = "80";
 } else if (process.env.NODE_ENV == "staging") {
-  var WEB_URL_BASE = "https://www.plus25c.com"
+  var WEB_URL_BASE = "https://www.plus25c.com";
   var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
+  var DATA25C_URL = "https://data.plus25c.com";
+  var DATA25C_PORT = "80";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
   var ASSETS_URL_BASE = "http://localhost:3000/s3";
+  var DATA25C_URL = "localhost";
+  var DATA25C_PORT = "5400";
 }
 
 var express = require('express');
 var RedisStore = require('connect-redis')(express);
-	 
+
 // var app = express.createServer(express.logger());
 var app = express();
 app.enable("jsonp callback");
@@ -313,9 +320,38 @@ app.post('/button/:button_uuid', function(req, res) {
         airbrake.notify(err);
         res.json({ error: true });
       } else if (count == -1) {
-        //// TODO: add click UUIDS to Redis for data25c to remove
+        //// send stored session click UUIDs to data25c to undo them
+        
+        var postData = '';
+        for (i = 0; i < req.session.clickUuids.length; i++) {
+          if (i > 0) postData += "&";
+          postData += 'uuids[]=' + req.session.clickUuids[i];
+        }
+
+        var postOptions = {
+          host: DATA25C_URL,
+          port: DATA25C_PORT,
+          path: '/api/clicks/undo',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': postData.length
+          }
+        };
+        
+        var postReq = http.request(postOptions, function(res) {
+          res.setEncoding('utf8');
+          res.on('data', function (chunk) {
+            // console.log('Response: ' + chunk);
+          });
+        });
+        
+        postReq.write(postData);
+        postReq.end();
+        
         req.session.clickUuids = [];
         res.json({ clear: true });
+        
       } else {
         //// fetch user and check balance
         redisDataClient.get("user:" + user_uuid, function(err, balance_str) {

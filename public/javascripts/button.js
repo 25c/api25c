@@ -7,10 +7,10 @@ var _tip25c_jquery = $.noConflict(true);
 _tip25c_jquery(document).ready(function($) {
 	var timer = null;
 	var buttons = {}; // for multiple buttons
+	var $tooltip = $();
 	
 	function hideTooltip() {
-		var tooltip = $("#tip-25c-tooltip");
-		tooltip.css({
+		$tooltip.css({
 			visibility: "hidden"
 		});
 	}
@@ -23,25 +23,21 @@ _tip25c_jquery(document).ready(function($) {
   }
   function setTooltipCount(count, showZero) {
     if (count > 0) {
-      $('.if-number').show();
-      $('.if-count').show();
-      $('.no-count').hide();
-      $('#count').text("$" + (count * 25 / 100).toFixed(2));
+      $tooltip.find('.if-number, .if-count').show();
+      $tooltip.find('.no-count').hide();
+      $tooltip.find('#count').text("$" + (count * 25 / 100).toFixed(2));
     } else if (showZero) {
-      $('.if-number').show();
-      $('.if-count').hide();
-      $('.no-count').hide();
-      $('#count').text("$" + (count * 25 / 100).toFixed(2));
+      $tooltip.find('.if-number').show();
+      $tooltip.find('.if-count, .no-count').hide();
+      $tooltip.find('#count').text("$" + (count * 25 / 100).toFixed(2));
     } else {
-      $('.if-number').hide();
-      $('.if-count').hide();
-      $('.no-count').show();
-      $('#count').text("");
+      $tooltip.find('.if-number, .if-count').hide();
+      $tooltip.find('.no-count').show();
+      $tooltip.find('#count').text("");
     }
   }
 	function refreshTooltip(uuid) {    	  
 		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + uuid + "?callback=?", null, function(response) {
-		  var $tooltip = $("#tip-25c-tooltip");
 			$tooltip.html(response);
 			
 			if (window.location.hostname.indexOf('localhost') != -1) {
@@ -67,7 +63,7 @@ _tip25c_jquery(document).ready(function($) {
 	    
 	    if (button.count > 0) {
         if (!testTooltip && (userName == button.user || pledgeName == button.user)) {
-	        $('.if-self').show();
+	        $tooltip.find('.if-self').show();
 	      } else {
           setTooltipCount(button.count);
   	    }
@@ -104,13 +100,13 @@ _tip25c_jquery(document).ready(function($) {
   			  + "&description=" + encodeURI(description)
   			  + "&redirect_uri=" + redirectURI;
 
-  			$('#fb-share-link').click(function() {
+  			$tooltip.find('#fb-share-link').click(function() {
   			  openPopup(fbShareHref, "Share on Facebook");
   			});
 
   			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
 			
-  			$('#tw-share-link').click(function() {
+  			$tooltip.find('#tw-share-link').click(function() {
   			  openPopup(twShareHref, "Share on Twitter");
   		  });
 		  }
@@ -137,8 +133,10 @@ _tip25c_jquery(document).ready(function($) {
         setTooltipCount(0, true);
         break;
       case "reset":
-        button[uuid].count = 0;
+        buttons[uuid].count = 0;
         setTooltipCount(0);
+        hideTooltip();
+        $tooltip.text("");
         break;
     }
 	}, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
@@ -201,13 +199,12 @@ _tip25c_jquery(document).ready(function($) {
 			mouseenter: function() {
 				clearTimeout(timer);
 				var offset = $(this).offset();
-				var tooltip = $("#tip-25c-tooltip");
-				tooltip.css({
+				$tooltip.css({
 					visibility: "visible",
 					left: offset.left,
 					top: offset.top + height
 				});
-				refreshTooltip(uuid);
+				if ($tooltip.text() == '') refreshTooltip(uuid);
 			},
 			mouseleave: function() {
 				timer = setTimeout(hideTooltip, 500);
@@ -215,8 +212,9 @@ _tip25c_jquery(document).ready(function($) {
 		});
 		a.remove();
 	});
-	$("body").append('<div id="tip-25c-tooltip">&nbsp;</div>');
-	$("#tip-25c-tooltip").on({
+	$tooltip = $('<div id="tip-25c-tooltip"></div>');
+	$("body").append($tooltip);
+	$tooltip.on({
 		mouseenter: function() {
 			clearTimeout(timer);			
 		},

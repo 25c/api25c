@@ -12,14 +12,10 @@ html(lang="en")
       var totalCount = 0;
       var maxCount = 399;
       
-      if (document.referrer.indexOf("25c.com/home/get_button") != -1
-      || document.referrer.indexOf("localhost:3000/home/get_button") != -1 
-      || document.referrer.indexOf("25c.com/home/receive_pledges") != -1
-      || document.referrer.indexOf("localhost:3000/home/receive_pledges") != -1) {
-        var testButton = true;
-      } else {
-        var testButton = false;
-      }
+      var testButton = document.referrer.indexOf("25c.com/home/get_button") != -1
+        || document.referrer.indexOf("localhost:3000/home/get_button") != -1 
+        || document.referrer.indexOf("25c.com/home/receive_pledges") != -1
+        || document.referrer.indexOf("localhost:3000/home/receive_pledges") != -1;
           
       $(function() {
         
@@ -29,6 +25,7 @@ html(lang="en")
         var interval = 400;
         
         function incrementCount() {
+          $('#undo').show();
           if (totalCount < maxCount) {
             sendCount++;
             totalCount++;
@@ -47,28 +44,30 @@ html(lang="en")
         }
         
         function zeroCount() {
+          $('#undo').hide();
+          clearTimeout(timer);
+          totalCount = 0;
+          sendCount = 0;
           if (hasTooltip) {
             $.postMessage(
               '#{req.params.button_uuid},clear',
               "#{req.header('Referer')}"
             );
           } else {
-            totalCount = 0;
-            sendCount = 0;
             $('#counter-value').text("$0.00");
           }
         }
         
         function resetCount() {
-          // use resetCount to set back to initial state, zero count to show $0.00
+          $('#undo').hide();
+          totalCount = 0;
+          sendCount = 0;
           if (hasTooltip) {
             $.postMessage(
               '#{req.params.button_uuid},reset',
               "#{req.header('Referer')}"
             );
           } else {
-            totalCount = 0;
-            sendCount = 0;
             $('#counter-box').hide();
             $('#counter-value').text("");
           }
@@ -90,8 +89,8 @@ html(lang="en")
             interval = 500;
           }
         }
-        
-        $("#submit-button").mousedown(function(event) {
+                
+        $("#submit-button").bind('mousedown touchstart', function(event) {
           sendCount = 0;
           mouseDown = true;
           $(this).children("img:first-child").fadeTo(50, 0);
@@ -104,7 +103,7 @@ html(lang="en")
           }, 1000);
         });
         
-        $(document).bind('mouseup blur', function() {
+        $(document).bind('mouseup touchend', function() {
           $('#submit-button').children('img:first-child').fadeTo(50, 1);
           // send post request with clicks
           if (!testButton && mouseDown && sendCount >= 1) $("form").submit();
@@ -116,6 +115,7 @@ html(lang="en")
             zeroCount();
             sendCount = -1;
             if (!testButton) $("form").submit();
+            $(this).hide();
           }
         }).mousedown(function() {
           $(this).css('background-position', '0% 100%');
@@ -131,6 +131,7 @@ html(lang="en")
             $('#submit-button').children('img:first-child').stop().fadeTo(0, 1);
             totalCount = totalCount - sendCount;
             sendCount = 0;
+            if (totalCount == 0) $('#undo').hide();
             $.postMessage(
               '#{req.params.button_uuid},decrement',
               "#{req.header('Referer')}"
@@ -153,8 +154,7 @@ html(lang="en")
                 var url = "#{WEB_URL_BASE}/tip/#{req.params.button_uuid}?referrer=#{encodeURIComponent(req.header("referrer"))}";
                 if (hasTooltip) {
                   url = url + "&source=javascript";
-                }
-                else url = url + "&source=iframe";
+                } else url = url + "&source=iframe";
                 if (data.overdraft) {
                   url = url + "&overdraft=true";
                 } else {
@@ -166,6 +166,8 @@ html(lang="en")
                 var top = (screen.height / 2) - (height / 2);
                 window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
               }
+              // if (totalCount > 0) $('#undo').show();
+              // else $('#undo').hide();
             },
             dataType: "json",
             async: false
@@ -219,6 +221,7 @@ html(lang="en")
         z-index: -10;
       }
       div#undo{
+        display: none;
         cursor: pointer;
         position: absolute;
         top: 0;
@@ -249,7 +252,7 @@ html(lang="en")
         ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
       })();
-      
+
   body
     form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
       input(type="hidden", name="_csrf", value=req.session._csrf)
