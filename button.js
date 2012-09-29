@@ -87,12 +87,12 @@ if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
 	var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
 	var DATA25C_URL = "data.25c.com";
-	var DATA25C_PORT = "80";
+	var DATA25C_PORT = "443";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
   var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
   var DATA25C_URL = "data.plus25c.com";
-  var DATA25C_PORT = "80";
+  var DATA25C_PORT = "443";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
   var ASSETS_URL_BASE = "http://localhost:3000/s3";
