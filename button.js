@@ -17,6 +17,7 @@ var NODE_COOKIE_SECRET = '9bcc9f49beb2dcb03cb20c01117431fd33cb4f0c64825ad78dd841
 var NODE_COOKIE_SESSION_KEY = '_api25c_session'
 
 var http = require('http');
+var https = require('https');
 var redis = require('redis');
 var rails = require('./rails');
 var url = require('url');
@@ -85,12 +86,12 @@ if (pgWebUrl == undefined) {
 if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
 	var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
-	var DATA25C_URL = "https://data.25c.com";
+	var DATA25C_URL = "data.25c.com";
 	var DATA25C_PORT = "80";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
   var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
-  var DATA25C_URL = "https://data.plus25c.com";
+  var DATA25C_URL = "data.plus25c.com";
   var DATA25C_PORT = "80";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
@@ -339,12 +340,21 @@ app.post('/button/:button_uuid', function(req, res) {
           }
         };
         
-        var postReq = http.request(postOptions, function(res) {
-          res.setEncoding('utf8');
-          res.on('data', function (chunk) {
-            // console.log('Response: ' + chunk);
+        if (process.env.NODE_ENV == "production" || process.env.NODE_ENV == "staging") {
+          var postReq = https.request(postOptions, function(res) {
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+              // console.log('Response: ' + chunk);
+            });
           });
-        });
+        } else {
+          var postReq = http.request(postOptions, function(res) {
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+              // console.log('Response: ' + chunk);
+            });
+          });
+        }
         
         postReq.write(postData);
         postReq.end();
