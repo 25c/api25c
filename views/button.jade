@@ -10,7 +10,7 @@ html(lang="en")
       
       var hasTooltip = false;
       var totalCount = 0;
-      var maxCount = 399;
+      var maxCount = 9999;
       
       var testButton = document.referrer.indexOf("25c.com/home/get_button") != -1
         || document.referrer.indexOf("localhost:3000/home/get_button") != -1 
@@ -27,8 +27,8 @@ html(lang="en")
         function incrementCount() {
           $('#undo').show();
           if (totalCount < maxCount) {
-            sendCount++;
-            totalCount++;
+            sendCount += 25;
+            totalCount += 25;
             if (hasTooltip) {
               $.postMessage(
                 '#{req.params.button_uuid},increment',
@@ -37,7 +37,7 @@ html(lang="en")
             } else {
               if (totalCount > 0) {
                 $('#counter-box').show();
-                $('#counter-value').text("$" + (totalCount * 25 / 100).toFixed(2));
+                $('#counter-value').text("$" + (totalCount / 100).toFixed(2));
               }
             }
           }
@@ -142,7 +142,7 @@ html(lang="en")
         $("form").submit(function() {
           var form = $(this);
           var data = form.serialize();
-          data += '&count=' + sendCount;
+          data += '&count=' + Math.floor(sendCount / 25);
           $.ajax({
             type: "POST",
             url: form.attr("action"),

@@ -22,14 +22,16 @@ _tip25c_jquery(document).ready(function($) {
     window.open(href, name, 'width = ' + width + ', height = ' + height + ', top = ' + top + ', left = ' + left);
   }
   function setTooltipCount(count, showZero) {
+    $('#count-input').hide();
+    $('.if-input').hide();
     if (count > 0) {
       $tooltip.find('.if-number, .if-count').show();
       $tooltip.find('.no-count').hide();
-      $tooltip.find('#count').text("$" + (count * 25 / 100).toFixed(2));
+      $tooltip.find('#count').text("$" + (count / 100).toFixed(2));
     } else if (showZero) {
       $tooltip.find('.if-number').show();
       $tooltip.find('.if-count, .no-count').hide();
-      $tooltip.find('#count').text("$" + (count * 25 / 100).toFixed(2));
+      $tooltip.find('#count').text("$" + (count / 100).toFixed(2));
     } else {
       $tooltip.find('.if-number, .if-count').hide();
       $tooltip.find('.no-count').show();
@@ -110,6 +112,24 @@ _tip25c_jquery(document).ready(function($) {
   			  openPopup(twShareHref, "Share on Twitter");
   		  });
 		  }
+		  
+		  $("#count").click(function() {
+    		  console.log("clicked");
+    			$(this).hide();
+    			$('#count-input').show();
+    			$('.if-input').show();
+    			$('#count-input').val((button.count / 100).toFixed(2));
+    	});
+    	
+    	$("#count-input").keypress(function(event) {
+        if ( event.which == 13 ) {
+          $('#check-icon').show();
+     			$('#count').val(button.count);
+     			button.count = parseInt(parseFloat($('#count-input').val()) * 100);
+     			setTooltipCount(button.count, true);
+     			console.log(button.count);
+        }
+      });
 		});
 	}
 	
@@ -121,11 +141,11 @@ _tip25c_jquery(document).ready(function($) {
 	  var command = e.data.split(",")[1] || "";
 	  switch (command) {
 	    case "increment":
-	      buttons[uuid].count++;
+	      buttons[uuid].count += 25;
 	      setTooltipCount(buttons[uuid].count)
 	      break;
       case "decrement":
-        buttons[uuid].count--;
+        buttons[uuid].count -= 25;
         setTooltipCount(buttons[uuid].count)
         break;
       case "clear":
