@@ -24,8 +24,18 @@ html(lang="en")
         var timer = null;
         var interval = 400;
         
+        function updateCount(isInput, showZero) {
+          if (totalCount > 0) $('#undo').show();
+          if (totalCount > maxCount) totalCount = maxCount;
+          if (totalCount > 0 || showZero) $('#count, #counter-box').show();
+          if (isInput) $('#check-icon').show();
+          else $('#check-icon').hide();
+          $('#count').text('$' + (totalCount / 100).toFixed(2));
+        }
+        
         function incrementCount() {
           $('#undo').show();
+          $('#check-icon').hide();
           if (totalCount < maxCount) {
             sendCount += 25;
             totalCount += 25;
@@ -35,16 +45,14 @@ html(lang="en")
                 "#{req.header('Referer')}"
               );
             } else {
-              if (totalCount > 0) {
-                $('#counter-box').show();
-                $('#counter-value').text("$" + (totalCount / 100).toFixed(2));
-              }
+              updateCount();
             }
           }
         }
         
         function zeroCount() {
           $('#undo').hide();
+          $('#check-icon').hide();
           clearTimeout(timer);
           totalCount = 0;
           sendCount = 0;
@@ -54,12 +62,13 @@ html(lang="en")
               "#{req.header('Referer')}"
             );
           } else {
-            $('#counter-value').text("$0.00");
+            updateCount(false, true);
           }
         }
         
         function resetCount() {
           $('#undo').hide();
+          $('#check-icon').hide();
           totalCount = 0;
           sendCount = 0;
           if (hasTooltip) {
@@ -68,10 +77,26 @@ html(lang="en")
               "#{req.header('Referer')}"
             );
           } else {
-            $('#counter-box').hide();
-            $('#counter-value').text("");
+            updateCount();
           }
         }
+        
+        $('#count').click(function() {
+          $('#check-icon').hide();
+          $(this).hide();
+          $('#count-input').show();
+          $('.if-input').show();
+          $('#count-input').val((totalCount / 100).toFixed(2));
+        });
+        
+        $("#count-input").bind('keypress', function(event) {
+          if (event.which == 13 ) {
+            $(this).hide();
+            $('.if-input').hide();
+            totalCount = parseInt(parseFloat($('#count-input').val()) * 100);
+            updateCount(true, true);
+          }
+        });
         
         function clickCounter() {
           if (mouseDown) {
@@ -182,13 +207,14 @@ html(lang="en")
         
     style(type="text/css")
       form{ 
+        float: left;
         position: relative; 
-        height:#{height}px; 
+        height:#{height}px;
       }
       body{ 
         margin: 0; 
         padding: 0; 
-        font: normal normal 400 13px helvetica, arial, sans-serif;
+        font: normal normal 400 12px helvetica, arial, sans-serif;
         -webkit-user-select: none;
         -khtml-user-select: none;
         -moz-user-select: none;
@@ -207,7 +233,7 @@ html(lang="en")
       .button-text {
         position: absolute; 
         left: 25px; 
-        top: 3px;
+        top: 4px;
       }
       img{
         cursor: pointer;
@@ -231,17 +257,45 @@ html(lang="en")
       div#counter-box{ 
         position: absolute;
         left: #{width + 5}px;
-        top: 50%;
-        margin: -#{fontSize/2 + 3}px 0 0 -2px;
+        top: #{height / 2}px;
+        margin: -10px 0 -1px -2px;
         margin-left: -2px;
         text-align: left;
         background-color: #fff;
         border: 1px solid #aaa;
         border-radius: 5px;
-        font-size: #{fontSize}px;
-        padding: 2px 2px 0px 2px;
+        font-size: 12px;
+        padding: 3px 1px 1px 1px;
         z-index: -20;
       }
+      span#count {
+        cursor: pointer;
+      }
+      span#count:hover {
+        color: #08c;
+      }
+      input#count-input {
+        font-size: 11px;
+        display:none;
+        width:30px;
+        border:1px solid #ddd;
+        margin:-3px 0 -1px 0;
+        padding:0 1px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
+           -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
+
+      }
+      input#count-input:hover {
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 0 3px rgba(82, 168, 236, 0.6);
+           -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 0 3px rgba(82, 168, 236, 0.6);
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 0 3px rgba(82, 168, 236, 0.6);
+      }
+      #check-icon {
+        display:none;
+        padding-left: 1px;
+      }
+      
     script
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-34638501-1']);
@@ -267,13 +321,18 @@ html(lang="en")
           div#undo(style="width:10px;height:10px;background-image:url('/public/images/undo-icon-medium.png');")
         else
           div#undo(style="width:8x;height:8px;background-image:url('/public/images/undo-icon-small.png');")
-      if size == 'icon-text'
-        .button-text 
-          span 25c 
-          span#counter-box(style="display:none;") 
-            span +
-            span#counter-value 0
-      else
-        #counter-box(style="display:none;")
-          span +
-          span#counter-value 0
+    if size == 'icon-text'
+      .button-text 
+        span 25c 
+        span#counter-box(style="display:none;") 
+          span#count 0
+          span.if-input(style="display:none;") $
+          input#count-input(type="text")
+          img#check-icon(src="https://s3.amazonaws.com/assets.25c.com/style/check-icon.png")
+    else
+      #counter-box(style="display:none;")
+        span#count 0
+        span.if-input(style="display:none;") $
+        input#count-input(type="text")
+        img#check-icon(src="https://s3.amazonaws.com/assets.25c.com/style/check-icon.png")
+

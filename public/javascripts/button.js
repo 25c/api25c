@@ -23,16 +23,18 @@ _tip25c_jquery(document).ready(function($) {
   }
   function setTooltipCount(count, showZero) {
     $('#count-input').hide();
-    $('.if-input').hide();
+    $('.if-input').hide();    
     if (count > 0) {
       $tooltip.find('.if-number, .if-count').show();
       $tooltip.find('.no-count').hide();
       $tooltip.find('#count').text("$" + (count / 100).toFixed(2));
     } else if (showZero) {
+      $('#check-icon').hide();
       $tooltip.find('.if-number').show();
       $tooltip.find('.if-count, .no-count').hide();
       $tooltip.find('#count').text("$" + (count / 100).toFixed(2));
     } else {
+      $('#check-icon').hide();
       $tooltip.find('.if-number, .if-count').hide();
       $tooltip.find('.no-count').show();
       $tooltip.find('#count').text("");
@@ -114,20 +116,18 @@ _tip25c_jquery(document).ready(function($) {
 		  }
 		  
 		  $("#count").click(function() {
-    		  console.log("clicked");
     			$(this).hide();
+    			$('#check-icon').hide();
     			$('#count-input').show();
     			$('.if-input').show();
     			$('#count-input').val((button.count / 100).toFixed(2));
     	});
     	
-    	$("#count-input").keypress(function(event) {
-        if ( event.which == 13 ) {
+      $("#count-input").bind('keypress', function(event) {
+        if (event.which == 13) {
           $('#check-icon').show();
-     			$('#count').val(button.count);
      			button.count = parseInt(parseFloat($('#count-input').val()) * 100);
      			setTooltipCount(button.count, true);
-     			console.log(button.count);
         }
       });
 		});
@@ -142,11 +142,12 @@ _tip25c_jquery(document).ready(function($) {
 	  switch (command) {
 	    case "increment":
 	      buttons[uuid].count += 25;
-	      setTooltipCount(buttons[uuid].count)
+	      setTooltipCount(buttons[uuid].count);
+	      $('#check-icon').hide();
 	      break;
       case "decrement":
         buttons[uuid].count -= 25;
-        setTooltipCount(buttons[uuid].count)
+        setTooltipCount(buttons[uuid].count);
         break;
       case "clear":
         buttons[uuid].count = 0;
