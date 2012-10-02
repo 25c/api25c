@@ -5,17 +5,18 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 (function($){var g,d,j=1,a,b=this,f=!1,h="postMessage",e="addEventListener",c,i=b[h]&&!$.browser.opera;$[h]=function(k,l,m){if(!l){return}k=typeof k==="string"?k:$.param(k);m=m||parent;if(i){m[h](k,l.replace(/([^:]+:\/\/[^\/]+).*/,"$1"))}else{if(l){m.location=l.replace(/#.*$/,"")+"#"+(+new Date)+(j++)+"&"+k}}};$.receiveMessage=c=function(l,m,k){if(i){if(l){a&&c();a=function(n){if((typeof m==="string"&&n.origin!==m)||($.isFunction(m)&&m(n.origin)===f)){return f}l(n)}}if(b[e]){b[l?e:"removeEventListener"]("message",a,f)}else{b[l?"attachEvent":"detachEvent"]("onmessage",a)}}else{g&&clearInterval(g);g=null;if(l){k=typeof m==="number"?m:typeof k==="number"?k:100;g=setInterval(function(){var o=document.location.hash,n=/^#?\d+&/;if(o!==d&&n.test(o)){d=o;l({data:o.replace(n,"")})}},k)}}}})(jQuery);
 var _tip25c_jquery = $.noConflict(true);
 _tip25c_jquery(document).ready(function($) {
-	var timer = null;
-	var buttons = {}; // for multiple buttons
-	var $tooltip = $();
-	
-	function hideTooltip() {
-		$tooltip.css({
-			visibility: "hidden"
-		});
-	}
-	function openPopup(href, name, width, height) {
-	  var width = width || 580;
+  var timer = null;
+  var buttons = {}; // for multiple buttons
+  var $tooltip = $();
+  var maxCount = 9999;
+  
+  function hideTooltip() {
+    $tooltip.css({
+      visibility: "hidden"
+    });
+  }
+  function openPopup(href, name, width, height) {
+    var width = width || 580;
     var height = height || 400;
     var left = (screen.width / 2) - (width / 2);
     var top = (screen.height / 2) - (height / 2);
@@ -40,22 +41,22 @@ _tip25c_jquery(document).ready(function($) {
       $tooltip.find('#count').text("");
     }
   }
-	function refreshTooltip(uuid) {    	  
-		$.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + uuid + "?callback=?", null, function(response) {
-			$tooltip.html(response);
-			
-			if (window.location.hostname.indexOf('localhost') != -1) {
-			  appId = "259751957456159";
-		    redirectURI = "http://localhost:3000/fb_share_callback";
-		  } else {
+  function refreshTooltip(uuid) {       
+    $.getJSON((src.indexOf("localhost") > 0 ? "http:" : "https:") + src + "/tooltip/" + uuid + "?callback=?", null, function(response) {
+      $tooltip.html(response);
+      
+      if (window.location.hostname.indexOf('localhost') != -1) {
+        appId = "259751957456159";
+        redirectURI = "http://localhost:3000/fb_share_callback";
+      } else {
         appId = "403609836335934";
-			  redirectURI = "https://www.25c.com/fb_share_callback";
-	    }
-	    
-	    if ((window.location.pathname.indexOf("/home/get_button") != -1 
-	      || window.location.pathname.indexOf("/home/receive_pledges") != -1)
-	      && (window.location.hostname.indexOf("25c.com") != -1 
-	      || window.location.hostname.indexOf("localhost") != -1)) {
+        redirectURI = "https://www.25c.com/fb_share_callback";
+      }
+      
+      if ((window.location.pathname.indexOf("/home/get_button") != -1 
+        || window.location.pathname.indexOf("/home/receive_pledges") != -1)
+        && (window.location.hostname.indexOf("25c.com") != -1 
+        || window.location.hostname.indexOf("localhost") != -1)) {
         var testTooltip = true;
       } else {
         var testTooltip = false;
@@ -64,87 +65,88 @@ _tip25c_jquery(document).ready(function($) {
       // DEBUG
       testTooltip = true;
       var button = buttons[uuid];
-	    
-	    if (button.count > 0) {
+      
+      if (button.count > 0) {
         if (!testTooltip && (userName == button.user || pledgeName == button.user)) {
-	        $tooltip.find('.if-self').show();
-	      } else {
+          $tooltip.find('.if-self').show();
+        } else {
           setTooltipCount(button.count);
-  	    }
+        }
       }
-		  
-		  if (button.user && !(/^\s+$/.test(button.user))) {
-		    var userHTML = button.user.replace(' ', "&nbsp;");
-		    if (button.url && !(/^\s+$/.test(button.url))) {
+      
+      if (button.user && !(/^\s+$/.test(button.user))) {
+        var userHTML = button.user.replace(' ', "&nbsp;");
+        if (button.url && !(/^\s+$/.test(button.url))) {
           $tooltip.find('#button-user').html('to&nbsp;<a target="_blank" href="' + button.url + '" style="color: #08c;font-weight:800;">' + userHTML + '</a>');
         } else {
           $tooltip.find('#button-user').html('to&nbsp;' + userHTML);
         }
-		  }
+      }
 
-		  if (button.title && !(/^\s+$/.test(button.title)) && button.title.indexOf("your cause") == -1) {
+      if (button.title && !(/^\s+$/.test(button.title)) && button.title.indexOf("your cause") == -1) {
         $tooltip.children('#button-title').html(' for&nbsp;' + button.title);
-		  }
+      }
 
-	    if (loggedIn) {
+      if (loggedIn) {
         // var name = userName + " pledged 25c ";
         var name = "I just pledged 25c ";
 
-  	    if (!button.user || /^\s+$/.test(button.user)) name += "";
-  	    else name += "to&nbsp;" + button.user;
+        if (!button.user || /^\s+$/.test(button.user)) name += "";
+        else name += "to&nbsp;" + button.user;
 
-  	    var description = "Using 25c to pledge one quarter one click.";
+        var description = "Using 25c to pledge one quarter one click.";
 
-  			var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
-  			  + "&app_id=" + appId
-  			  + "&link=" + referrerUrl
+        var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
+          + "&app_id=" + appId
+          + "&link=" + referrerUrl
           + "&picture=" + "http://assets.25c.com.s3.amazonaws.com/logos/icon-50.png"
-  			  + "&name=" + encodeURI(name)
+          + "&name=" + encodeURI(name)
           + "&caption=" + " "
-  			  + "&description=" + encodeURI(description)
-  			  + "&redirect_uri=" + redirectURI;
+          + "&description=" + encodeURI(description)
+          + "&redirect_uri=" + redirectURI;
 
-  			$tooltip.find('#fb-share-link').click(function() {
-  			  openPopup(fbShareHref, "Share on Facebook");
-  			});
+        $tooltip.find('#fb-share-link').click(function() {
+          openPopup(fbShareHref, "Share on Facebook");
+        });
 
-  			var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
-			
-  			$tooltip.find('#tw-share-link').click(function() {
-  			  openPopup(twShareHref, "Share on Twitter");
-  		  });
-		  }
-		  
-		  $("#count").click(function() {
-    			$(this).hide();
-    			$('#check-icon').hide();
-    			$('#count-input').show();
-    			$('.if-input').show();
-    			$('#count-input').val((button.count / 100).toFixed(2));
-    	});
-    	
-      $("#count-input").bind('keypress', function(event) {
-        if (event.which == 13) {
-          $('#check-icon').show();
-     			button.count = parseInt(parseFloat($('#count-input').val()) * 100);
-     			setTooltipCount(button.count, true);
-        }
-      });
-		});
-	}
-	
-	var src = $("script#tip-25c-js").attr("src");
-	src = src.substr(0, src.indexOf("/public"));
-	
-	$.receiveMessage(function(e) {
-	  var uuid = e.data.split(",")[0];
-	  var command = e.data.split(",")[1] || "";
-	  switch (command) {
-	    case "increment":
-	      buttons[uuid].count += 25;
-	      setTooltipCount(buttons[uuid].count);
-	      $('#check-icon').hide();
-	      break;
+        var twShareHref = "https://twitter.com/share?url=" + encodeURIComponent(referrerUrl);
+      
+        $tooltip.find('#tw-share-link').click(function() {
+          openPopup(twShareHref, "Share on Twitter");
+        });
+      }
+      
+      // $("#count").click(function() {
+      //          $(this).hide();
+      //          $('#check-icon').hide();
+      //          $('#count-input').show();
+      //          $('.if-input').show();
+      //          $('#count-input').val((button.count / 100).toFixed(2));
+      //      });
+      //
+      // $("#count-input").bind('keypress', function(event) {
+      //   if (event.which == 13) {
+      //     $('#check-icon').show();
+      //      button.count = parseInt(parseFloat($('#count-input').val()) * 100);
+      //      if (button.count > maxCount) button.count = maxCount;
+      //      setTooltipCount(button.count, true);
+      //   }
+      // });
+    });
+  }
+  
+  var src = $("script#tip-25c-js").attr("src");
+  src = src.substr(0, src.indexOf("/public"));
+  
+  $.receiveMessage(function(e) {
+    var uuid = e.data.split(",")[0];
+    var command = e.data.split(",")[1] || "";
+    switch (command) {
+      case "increment":
+        if (buttons[uuid].count + 25 < maxCount) buttons[uuid].count += 25;
+        setTooltipCount(buttons[uuid].count);
+        $('#check-icon').hide();
+        break;
       case "decrement":
         buttons[uuid].count -= 25;
         setTooltipCount(buttons[uuid].count);
@@ -160,87 +162,87 @@ _tip25c_jquery(document).ready(function($) {
         $tooltip.text("");
         break;
     }
-	}, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
-	
-	$("a.tip-25c-button").each(function() {
-		var a = $(this);
-	  var uuid = a.attr("data-id");
-	  
-	  var button = {};
-	  if (uuid) {
-	    // new button style has the button uuid as attribute and profile as the link href
-  	  button.url = a.attr("href");
+  }, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
+  
+  $("a.tip-25c-button").each(function() {
+    var a = $(this);
+    var uuid = a.attr("data-id");
+    
+    var button = {};
+    if (uuid) {
+      // new button style has the button uuid as attribute and profile as the link href
+      button.url = a.attr("href");
     } else {
       // support old style of button code with button uuid in the link href and profile url as attribute
       uuid = a.attr("href").substr(a.attr("href").lastIndexOf("/") + 1);
       button.url = a.attr("data-profile");
     }
-    	  
-		button.title = a.text();
-		button.user = a.attr("data-user");
-		button.count = 0;
-		
-		buttons[uuid] = button;
-		
-		var size = a.attr("data-size");
-		var height;
-		var width;
-		if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
-			size = "btn-small";
-		}
-		size = size.toLowerCase();
-		if (size.match(/-large/)) {
-			height = 40;
-			if (size.match(/btn-/)) {
-				width = 200;
-			} else {
-				width = 40;
-			}
-		} else if (size.match(/-medium/)) {
-			height = 30;
-			if (size.match(/btn-/)) {
-				width = 54;
-			} else {
-				width = 30;
-			}
-		} else {
-			height = 20;
-			if (size.match(/btn-/)) {
-				width = 36;
-			} else if (size.match(/-text/)) {
-			  width = 60;
-			} else {
-				width = 20;
-			}
-		}
-		var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + uuid + '?tooltip=true&size=' + size;
-		a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:' + width + 'px; height:' + height + 'px;"></iframe>');
-		var iframe = a.next();
-		iframe.on({
-			mouseenter: function() {
-				clearTimeout(timer);
-				var offset = $(this).offset();
-				$tooltip.css({
-					visibility: "visible",
-					left: offset.left,
-					top: offset.top + height
-				});
-				if ($tooltip.text() == '') refreshTooltip(uuid);
-			},
-			mouseleave: function() {
-				timer = setTimeout(hideTooltip, 500);
-			}
-		});
-		a.remove();
-	});
-	$tooltip = $('<div id="tip-25c-tooltip"></div>');
-	$("body").append($tooltip);
-	$tooltip.on({
-		mouseenter: function() {
-			clearTimeout(timer);			
-		},
-		mouseleave: function() {
-			timer = setTimeout(hideTooltip, 500);
-		}
-	});
+        
+    button.title = a.text();
+    button.user = a.attr("data-user");
+    button.count = 0;
+    
+    buttons[uuid] = button;
+    
+    var size = a.attr("data-size");
+    var height;
+    var width;
+    if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
+      size = "btn-small";
+    }
+    size = size.toLowerCase();
+    if (size.match(/-large/)) {
+      height = 40;
+      if (size.match(/btn-/)) {
+        width = 200;
+      } else {
+        width = 40;
+      }
+    } else if (size.match(/-medium/)) {
+      height = 30;
+      if (size.match(/btn-/)) {
+        width = 54;
+      } else {
+        width = 30;
+      }
+    } else {
+      height = 20;
+      if (size.match(/btn-/)) {
+        width = 36;
+      } else if (size.match(/-text/)) {
+        width = 60;
+      } else {
+        width = 20;
+      }
+    }
+    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + uuid + '?tooltip=true&size=' + size;
+    a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:' + width + 'px; height:' + height + 'px;"></iframe>');
+    var iframe = a.next();
+    iframe.on({
+      mouseenter: function() {
+        clearTimeout(timer);
+        var offset = $(this).offset();
+        $tooltip.css({
+          visibility: "visible",
+          left: offset.left,
+          top: offset.top + height
+        });
+        if ($tooltip.text() == '') refreshTooltip(uuid);
+      },
+      mouseleave: function() {
+        timer = setTimeout(hideTooltip, 500);
+      }
+    });
+    a.remove();
+  });
+  $tooltip = $('<div id="tip-25c-tooltip"></div>');
+  $("body").append($tooltip);
+  $tooltip.on({
+    mouseenter: function() {
+      clearTimeout(timer);      
+    },
+    mouseleave: function() {
+      timer = setTimeout(hideTooltip, 500);
+    }
+  });
 });
