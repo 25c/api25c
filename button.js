@@ -282,7 +282,7 @@ function enqueueClicks(count, user_uuid, button_uuid, referrer_user_uuid, referr
 	var data = {
 		'user_uuid': user_uuid,
 		'button_uuid': button_uuid,
-		'amount', 25,
+		'amount': 25,
 		'referrer_user_uuid': referrer_user_uuid,
 		'referrer': referrer,
 		'user_agent': user_agent,
