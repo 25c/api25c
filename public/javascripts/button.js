@@ -194,7 +194,7 @@ _tip25c_jquery(document).ready(function($) {
     if (size.match(/-large/)) {
       height = 40;
       if (size.match(/btn-/)) {
-        width = 200;
+        width = 72;
       } else {
         width = 40;
       }
