@@ -83,7 +83,7 @@ _tip25c_jquery(document).ready(function($) {
         }
       }
 
-      if (button.title && !(/^\s+$/.test(button.title)) && button.title.indexOf("your cause") == -1) {
+      if (button.title && !(/^\s+$/.test(button.title)) && button.title.indexOf("&nbsp;") == -1) {
         $tooltip.children('#button-title').html(' for&nbsp;' + button.title);
       }
 
@@ -92,8 +92,8 @@ _tip25c_jquery(document).ready(function($) {
         var name = "I just pledged 25c ";
 
         if (!button.user || /^\s+$/.test(button.user)) name += "";
-        else name += "to&nbsp;" + button.user;
-
+        else name += "to " + button.user;
+        
         var description = "Using 25c to pledge one quarter one click.";
 
         var fbShareHref = "https://www.facebook.com/dialog/feed?display=popup"
