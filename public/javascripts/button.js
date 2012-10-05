@@ -215,7 +215,7 @@ _tip25c_jquery(document).ready(function($) {
         width = 20;
       }
     }
-    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + uuid + '?tooltip=true&size=' + size;
+    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/public/html/button.html?uuid=' + uuid + '&tooltip=true&size=' + size;
     a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:' + width + 'px; height:' + height + 'px;"></iframe>');
     var iframe = a.next();
     iframe.on({

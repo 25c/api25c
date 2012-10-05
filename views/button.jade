@@ -308,7 +308,7 @@ html(lang="en")
 
   body
     form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
-      input(type="hidden", name="_csrf", value=req.session._csrf)
+      //- input(type="hidden", name="_csrf", value=req.session._csrf)
       input(type="hidden", name="_referrer", value=referrer)
       #button-wrapper
         #submit-button(class="#{size}")

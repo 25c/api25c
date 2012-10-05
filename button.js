@@ -113,7 +113,7 @@ app.use(express.compress());
 app.use(express.bodyParser());
 app.use(express.cookieParser());
 app.use(express.session({ secret: NODE_COOKIE_SECRET, key: NODE_COOKIE_SESSION_KEY, cookie: { maxAge: 900000 }, store: new RedisStore({ client: redisApiClient })}));
-app.use(express.csrf());
+// app.use(express.csrf());
 app.use(rails.signedCookieParser(RAILS_COOKIE_SECRET));
 app.set('view options', {
   layout: false
@@ -257,7 +257,6 @@ app.get('/button/:button_uuid', function(req, res) {
 	
 	referrer = req.header('referrer');
   
-  // console.log(req.session._csrf);
   req.session.clickUuids = [];
 	
 	res.render("button.jade", { 
