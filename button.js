@@ -85,16 +85,19 @@ if (pgWebUrl == undefined) {
 
 if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
-	var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
+  var BUTTON_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net/buttons";
+	var ASSETS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
 	var DATA25C_URL = "data.25c.com";
 	var DATA25C_PORT = "443";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
-  var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
+  var BUTTON_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net/buttons";
+  var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var DATA25C_URL = "data.plus25c.com";
   var DATA25C_PORT = "443";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
+  var BUTTON_URL_BASE = "http://localhost:5000/public/images/buttons";
   var ASSETS_URL_BASE = "http://localhost:3000/s3";
   var DATA25C_URL = "localhost";
   var DATA25C_PORT = "5400";
@@ -252,29 +255,20 @@ app.get('/button/:button_uuid', function(req, res) {
     }
 	}
 	
-	// LJ: if coming from tip page, use original referrer
-	
-	if (req.header("referrer")) {
-	  if (req.header("referrer").indexOf(WEB_URL_BASE + '/tip/') != -1) {
-	  referrer = url.parse(req.header("referrer"), true).query.referrer;
-    } else {
-      referrer = req.header('referrer');
-    }
-  } else {
-    referrer = "";
-  }
+	referrer = req.header('referrer');
   
   // console.log(req.session._csrf);
   req.session.clickUuids = [];
 	
 	res.render("button.jade", { 
-	  req: req, 
-	  size: size, 
+	  req: req,
+	  size: size,
 	  height: height, 
-	  width: width, 
-	  fontSize: fontSize, 
-	  textPadding: textPadding, 
-	  WEB_URL_BASE: WEB_URL_BASE, 
+	  width: width,
+    // fontSize: fontSize,
+    // textPadding: textPadding, 
+	  WEB_URL_BASE: WEB_URL_BASE,
+	  BUTTON_URL_BASE: BUTTON_URL_BASE,
 	  referrer: referrer 
 	});
 });
