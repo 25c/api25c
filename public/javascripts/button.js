@@ -216,7 +216,18 @@ _tip25c_jquery(document).ready(function($) {
       }
     }
     var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + uuid + '?tooltip=true&size=' + size;
-    a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="width:' + width + 'px; height:' + height + 'px;"></iframe>');
+    a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="display:none;width:' + width + 'px; height:' + height + 'px;"></iframe>');    
+    // var $iframe = $('<iframe />', {
+    //   src: src_url,
+    //   allowtransparency: true,
+    //   frameborder: 0,
+    //   scrolling: false,
+    //   style: {
+    //     display: none,
+    //     width: width,
+    //     height: height
+    //   }
+    // });
     var iframe = a.next();
     iframe.on({
       mouseenter: function() {
@@ -233,7 +244,10 @@ _tip25c_jquery(document).ready(function($) {
         timer = setTimeout(hideTooltip, 500);
       }
     });
-    a.remove();
+    iframe.load(function() {
+      a.remove();
+      $(this).show();
+    });
   });
   $tooltip = $('<div id="tip-25c-tooltip"></div>');
   $("body").append($tooltip);
