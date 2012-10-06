@@ -116,9 +116,9 @@ html(lang="en")
         }
                 
         $("#submit-button").bind('mousedown touchstart', function(event) {
+          $(this).css('background-position', '0 -100%');
           sendCount = 0;
           mouseDown = true;
-          $(this).children("img:first-child").fadeTo(50, 0);
           incrementCount();
           clearTimeout(timer);
           timer = setTimeout(function() {
@@ -129,7 +129,7 @@ html(lang="en")
         });
         
         $(document).bind('mouseup touchend', function() {
-          $('#submit-button').children('img:first-child').fadeTo(50, 1);
+          $('#submit-button').css('background-position', '');
           // send post request with clicks
           if (!testButton && mouseDown && sendCount >= 1) $("form").submit();
           mouseDown = false;
@@ -142,10 +142,6 @@ html(lang="en")
             if (!testButton) $("form").submit();
             $(this).hide();
           }
-        }).mousedown(function() {
-          $(this).css('background-position', '0% 100%');
-        }).mouseup(function() {
-          $("#undo").css('background-position', '0% 0%');
         });
         
         // if a context menu event (ie right click) interrupt click submission
@@ -206,12 +202,7 @@ html(lang="en")
         window.hasTooltip = true;
         
     style(type="text/css")
-      form{ 
-        float: left;
-        position: relative; 
-        height:#{height}px;
-      }
-      body{ 
+      body { 
         margin: 0; 
         padding: 0; 
         font: normal normal 400 12px helvetica, arial, sans-serif;
@@ -221,32 +212,24 @@ html(lang="en")
         -o-user-select: none;
         user-select: none;
       }
+      form {
+        float: left;
+      }
       #button-wrapper {
         position: relative;
-        float: left;
+      }
+      #submit-button, #undo {
+        background-image: url("#{ BUTTON_URL_BASE }/25c-#{ size }.png");
       }
       #submit-button {
         margin: 0; 
         padding: 0;
-        border: 0px none transparent; 
-      }
-      .button-text {
-        position: absolute; 
-        left: 25px; 
-        top: 4px;
-      }
-      img{
+        border: 0px none transparent;
         cursor: pointer;
-        padding: 0;
-        margin: 0;
+        width: #{ width }px;
+        height: #{ height }px;
       }
-      img.rot{
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: -10;
-      }
-      div#undo{
+      #undo {
         display: none;
         cursor: pointer;
         position: absolute;
@@ -254,12 +237,28 @@ html(lang="en")
         right: 0;
         z-index: 10;
       }
-      div#counter-box{ 
-        position: absolute;
-        left: #{width + 5}px;
-        top: #{height / 2}px;
-        margin: -10px 0 -1px -2px;
-        margin-left: -2px;
+      .btn-large > #undo, .icon-large > #undo {
+        background-position: 0 12px;
+        width: 12px;
+        height: 12px;
+      }
+      .btn-medium > #undo, .icon-medium > #undo {
+        background-position: 0 10px;
+        width: 10px;
+        height: 10px;
+      }
+      .btn-small > #undo, .icon-small > #undo {
+        background-position: 0 8px;
+        width: 8px;
+        height: 8px;
+      }
+      div#counter-box { 
+        display: none;
+        position: relative;
+        float: left;
+        top: #{ height / 2 }px;
+        margin: -10px 0 0 2px;
+        height: 14px;
         text-align: left;
         background-color: #fff;
         border: 1px solid #aaa;
@@ -311,28 +310,12 @@ html(lang="en")
     form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
       input(type="hidden", name="_csrf", value=req.session._csrf)
       input(type="hidden", name="_referrer", value=referrer)
-      #button-wrapper
+      #button-wrapper(class="#{size}")
         #submit-button
-          img(src="/public/images/25c-#{size}.png", alt="Pledge 25c!")
-          img.rot(src="/public/images/25c-rot-#{size}.png")
-        if size.indexOf('large') != -1
-          div#undo(style="width:12px;height:12px;background-image:url('/public/images/undo-icon-large.png');")
-        else if size.indexOf('medium') != -1
-          div#undo(style="width:10px;height:10px;background-image:url('/public/images/undo-icon-medium.png');")
-        else
-          div#undo(style="width:8x;height:8px;background-image:url('/public/images/undo-icon-small.png');")
-    if size == 'icon-text'
-      .button-text 
-        span 25c 
-        span#counter-box(style="display:none;") 
-          span#count 0
-          //- span.if-input(style="display:none;") $
-          //- input#count-input(type="text")
-          //- img#check-icon(src="https://s3.amazonaws.com/assets.25c.com/style/check-icon.png")
-    else
-      #counter-box(style="display:none;")
-        span#count 0
-        //- span.if-input(style="display:none;") $
-        //- input#count-input(type="text")
-        //- img#check-icon(src="https://s3.amazonaws.com/assets.25c.com/style/check-icon.png")
+        div#undo
+    #counter-box
+      span#count 0
+      //- span.if-input(style="display:none;") $
+      //- input#count-input(type="text")
+      //- img#check-icon(src="https://s3.amazonaws.com/assets.25c.com/style/check-icon.png")
 
