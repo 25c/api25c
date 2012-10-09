@@ -91,6 +91,7 @@ html(lang="en")
             $('.if-input').hide();
             totalAmount = parseInt(parseFloat($('#count-input').val()) * 100);
             updateCount(true, true);
+            if (!testButton) $("form").submit();
           }
         });
         
