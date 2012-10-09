@@ -9,8 +9,8 @@ html(lang="en")
       (function($){var g,d,j=1,a,b=this,f=!1,h="postMessage",e="addEventListener",c,i=b[h]&&!$.browser.opera;$[h]=function(k,l,m){if(!l){return}k=typeof k==="string"?k:$.param(k);m=m||parent;if(i){m[h](k,l.replace(/([^:]+:\/\/[^\/]+).*/,"$1"))}else{if(l){m.location=l.replace(/#.*$/,"")+"#"+(+new Date)+(j++)+"&"+k}}};$.receiveMessage=c=function(l,m,k){if(i){if(l){a&&c();a=function(n){if((typeof m==="string"&&n.origin!==m)||($.isFunction(m)&&m(n.origin)===f)){return f}l(n)}}if(b[e]){b[l?e:"removeEventListener"]("message",a,f)}else{b[l?"attachEvent":"detachEvent"]("onmessage",a)}}else{g&&clearInterval(g);g=null;if(l){k=typeof m==="number"?m:typeof k==="number"?k:100;g=setInterval(function(){var o=document.location.hash,n=/^#?\d+&/;if(o!==d&&n.test(o)){d=o;l({data:o.replace(n,"")})}},k)}}}})(jQuery);
       
       var hasTooltip = false;
-      var totalCount = 0;
-      var maxCount = 9999;
+      var totalAmount = 0;
+      var maxAmount = 9999;
       
       var testButton = document.referrer.indexOf("25c.com/home/get_button") != -1
         || document.referrer.indexOf("localhost:3000/home/get_button") != -1 
@@ -19,26 +19,24 @@ html(lang="en")
           
       $(function() {
         
-        var sendCount = 0;
         var mouseDown = false;
         var timer = null;
         var interval = 400;
         
         function updateCount(isInput, showZero) {
-          if (totalCount > maxCount) totalCount = maxCount;
-          if (totalCount > 0) $('#undo').show();
-          if (totalCount > 0 || showZero) $('#count, #counter-box').show();
+          if (totalAmount > maxAmount) totalAmount = maxAmount;
+          if (totalAmount > 0) $('#undo').show();
+          if (totalAmount > 0 || showZero) $('#count, #counter-box').show();
           if (isInput) $('#check-icon').show();
           else $('#check-icon').hide();
-          $('#count').text('$' + (totalCount / 100).toFixed(2));
+          $('#count').text('$' + (totalAmount / 100).toFixed(2));
         }
         
         function incrementCount() {
           $('#undo').show();
           $('#check-icon').hide();
-          if (totalCount + 25 < maxCount) {
-            sendCount += 25;
-            totalCount += 25;
+          if (totalAmount + 25 < maxAmount) {
+            totalAmount += 25;
             if (hasTooltip) {
               $.postMessage(
                 '#{req.params.button_uuid},increment',
@@ -54,8 +52,7 @@ html(lang="en")
           $('#undo').hide();
           $('#check-icon').hide();
           clearTimeout(timer);
-          totalCount = 0;
-          sendCount = 0;
+          totalAmount = 0;
           if (hasTooltip) {
             $.postMessage(
               '#{req.params.button_uuid},clear',
@@ -69,8 +66,7 @@ html(lang="en")
         function resetCount() {
           $('#undo').hide();
           $('#check-icon').hide();
-          totalCount = 0;
-          sendCount = 0;
+          totalAmount = 0;
           if (hasTooltip) {
             $.postMessage(
               '#{req.params.button_uuid},reset',
@@ -86,14 +82,14 @@ html(lang="en")
           $(this).hide();
           $('#count-input').show();
           $('.if-input').show();
-          $('#count-input').val((totalCount / 100).toFixed(2));
+          $('#count-input').val((totalAmount / 100).toFixed(2));
         });
         
         $("#count-input").bind('keypress', function(event) {
           if (event.which == 13 ) {
             $(this).hide();
             $('.if-input').hide();
-            totalCount = parseInt(parseFloat($('#count-input').val()) * 100);
+            totalAmount = parseInt(parseFloat($('#count-input').val()) * 100);
             updateCount(true, true);
           }
         });
@@ -105,7 +101,6 @@ html(lang="en")
             timer = setTimeout(function() {
               if (mouseDown) {
                 if (interval > 100) interval = interval - 20;
-                // interval = 400 / (sendCount - 1) + 100;
                 clickCounter();
               }
             }, interval);
@@ -117,7 +112,6 @@ html(lang="en")
                 
         $("#submit-button").bind('mousedown touchstart', function(event) {
           $(this).css('background-position', '0 -100%');
-          sendCount = 0;
           mouseDown = true;
           incrementCount();
           clearTimeout(timer);
@@ -131,14 +125,13 @@ html(lang="en")
         $(document).bind('mouseup touchend', function() {
           $('#submit-button').css('background-position', '');
           // send post request with clicks
-          if (!testButton && mouseDown && sendCount >= 1) $("form").submit();
+          if (!testButton && mouseDown && totalAmount >= 1) $("form").submit();
           mouseDown = false;
         });
         
         $("#undo").click(function() {
-          if (totalCount > 0) {
+          if (totalAmount > 0) {
             zeroCount();
-            sendCount = -1;
             if (!testButton) $("form").submit();
             $(this).hide();
           }
@@ -150,9 +143,8 @@ html(lang="en")
             clearTimeout(timer);
             mouseDown = false;
             $('#submit-button').children('img:first-child').stop().fadeTo(0, 1);
-            totalCount = totalCount - sendCount;
-            sendCount = 0;
-            if (totalCount == 0) $('#undo').hide();
+            totalAmount = totalAmount - 25;
+            if (totalAmount == 0) $('#undo').hide();
             $.postMessage(
               '#{req.params.button_uuid},decrement',
               "#{req.header('Referer')}"
@@ -163,7 +155,7 @@ html(lang="en")
         $("form").submit(function() {
           var form = $(this);
           var data = form.serialize();
-          data += '&count=' + sendCount;
+          data += '&amount=' + totalAmount;
           $.ajax({
             type: "POST",
             url: form.attr("action"),
@@ -187,7 +179,7 @@ html(lang="en")
                 var top = (screen.height / 2) - (height / 2);
                 window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
               }
-              // if (totalCount > 0) $('#undo').show();
+              // if (totalAmount > 0) $('#undo').show();
               // else $('#undo').hide();
             },
             dataType: "json",
@@ -199,8 +191,7 @@ html(lang="en")
         $.receiveMessage(function(e) {
           var receivedCount = parseInt(e.data);
           if (receivedCount && receivedCount > 0) {
-            sendCount = receivedCount;
-            totalCount += sendCount;
+            totalAmount = receivedCount;
             $("form").submit();
           }
         });
