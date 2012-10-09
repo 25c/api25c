@@ -209,49 +209,36 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 });
 
 app.get('/button/:button_uuid', function(req, res) {
-  // Duane: once the button page is a static html document public/html/button.html
-  // this handler should be removed.
 	var size = req.param("size");
 	var height;
 	var width;
 	var fontSize;
-	if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
+	if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|tip-large|tip-medium|tip-small)$/i) == null)) {
 		size = "btn-small";
 	}
 	size = size.toLowerCase();
 	if (size.match(/-large/)) {
 		height = 40;
-		fontSize = 13;
-		textPadding = 0;
-		if (size.match(/btn-/)) {
-		  width = 72;
-		  textPadding = 3;
+		if (size.match(/icon-/)) {
+		  width = 40;
 	  } else {
-	    width = 40;
-	    textPadding = 0;
+	    width = 72;
     }
 	} else if (size.match(/-medium/)) {
 		height = 30;
-		fontSize = 13;
-		if (size.match(/btn-/)) {
-	    width = 54;
-		  textPadding = 2;
-	  } else {
+		if (size.match(/icon-/)) {
 	    width = 30;
-	    textPadding = 0;
+	  } else {
+	    width = 54;
     }
 	} else {	  
 		height = 20;
-		fontSize = 13;
-		if (size.match(/btn-/)) {
-		  width = 36;
-		  textPadding = 1;
+		if (size.match(/icon-/)) {
+		  width = 20;
 	  } else if (size.match(/-text/)) {
 	      width = 60;
-	      textPadding = 0;
 	  } else {
-	    width = 20;
-	    textPadding = 1;
+	    width = 36;
     }
 	}
 	

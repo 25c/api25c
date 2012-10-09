@@ -81,22 +81,22 @@ html(lang="en")
           }
         }
         
-        // $('#count').click(function() {
-        //   $('#check-icon').hide();
-        //   $(this).hide();
-        //   $('#count-input').show();
-        //   $('.if-input').show();
-        //   $('#count-input').val((totalCount / 100).toFixed(2));
-        // });
-        // 
-        // $("#count-input").bind('keypress', function(event) {
-        //   if (event.which == 13 ) {
-        //     $(this).hide();
-        //     $('.if-input').hide();
-        //     totalCount = parseInt(parseFloat($('#count-input').val()) * 100);
-        //     updateCount(true, true);
-        //   }
-        // });
+        $('#count').click(function() {
+          $('#check-icon').hide();
+          $(this).hide();
+          $('#count-input').show();
+          $('.if-input').show();
+          $('#count-input').val((totalCount / 100).toFixed(2));
+        });
+        
+        $("#count-input").bind('keypress', function(event) {
+          if (event.which == 13 ) {
+            $(this).hide();
+            $('.if-input').hide();
+            totalCount = parseInt(parseFloat($('#count-input').val()) * 100);
+            updateCount(true, true);
+          }
+        });
         
         function clickCounter() {
           if (mouseDown) {
@@ -163,7 +163,7 @@ html(lang="en")
         $("form").submit(function() {
           var form = $(this);
           var data = form.serialize();
-          data += '&count=' + Math.floor(sendCount / 25);
+          data += '&count=' + sendCount;
           $.ajax({
             type: "POST",
             url: form.attr("action"),
@@ -195,6 +195,17 @@ html(lang="en")
           });
           return false;
         });
+        
+        $.receiveMessage(function(e) {
+          var receivedCount = parseInt(e.data);
+          if (receivedCount && receivedCount > 0) {
+            sendCount = receivedCount;
+            totalCount += sendCount;
+            $("form").submit();
+          }
+        });
+        // , "#{req.header('Referer')}");
+        
       });
     
     if req.param("tooltip") == "true"
@@ -267,12 +278,12 @@ html(lang="en")
         padding: 3px 1px 1px 1px;
         z-index: -20;
       }
-      //- span#count {
-      //-   cursor: pointer;
-      //- }
-      //- span#count:hover {
-      //-   color: #08c;
-      //- }
+      span#count {
+        cursor: pointer;
+      }
+      span#count:hover {
+        color: #08c;
+      }
       input#count-input {
         font-size: 11px;
         display:none;
@@ -315,7 +326,7 @@ html(lang="en")
         div#undo
     #counter-box
       span#count 0
-      //- span.if-input(style="display:none;") $
-      //- input#count-input(type="text")
-      //- img#check-icon(src="https://s3.amazonaws.com/assets.25c.com/style/check-icon.png")
+      span.if-input(style="display:none;") $
+      input#count-input(type="text")
+      img#check-icon(src="https://s3.amazonaws.com/assets.25c.com/style/check-icon.png")
 

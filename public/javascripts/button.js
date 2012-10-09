@@ -116,22 +116,27 @@ _tip25c_jquery(document).ready(function($) {
         });
       }
       
-      // $("#count").click(function() {
-      //          $(this).hide();
-      //          $('#check-icon').hide();
-      //          $('#count-input').show();
-      //          $('.if-input').show();
-      //          $('#count-input').val((button.count / 100).toFixed(2));
-      //      });
-      //
-      // $("#count-input").bind('keypress', function(event) {
-      //   if (event.which == 13) {
-      //     $('#check-icon').show();
-      //      button.count = parseInt(parseFloat($('#count-input').val()) * 100);
-      //      if (button.count > maxCount) button.count = maxCount;
-      //      setTooltipCount(button.count, true);
-      //   }
-      // });
+      $("#count").click(function() {
+        $(this).hide();
+        $('#check-icon').hide();
+        $('#count-input').show();
+        $('.if-input').show();
+        $('#count-input').val((button.count / 100).toFixed(2));
+      });
+      
+      $("#count-input").bind('keypress', function(event) {
+        if (event.which == 13) {
+          $('#check-icon').show();
+           button.count = parseInt(parseFloat($('#count-input').val()) * 100);
+           if (button.count > maxCount) button.count = maxCount;
+           setTooltipCount(button.count, true);
+           $.postMessage(
+             String(button.count),
+             (src.indexOf("localhost") > 0 ? "http:" : "https:") + src,
+             window.frames[uuid]
+           );
+        }
+      });
     });
   }
   
@@ -187,49 +192,47 @@ _tip25c_jquery(document).ready(function($) {
     var size = a.attr("data-size");
     var height;
     var width;
-    if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|round-large|round-medium|round-small|icon-text)$/i) == null)) {
+    if ((size == undefined) || (size == null) || (size.match(/^(btn-large|btn-medium|btn-small|icon-large|icon-medium|icon-small|tip-large|tip-medium|tip-small)$/i) == null)) {
       size = "btn-small";
     }
     size = size.toLowerCase();
     if (size.match(/-large/)) {
       height = 40;
-      if (size.match(/btn-/)) {
-        width = 72;
-      } else {
+      if (size.match(/icon-/)) {
         width = 40;
+      } else {
+        width = 72;
       }
     } else if (size.match(/-medium/)) {
       height = 30;
-      if (size.match(/btn-/)) {
-        width = 54;
-      } else {
+      if (size.match(/icon-/)) {
         width = 30;
+      } else {
+        width = 54;
       }
     } else {
       height = 20;
-      if (size.match(/btn-/)) {
-        width = 36;
-      } else if (size.match(/-text/)) {
-        width = 60;
-      } else {
+      if (size.match(/icon-/)) {
         width = 20;
+      } else {
+        width = 36;
       }
     }
     var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/button/' + uuid + '?tooltip=true&size=' + size;
-    a.after('<iframe src="' + src_url + '" allowtransparency="true" frameborder="0" scrolling="no" style="display:none;width:' + width + 'px; height:' + height + 'px;"></iframe>');    
-    // var $iframe = $('<iframe />', {
-    //   src: src_url,
-    //   allowtransparency: true,
-    //   frameborder: 0,
-    //   scrolling: false,
-    //   style: {
-    //     display: none,
-    //     width: width,
-    //     height: height
-    //   }
-    // });
-    var iframe = a.next();
-    iframe.on({
+    var $iframe = $('<iframe />', {
+      name: uuid,
+      src: src_url,
+      allowtransparency: true,
+      frameborder: 0,
+      scrolling: false,
+      css: {
+        display: 'none',
+        width: width,
+        height: height
+      }
+    });
+    a.after($iframe);
+    $iframe.on({
       mouseenter: function() {
         clearTimeout(timer);
         var offset = $(this).offset();
@@ -244,7 +247,7 @@ _tip25c_jquery(document).ready(function($) {
         timer = setTimeout(hideTooltip, 500);
       }
     });
-    iframe.load(function() {
+    $iframe.load(function() {
       a.remove();
       $(this).show();
     });
