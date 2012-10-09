@@ -267,7 +267,7 @@ function enqueueClick(amount, click_uuid, user_uuid, button_uuid, referrer_user_
 	  'uuid': click_uuid,
 		'user_uuid': user_uuid,
 		'button_uuid': button_uuid,
-		'amount': amount ? amount : 25,
+		'amount': amount,
 		'referrer_user_uuid': referrer_user_uuid,
 		'referrer': referrer,
 		'user_agent': user_agent,
