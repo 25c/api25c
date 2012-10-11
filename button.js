@@ -85,20 +85,20 @@ if (pgWebUrl == undefined) {
 
 if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
-  var BUTTON_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net/buttons";
 	var ASSETS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
+	var USERS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
 	var DATA25C_URL = "data.25c.com";
 	var DATA25C_PORT = "443";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
-  var BUTTON_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net/buttons";
   var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
+  var USERS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var DATA25C_URL = "data.plus25c.com";
   var DATA25C_PORT = "443";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
-  var BUTTON_URL_BASE = "http://localhost:5000/public/images/buttons";
-  var ASSETS_URL_BASE = "http://localhost:3000/s3";
+  var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
+  var USERS_URL_BASE = "http://localhost:3000/s3";
   var DATA25C_URL = "localhost";
   var DATA25C_PORT = "5400";
 }
@@ -136,10 +136,12 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 	if (req.signedRailsCookies['_25c_session']) {
 		redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
 			if (err != null) {
+			  console.log("failed to retrieve cookie information from redis.");
 				renderTooltip(res, { user: null });
 			} else {
 				pg.connect(pgWebUrl, function(err, pgWebClient) {
 					if (err != null) {
+					  console.log("failed to connect to postgres database.");
 						renderTooltip(res, { user: null });
 					} else {
 						pgWebClient.query("SELECT * FROM users WHERE LOWER(uuid)=LOWER($1)", [ user_uuid ], function(err, result) {
@@ -173,8 +175,8 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 								user.displayName = displayName;
 								var pictureUrl = "";
 								if (user.picture_file_name && user.picture_file_name != "") {
-                  // pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
-                  pictureUrl = ASSETS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
+                  // pictureUrl = USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb" + user.picture_file_name.substr(user.picture_file_name.lastIndexOf("."));
+                  pictureUrl = USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
 								}
 								user.pictureUrl = pictureUrl;
 								var nicknameUrl = "";
@@ -249,14 +251,27 @@ app.get('/button/:button_uuid', function(req, res) {
 	
 	res.render("button.jade", { 
 	  req: req,
+	  referrer: referrer,
 	  size: size,
 	  height: height, 
 	  width: width,
     // fontSize: fontSize,
-    // textPadding: textPadding, 
+    // textPadding: textPadding,
+    WEB_URL_BASE: WEB_URL_BASE,
+	  ASSETS_URL_BASE: ASSETS_URL_BASE,
+	  USERS_URL_BASE: USERS_URL_BASE
+	});
+});
+
+app.get('/belt/:button_uuid', function(req, res) {
+	referrer = req.header('referrer');
+  req.session.clickUuids = {};
+	res.render("belt.jade", { 
+	  req: req,
+	  referrer: referrer,
 	  WEB_URL_BASE: WEB_URL_BASE,
-	  BUTTON_URL_BASE: BUTTON_URL_BASE,
-	  referrer: referrer 
+	  ASSETS_URL_BASE: ASSETS_URL_BASE,
+	  USERS_URL_BASE: USERS_URL_BASE
 	});
 });
 
