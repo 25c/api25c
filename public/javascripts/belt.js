@@ -189,8 +189,8 @@ _tip25c_jquery(document).ready(function($) {
       scrolling: false,
       css: {
         display: 'none',
-        width: 600,
-        height: 100
+        width: 400,
+        height: 85
       }
     });
     a.after($iframe);

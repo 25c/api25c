@@ -19,9 +19,13 @@ html(lang="en")
           
       $(function() {
         
+        // VARIABLES
+        
         var mouseDown = false;
         var timer = null;
         var interval = 400;
+        
+        // FUNCTIONS
         
         function updateCount(isInput, showZero) {
           if (totalAmount > maxAmount) totalAmount = maxAmount;
@@ -76,6 +80,8 @@ html(lang="en")
             updateCount();
           }
         }
+        
+        // EVENT HANDLERS
         
         $('#count').click(function() {
           $('#check-icon').hide();
@@ -189,6 +195,8 @@ html(lang="en")
           return false;
         });
         
+        // CROSS DOMAIN MESSAGING
+        
         $.receiveMessage(function(e) {
           var receivedCount = parseInt(e.data);
           if (receivedCount && receivedCount > 0) {
@@ -200,9 +208,19 @@ html(lang="en")
         
         
         // BELT CODE
+        
         window.hasTooltip = true;
-        
-        
+
+        $.ajax({
+          type: "POST",
+          url: "/belt/#{req.params.button_uuid}",
+          data: "",
+          success: function(data) {
+            alert(data);
+          },
+          dataType: "json",
+          async: false
+        });
         
       });
     
@@ -225,8 +243,9 @@ html(lang="en")
         padding: 5px;
         border: 1px solid #ccc;
         border-radius: 5px;
-        width: 578px;
-        height: 78px;
+        background-color: #f6f6f6;
+        width: 378px;
+        height: 63px;
       }
       #button-container{
         float: left;
@@ -274,10 +293,11 @@ html(lang="en")
       .user-image-container {
         float: left;
         display:block;
-        height: 40px;
+        height: 37px;
         width: 40px;
         margin: 0 10px 0 0;
         padding: 3px 0 0 0;
+        //- border-radius: 5px;
         background-repeat: no-repeat;
         background-size: 40px 40px;
         text-align: center;
@@ -288,16 +308,17 @@ html(lang="en")
       #call-arrow {
         height: 12px;
         width: 40px;
-        margin: 20px 10px 0 0;
+        margin: 17px 10px 0 0;
         background-repeat: no-repeat;
         background-image: url("#{ ASSETS_URL_BASE }/style/arrow.png");
         float: left;
       }
       #call-message {
         float: left;
-        //- width: 80px;
-        margin: 10px 0 0 0;
-        font-size: 22px;
+        width: 180px;
+        margin: 0px 0 0 0;
+        font-size: 18px;
+        line-height: 1em;
       }
       
       
@@ -323,11 +344,11 @@ html(lang="en")
             #submit-button
             #undo
       #users-container 
-        #users-message Top Contributors (Give the most tips to appear here!)
+        #users-message Top Contributors
         .user-image-container(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
           div YOUR FACE HERE
         #call-arrow 
-        #call-message Give a tip to appear here!
+        #call-message Give a tip and appear as a top contributor!
       
       
       

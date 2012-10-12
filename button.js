@@ -83,6 +83,11 @@ if (pgWebUrl == undefined) {
 	pgWebUrl = "tcp://localhost/web25c_development";
 }
 
+var pgDataUrl = process.env.DATABASE_DATA_URL;
+if (pgDataUrl == undefined) {
+	pgDataUrl = "tcp://localhost/data25c_development";
+}
+
 if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
 	var ASSETS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
@@ -263,43 +268,6 @@ app.get('/button/:button_uuid', function(req, res) {
 	});
 });
 
-app.get('/belt/:button_uuid', function(req, res) {
-	referrer = req.header('referrer');
-  req.session.clickUuids = {};
-	res.render("belt.jade", { 
-	  req: req,
-	  referrer: referrer,
-	  WEB_URL_BASE: WEB_URL_BASE,
-	  ASSETS_URL_BASE: ASSETS_URL_BASE,
-	  USERS_URL_BASE: USERS_URL_BASE
-	});
-});
-
-function enqueueClick(amount, click_uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
-  click_uuid = click_uuid || uuid.v1();
-  amount = parseInt(amount);
-	var data = {
-	  'uuid': click_uuid,
-		'user_uuid': user_uuid,
-		'button_uuid': button_uuid,
-		'amount': amount,
-		'referrer_user_uuid': referrer_user_uuid,
-		'referrer': referrer,
-		'user_agent': user_agent,
-		'ip_address': ip_address,
-		'created_at': new Date()
-	};
-  redisDataClient.lpush(QUEUE_KEY, JSON.stringify(data), function(err) {
-    if (err == null) {
-			res.json({});
-		} else {
-			airbrake.notify(err);
-			res.json({ error: true });
-		}
-  });
-  return click_uuid;
-}
-
 app.post('/button/:button_uuid', function(req, res) {
 
   //// get number of clicks to send
@@ -384,6 +352,127 @@ app.post('/button/:button_uuid', function(req, res) {
 		res.json({ redirect: true });
 	}
 });
+
+app.get('/belt/:button_uuid', function(req, res) {
+	referrer = req.header('referrer');
+  req.session.clickUuids = {};
+	res.render("belt.jade", { 
+	  req: req,
+	  referrer: referrer,
+	  WEB_URL_BASE: WEB_URL_BASE,
+	  ASSETS_URL_BASE: ASSETS_URL_BASE,
+	  USERS_URL_BASE: USERS_URL_BASE
+	});
+});
+
+app.post('/belt/:button_uuid', function(req, res) {
+  button_uuid = req.params.button_uuid;
+  pg.connect(pgWebUrl, function(err, pgWebClient) {
+		if (err != null) {
+			console.log("Could not connect to web postgres: " + err);
+			airbrake.notify(err);
+			callback(err);
+		} else {
+      pgWebClient.query("SELECT button_id FROM buttons WHERE uuid = LOWER($1)", [ uuid ], function(err, result) {
+    	  if (err != null) {
+    	    console.log("Getting user email error: " + err);
+        } else if (result.rows[0] == undefined) {
+          console.log("No users found.");
+        } else if (!result.rows[0].email) {
+          console.log("User does not have an email address!");
+        } else {
+          userEmail = result.rows[0].email;
+          userFirstName = result.rows[0].first_name;
+          userNickname = result.rows[0].nickname;
+          toName = userFirstName || userNickname || userEmail;
+    		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
+
+    		  var pictureUrl = "";
+					if (user.picture_file_name && user.picture_file_name != "") {
+            pictureUrl = USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
+					}    		  
+        }
+      });
+    }
+  });
+  
+  pg.connect(pgDataUrl, function(err, pgDataClient) {
+		if (err != null) {
+			console.log("Could not connect to data postgres: " + err);
+			airbrake.notify(err);
+			callback(err);
+		} else {
+      pgDataClient.query(
+        "SELECT user_id, SUM(CASE WHEN clicks.state=1 THEN clicks.amount ELSE null END) AS unfunded, \
+        SUM(CASE when clicks.state BETWEEN 2 AND 4 THEN clicks.amount ELSE null END) AS funded \
+        FROM clicks WHERE state BETWEEN 1 AND 4 AND click.button_id=$1 GROUP BY user_id;", [ button_id ], function(err, result) {
+    	  if (err != null) {
+    	    console.log("Getting click count error: " + err);
+        } else if (result.rows[0] == undefined) {
+          console.log("No clicks found.");
+        } else {
+          console.log(result);
+          console.log(result.rows);
+        }
+      });
+    }
+  });
+  
+  pg.connect(pgWebUrl, function(err, pgWebClient) {
+		if (err != null) {
+			console.log("Could not connect to web postgres: " + err);
+			airbrake.notify(err);
+			callback(err);
+		} else {
+      pgWebClient.query("SELECT first_name, last_name, nickname FROM users WHERE uuid = LOWER($1)", [ uuid ], function(err, result) {
+    	  if (err != null) {
+    	    console.log("Getting user email error: " + err);
+        } else if (result.rows[0] == undefined) {
+          console.log("No users found.");
+        } else if (!result.rows[0].email) {
+          console.log("User does not have an email address!");
+        } else {
+          userEmail = result.rows[0].email;
+          userFirstName = result.rows[0].first_name;
+          userNickname = result.rows[0].nickname;
+          toName = userFirstName || userNickname || userEmail;
+    		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
+
+    		  var pictureUrl = "";
+					if (user.picture_file_name && user.picture_file_name != "") {
+            pictureUrl = USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
+					}    		  
+        }
+      });
+    }
+  });
+  
+});
+
+function enqueueClick(amount, click_uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
+  click_uuid = click_uuid || uuid.v1();
+  amount = parseInt(amount);
+	var data = {
+	  'uuid': click_uuid,
+		'user_uuid': user_uuid,
+		'button_uuid': button_uuid,
+		'amount': amount,
+		'referrer_user_uuid': referrer_user_uuid,
+		'referrer': referrer,
+		'user_agent': user_agent,
+		'ip_address': ip_address,
+		'created_at': new Date()
+	};
+  redisDataClient.lpush(QUEUE_KEY, JSON.stringify(data), function(err) {
+    if (err == null) {
+			res.json({});
+		} else {
+			airbrake.notify(err);
+			res.json({ error: true });
+		}
+  });
+  return click_uuid;
+}
 
 function sendEmail(to, filename, args) {
   fs.readFile(filename, "utf8", function(err, data) {
