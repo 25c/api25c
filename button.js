@@ -90,18 +90,21 @@ if (pgDataUrl == undefined) {
 
 if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
+  var TIP_URL_BASE = "https://tip.25c.com";
 	var ASSETS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
 	var USERS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
 	var DATA25C_URL = "data.25c.com";
 	var DATA25C_PORT = "443";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
+  var TIP_URL_BASE = "https://tip.plus25c.com";
   var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var USERS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var DATA25C_URL = "data.plus25c.com";
   var DATA25C_PORT = "443";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
+  var TIP_URL_BASE = "http://localhost:3000";
   var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var USERS_URL_BASE = "http://localhost:3000/s3";
   var DATA25C_URL = "localhost";
@@ -186,7 +189,7 @@ app.get('/tooltip/:button_uuid', function(req, res) {
 								user.pictureUrl = pictureUrl;
 								var nicknameUrl = "";
 								if (user.nickname && user.nickname != "") {
-									nicknameUrl = WEB_URL_BASE + "/" + user.nickname;
+									nicknameUrl = TIP_URL_BASE + "/" + user.nickname;
 								}
 								user.nicknameUrl = nicknameUrl;
 							  //// get shortened referrer url
@@ -353,10 +356,10 @@ app.post('/button/:button_uuid', function(req, res) {
 	}
 });
 
-app.get('/belt/:button_uuid', function(req, res) {
+app.get('/belt/:button_uuid', function(req, res) {  
 	referrer = req.header('referrer');
   req.session.clickUuids = {};
-	res.render("belt.jade", { 
+	res.render("belt.jade", {
 	  req: req,
 	  referrer: referrer,
 	  WEB_URL_BASE: WEB_URL_BASE,
@@ -366,87 +369,140 @@ app.get('/belt/:button_uuid', function(req, res) {
 });
 
 app.post('/belt/:button_uuid', function(req, res) {
-  button_uuid = req.params.button_uuid;
-  pg.connect(pgWebUrl, function(err, pgWebClient) {
-		if (err != null) {
-			console.log("Could not connect to web postgres: " + err);
-			airbrake.notify(err);
-			callback(err);
-		} else {
-      pgWebClient.query("SELECT button_id FROM buttons WHERE uuid = LOWER($1)", [ uuid ], function(err, result) {
-    	  if (err != null) {
-    	    console.log("Getting user email error: " + err);
-        } else if (result.rows[0] == undefined) {
-          console.log("No users found.");
-        } else if (!result.rows[0].email) {
-          console.log("User does not have an email address!");
-        } else {
-          userEmail = result.rows[0].email;
-          userFirstName = result.rows[0].first_name;
-          userNickname = result.rows[0].nickname;
-          toName = userFirstName || userNickname || userEmail;
-    		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
-
-    		  var pictureUrl = "";
-					if (user.picture_file_name && user.picture_file_name != "") {
-            pictureUrl = USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
-					}    		  
-        }
-      });
-    }
-  });
+  var button_uuid = req.params.button_uuid;
+  var user_uuid = "";
   
-  pg.connect(pgDataUrl, function(err, pgDataClient) {
-		if (err != null) {
-			console.log("Could not connect to data postgres: " + err);
-			airbrake.notify(err);
-			callback(err);
-		} else {
-      pgDataClient.query(
-        "SELECT user_id, SUM(CASE WHEN clicks.state=1 THEN clicks.amount ELSE null END) AS unfunded, \
-        SUM(CASE when clicks.state BETWEEN 2 AND 4 THEN clicks.amount ELSE null END) AS funded \
-        FROM clicks WHERE state BETWEEN 1 AND 4 AND click.button_id=$1 GROUP BY user_id;", [ button_id ], function(err, result) {
-    	  if (err != null) {
-    	    console.log("Getting click count error: " + err);
-        } else if (result.rows[0] == undefined) {
-          console.log("No clicks found.");
-        } else {
-          console.log(result);
-          console.log(result.rows);
-        }
-      });
-    }
-  });
+  if (req.signedRailsCookies['_25c_session']) {
+    redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, uuid) {
+      if (err != null) {
+        console.log("POST error fetching session user_uuid: " + err);
+        airbrake.notify(err);
+        res.json({ error: true });
+      } else {
+        user_uuid = uuid;
+        fetchUserInfo();
+      }
+    });
+  } else {
+    fetchUserInfo();
+  }
   
-  pg.connect(pgWebUrl, function(err, pgWebClient) {
-		if (err != null) {
-			console.log("Could not connect to web postgres: " + err);
-			airbrake.notify(err);
-			callback(err);
-		} else {
-      pgWebClient.query("SELECT first_name, last_name, nickname FROM users WHERE uuid = LOWER($1)", [ uuid ], function(err, result) {
-    	  if (err != null) {
-    	    console.log("Getting user email error: " + err);
-        } else if (result.rows[0] == undefined) {
-          console.log("No users found.");
-        } else if (!result.rows[0].email) {
-          console.log("User does not have an email address!");
-        } else {
-          userEmail = result.rows[0].email;
-          userFirstName = result.rows[0].first_name;
-          userNickname = result.rows[0].nickname;
-          toName = userFirstName || userNickname || userEmail;
-    		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
-
-    		  var pictureUrl = "";
-					if (user.picture_file_name && user.picture_file_name != "") {
-            pictureUrl = USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg";
-					}    		  
-        }
-      });
-    }
-  });
-  
+  function fetchUserInfo() {
+    pg.connect(pgWebUrl, function(err, pgWebClient) {
+		  if (err != null) {
+  			console.log("Could not connect to web postgres: " + err);
+  			airbrake.notify(err);
+  			res.json({ error: true });
+  		} else {
+        pgWebClient.query("SELECT id FROM buttons WHERE uuid = LOWER($1)", [ button_uuid ], function(err, result) {
+      	  if (err != null) {
+      	    console.log("Getting button id error: " + err);
+      	    airbrake.notify(err);
+      			res.json({ error: true });
+          } else if (result.rows[0] == undefined) {
+            console.log("No buttons found.");
+      	    airbrake.notify("No buttons found for fan belt.");
+      			res.json({ error: true });
+          } else {
+            var button_id = result.rows[0].id;
+            pg.connect(pgDataUrl, function(err, pgDataClient) {
+              if (err != null) {
+               console.log("Could not connect to data postgres: " + err);
+               airbrake.notify(err);
+               res.json({ error: true });
+             } else {
+                pgDataClient.query(
+                  "SELECT user_id, SUM(CASE WHEN clicks.state=1 THEN clicks.amount ELSE null END) AS unfunded, \
+                  SUM(CASE when clicks.state BETWEEN 2 AND 4 THEN clicks.amount ELSE null END) AS funded \
+                  FROM clicks WHERE state BETWEEN 1 AND 4 AND clicks.button_id=$1 \
+                  GROUP BY user_id ORDER BY user_id;", [ button_id ], function(err, result) {
+                 if (err != null) {
+                   console.log("Getting click count error: " + err);
+                  } else if (result.rows[0] == undefined) {
+                    console.log("No clicks found.");
+                    res.json({});
+                  } else {
+                    var userTips = result.rows;  
+                  
+                    // DEBUG CODE - adding additional user
+                    // userTips[1] = {user_id: 2, unfunded: 900000000, funded: 300000000};
+                  
+                    var containsCurrentUser = false;
+                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE id IN (";
+                    for (i in userTips) {
+                      queryString += userTips[i].user_id;
+                      if (i < userTips.length - 1) queryString += ",";
+                      else queryString += ")";
+                    }
+                    if (user_uuid) {
+                      queryString += " OR uuid=LOWER('" + user_uuid + "')";
+                    }
+                    queryString += " ORDER BY id;";
+                                      
+                    pgWebClient.query(queryString, function(err, result) {
+                      if (err != null) {
+                        console.log("Getting user email error: " + err);
+                        airbrake.notify(err);
+                        res.json({ error: true });
+                      } else if (result.rows[0] == undefined) {
+                        console.log("No users found.");
+                        res.json({});
+                      } else if (result.rows.length != userTips.length && result.rows.length != userTips.length + 1) {
+                        console.log("Number of users found doesn't match tips found.");
+                        airbrake.notify("Number of users found doesn't match tips found.");
+                        res.json({ error: true });
+                      } else {
+                        var beltUsers = [];
+                        var offset = 0;                  
+                        for (i = 0 ; i < result.rows.length; i++) {
+                          var user = result.rows[i];
+                          if (user.first_name || user.last_name) {
+                            var name = user.first_name + " " + user.last_name;
+                          } else {
+                            var name = user.nickname || user.email.substring(0, user.email.indexOf("@"));
+                          }
+                          var profileUrl = user.nickname ? TIP_URL_BASE + "/" + user.nickname : '';
+                          var pictureUrl = user.picture_file_name ? USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg" : '';
+                          
+                          if (user.uuid == user_uuid) {
+                            var currentUser = true;
+                          } else {
+                            var currentUser = false;
+                          }
+                          
+                          if (user.uuid == user_uuid && result.rows.length > userTips.length) {
+                            offset = -1;
+                            var funded = 0;
+                            var unfunded = 0;
+                          } else {
+                            
+                            var funded = parseInt(userTips[i + offset].funded) || 0;
+                            var unfunded = parseInt(userTips[i + offset].unfunded) || 0;
+                            
+                          }
+                          beltUsers.push({
+                            currentUser: currentUser,
+                            uuid: user.uuid,
+                            name: name,
+                            profileUrl: profileUrl,
+                            pictureUrl: pictureUrl,
+                            funded: funded,
+                            unfunded: unfunded
+                          });
+                          
+                        }
+                        res.json({ beltUsers: beltUsers });
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
 });
 
 function enqueueClick(amount, click_uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {

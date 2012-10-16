@@ -25,8 +25,6 @@ html(lang="en")
         var timer = null;
         var interval = 400;
         
-        // FUNCTIONS
-        
         function updateCount(isInput, showZero) {
           if (totalAmount > maxAmount) totalAmount = maxAmount;
           if (totalAmount > 0) $('#undo').show();
@@ -43,7 +41,7 @@ html(lang="en")
             totalAmount += 25;
             if (hasTooltip) {
               $.postMessage(
-                '#{req.params.button_uuid},increment',
+                JSON.stringify({command: "increment", uuid: "#{req.params.button_uuid}"}),
                 "#{req.header('Referer')}"
               );
             } else {
@@ -59,7 +57,7 @@ html(lang="en")
           totalAmount = 0;
           if (hasTooltip) {
             $.postMessage(
-              '#{req.params.button_uuid},clear',
+              JSON.stringify({command: "clear", uuid: "#{req.params.button_uuid}"}),
               "#{req.header('Referer')}"
             );
           } else {
@@ -73,11 +71,27 @@ html(lang="en")
           totalAmount = 0;
           if (hasTooltip) {
             $.postMessage(
-              '#{req.params.button_uuid},reset',
+              JSON.stringify({command: "reset", uuid: "#{req.params.button_uuid}"}),
               "#{req.header('Referer')}"
             );
           } else {
             updateCount();
+          }
+        }
+        
+        function clickCounter() {
+          if (mouseDown) {
+            incrementCount();
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+              if (mouseDown) {
+                if (interval > 100) interval = interval - 20;
+                clickCounter();
+              }
+            }, interval);
+          } else {
+            clearTimeout(timer);
+            interval = 500;
           }
         }
         
@@ -100,22 +114,6 @@ html(lang="en")
             if (!testButton) $("form").submit();
           }
         });
-        
-        function clickCounter() {
-          if (mouseDown) {
-            incrementCount();
-            clearTimeout(timer);
-            timer = setTimeout(function() {
-              if (mouseDown) {
-                if (interval > 100) interval = interval - 20;
-                clickCounter();
-              }
-            }, interval);
-          } else {
-            clearTimeout(timer);
-            interval = 500;
-          }
-        }
                 
         $("#submit-button").bind('mousedown touchstart', function(event) {
           $(this).css('background-position', '0 -100%');
@@ -153,7 +151,7 @@ html(lang="en")
             totalAmount = totalAmount - 25;
             if (totalAmount == 0) $('#undo').hide();
             $.postMessage(
-              '#{req.params.button_uuid},decrement',
+              JSON.stringify({command: "decrement", uuid: "#{req.params.button_uuid}"}),
               "#{req.header('Referer')}"
             );
           }
@@ -185,9 +183,10 @@ html(lang="en")
                 var left = (screen.width / 2) - (width / 2);
                 var top = (screen.height / 2) - (height / 2);
                 window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
+              } else {
+                if (currentUserIndex >= 0) beltUsers[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
+                populateUsers();
               }
-              // if (totalAmount > 0) $('#undo').show();
-              // else $('#undo').hide();
             },
             dataType: "json",
             async: false
@@ -206,27 +205,104 @@ html(lang="en")
         });
         // , "#{req.header('Referer')}");
         
-        
         // BELT CODE
         
         window.hasTooltip = true;
-
-        $.ajax({
-          type: "POST",
-          url: "/belt/#{req.params.button_uuid}",
-          data: "",
-          success: function(data) {
-            alert(data);
-          },
-          dataType: "json",
-          async: false
-        });
+        var beltUsers = [];
+        var baseAmount = null;
+        var currentUserIndex = -1;
         
+        // FUNCTIONS
+        function getUserInfo() {
+          $.ajax({
+            type: "POST",
+            url: "/belt/#{req.params.button_uuid}",
+            data: {_csrf: "#{req.session._csrf}"},
+            success: function(data) {
+              if (!data.beltUsers) {
+                // something went wrong
+              } else {
+                beltUsers = data.beltUsers;
+                populateUsers();
+              }
+            },
+            dataType: "json",
+            async: false
+          });
+        }
+        
+        function populateUsers() {
+          beltUsers.sort(function(a, b) {
+            if (a.funded == 0 && b.funded == 0) return(b.unfunded - a.unfunded);
+            else return(b.funded - a.funded);
+          });
+          $('a.user-image').remove();
+          $('#call-arrow, #call-message').hide();
+          var delay = 0;
+          for (i in beltUsers) {
+            var user = beltUsers[i];
+            if (user.currentUser) {
+              currentUserIndex = i;
+              if (!baseAmount) baseAmount = user.unfunded;
+            }
+            if (i > 4 || (user.funded == 0 && user.unfunded == 0)) break;
+            var $userImage = $('<a />', {
+              class: 'user-image',
+              href: user.profileUrl,
+              target: '_blank',
+              'data-id': i,
+              'css': {
+                left: 50 * i,
+                'background-image': user.pictureUrl ? 
+                  'url(' + user.pictureUrl + ')'
+                  : 'url("#{ ASSETS_URL_BASE }/users/pictures/no_pic.png")'
+              }
+            });
+            $('#call-image').before($userImage);
+            if (user.loaded) {
+              $userImage.show();
+            } else {
+              beltUsers[i].loaded = true;
+              $userImage.delay(500 + delay * 500).show('slow');
+              delay++;
+            }
+          }
+        }
+                
+        $('#users-container').on({
+          mouseenter: function() {
+            var $this = $(this);
+            var user = beltUsers[$this.attr('data-id')];
+            user.left = $this.offset().left;
+            $.postMessage(
+              JSON.stringify({command: 'user', user: user}),
+              "#{req.header('Referer')}"
+            );
+          },
+          mouseleave: function() {
+            $.postMessage(
+              JSON.stringify({command: 'hide'}),
+              "#{req.header('Referer')}"
+            );
+          }, 
+        }, '.user-image');
+        
+        $('#button-wrapper').bind({
+          mouseenter: function() {
+            $.postMessage(
+              JSON.stringify({command: 'button', uuid: "#{req.params.button_uuid}"}),
+              "#{req.header('Referer')}"
+            );
+          },
+          mouseleave: function() {
+            $.postMessage(
+              JSON.stringify({command: 'hide'}),
+              "#{req.header('Referer')}"
+            );
+          }
+        });
+        getUserInfo();
       });
-    
-    if req.param("tooltip") == "true"
-      script
-        window.hasTooltip = true;
         
     style(type="text/css")
       body { 
@@ -244,11 +320,13 @@ html(lang="en")
         border: 1px solid #ccc;
         border-radius: 5px;
         background-color: #f6f6f6;
-        width: 378px;
+        width: 322px;
         height: 63px;
+        overflow: hidden;
       }
       #button-container{
         float: left;
+        width: 72px;
       }
       #button-message {
         margin: 0 0 5px 0;
@@ -284,15 +362,19 @@ html(lang="en")
         height: 12px;
       }
       #users-container {
-        margin: 0 0 0 10px;
-        float: left;
+        width: 200%;
+        margin: 0 0 0 82px;
       }
       #users-message {
         margin: 0 0 5px 0;
       }
-      .user-image-container {
+      #users-image-container {
         float: left;
-        display:block;
+      }
+      .user-image, #call-image {
+        position: absolute;
+        float: left;
+        display: block;
         height: 37px;
         width: 40px;
         margin: 0 10px 0 0;
@@ -321,7 +403,6 @@ html(lang="en")
         line-height: 1em;
       }
       
-      
     script
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-34638501-1']);
@@ -345,12 +426,10 @@ html(lang="en")
             #undo
       #users-container 
         #users-message Top Contributors
-        .user-image-container(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
+        #call-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
           div YOUR FACE HERE
         #call-arrow 
         #call-message Give a tip and appear as a top contributor!
-      
-      
-      
+        div(style="clear:both;") 
       div(style="clear:both;")
 
