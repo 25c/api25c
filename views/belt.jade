@@ -111,7 +111,7 @@ html(lang="en")
             $('.if-input').hide();
             totalAmount = parseInt(parseFloat($('#count-input').val()) * 100);
             updateCount(true, true);
-            if (!testButton) $("form").submit();
+             $("form").submit();
           }
         });
                 
@@ -130,14 +130,14 @@ html(lang="en")
         $(document).bind('mouseup touchend', function() {
           $('#submit-button').css('background-position', '');
           // send post request with clicks
-          if (!testButton && mouseDown && totalAmount >= 1) $("form").submit();
+          if (mouseDown && totalAmount >= 1) $("form").submit();
           mouseDown = false;
         });
         
         $("#undo").click(function() {
           if (totalAmount > 0) {
             zeroCount();
-            if (!testButton) $("form").submit();
+            $("form").submit();
             $(this).hide();
           }
         });
@@ -161,6 +161,11 @@ html(lang="en")
           var form = $(this);
           var data = form.serialize();
           data += '&amount=' + totalAmount;
+          if (testButton) {
+            if (currentUserIndex >= 0) beltUsers[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
+            populateUsers();
+            return false;
+          } 
           $.ajax({
             type: "POST",
             url: form.attr("action"),
@@ -243,7 +248,7 @@ html(lang="en")
             var user = beltUsers[i];
             if (user.currentUser) {
               currentUserIndex = i;
-              if (!baseAmount) baseAmount = user.unfunded;
+              if (baseAmount === null) baseAmount = user.unfunded;
             }
             if (i > 4 || (user.funded == 0 && user.unfunded == 0)) break;
             var $userImage = $('<a />', {
@@ -259,12 +264,12 @@ html(lang="en")
               }
             });
             $('#call-image').before($userImage);
-            if (user.loaded) {
-              $userImage.show();
-            } else {
+            if (user.loaded === undefined) {
               beltUsers[i].loaded = true;
               $userImage.delay(500 + delay * 500).show('slow');
               delay++;
+            } else {
+              $userImage.show();
             }
           }
         }
@@ -398,7 +403,7 @@ html(lang="en")
       #call-message {
         float: left;
         width: 140px;
-        margin: 7px 0 0 0;
+        margin: px 0 0 0;
         font-weight: bold;
         //- font-size: 16px;
         line-height: 1em;

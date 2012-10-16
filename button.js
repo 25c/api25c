@@ -418,27 +418,26 @@ app.post('/belt/:button_uuid', function(req, res) {
                   GROUP BY user_id ORDER BY user_id;", [ button_id ], function(err, result) {
                  if (err != null) {
                    console.log("Getting click count error: " + err);
-                  } else if (result.rows[0] == undefined) {
-                    console.log("No clicks found.");
-                    res.json({});
                   } else {
-                    var userTips = result.rows;  
-                  
-                    // DEBUG CODE - adding additional user
-                    // userTips[1] = {user_id: 2, unfunded: 900000000, funded: 300000000};
-                  
-                    var containsCurrentUser = false;
-                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE id IN (";
-                    for (i in userTips) {
-                      queryString += userTips[i].user_id;
-                      if (i < userTips.length - 1) queryString += ",";
-                      else queryString += ")";
+                    var userTips = result.rows;
+                    
+                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE";
+                    
+                    if (user_uuid && userTips.length == 0) {
+                      queryString += " uuid=LOWER('" + user_uuid + "');";
+                    } else {
+                      queryString += " id IN (";
+                      for (i in userTips) {
+                        queryString += userTips[i].user_id;
+                        if (i < userTips.length - 1) queryString += ",";
+                        else queryString += ")";
+                      }
+                      if (user_uuid) {
+                        queryString += " OR uuid=LOWER('" + user_uuid + "')";
+                      }
+                      queryString += " ORDER BY id;";
                     }
-                    if (user_uuid) {
-                      queryString += " OR uuid=LOWER('" + user_uuid + "')";
-                    }
-                    queryString += " ORDER BY id;";
-                                      
+                                                        
                     pgWebClient.query(queryString, function(err, result) {
                       if (err != null) {
                         console.log("Getting user email error: " + err);
