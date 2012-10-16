@@ -37,7 +37,7 @@ _tip25c_belt_jquery(document).ready(function($) {
   function showUserInfo(user) {
     hideTooltip();
     var tipHtml = "";
-    if (user.funded) tipHtml = "<div class='user-tip'>$" + (user.funded / 100000000).toFixed(2) + " Given</div>";
+    if (user.funded) tipHtml = "<div class='user-tip'>$" + (user.funded / 100000000).toFixed(2) + " Funded</div>";
     if (user.unfunded) tipHtml += "<div class='user-tip'>$" + (user.unfunded / 100000000).toFixed(2) + " Pledged</div>";
     var offset = $iframe.offset();
     var left = offset.left + user.left;

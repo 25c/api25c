@@ -437,7 +437,7 @@ app.post('/belt/:button_uuid', function(req, res) {
                       }
                       queryString += " ORDER BY id;";
                     }
-                                                        
+                                      
                     pgWebClient.query(queryString, function(err, result) {
                       if (err != null) {
                         console.log("Getting user email error: " + err);
