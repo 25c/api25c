@@ -190,7 +190,7 @@ html(lang="en")
                 window.open(url, "25c", "menubar=no,resizable=no,scrollbars=no,toolbar=no,width=" + width + ",height=" + height + ",top=" + top + ",left=" + left);
               } else {
                 if (currentUserIndex >= 0) beltUsers[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
-                populateUsers();
+                repositionUsers();
               }
             },
             dataType: "json",
@@ -212,10 +212,12 @@ html(lang="en")
         
         // BELT CODE
         
+        var MAX_USERS = 5;
         window.hasTooltip = true;
         var beltUsers = [];
         var baseAmount = null;
         var currentUserIndex = -1;
+        var currentUserVisible = false;
         
         // FUNCTIONS
         function getUserInfo() {
@@ -236,40 +238,85 @@ html(lang="en")
           });
         }
         
+        function sortFunction(a, b) {
+          if (a.funded == 0 && b.funded == 0) return(b.unfunded - a.unfunded);
+          else return(b.funded - a.funded);
+        }
+        
         function populateUsers() {
-          beltUsers.sort(function(a, b) {
-            if (a.funded == 0 && b.funded == 0) return(b.unfunded - a.unfunded);
-            else return(b.funded - a.funded);
-          });
-          $('a.user-image').remove();
-          $('#call-arrow, #call-message').hide();
-          var delay = 0;
+        
+          var usersLoaded = 0;
+          beltUsers.sort(sortFunction);
+          $('#call-arrow, #call-message, #call-image').hide();
+          
           for (i in beltUsers) {
+          
             var user = beltUsers[i];
+            var position = i;
+            
             if (user.currentUser) {
               currentUserIndex = i;
               if (baseAmount === null) baseAmount = user.unfunded;
+              if (i >= MAX_USERS || (user.funded == 0 && user.unfunded == 0)) {
+                position = (MAX_USERS + 1);
+                usersLoaded--;
+              } else {
+                currentUserVisible = true;
+              }
+            } else if (i >= MAX_USERS || (user.funded == 0 && user.unfunded == 0)) {
+              continue;
             }
-            if (i > 4 || (user.funded == 0 && user.unfunded == 0)) break;
+            
             var $userImage = $('<a />', {
               class: 'user-image',
               href: user.profileUrl,
               target: '_blank',
-              'data-id': i,
+              'data-position': i,
               'css': {
-                // left: 50 * i,
+                left: position * 50,
                 'background-image': user.pictureUrl ? 
                   'url(' + user.pictureUrl + ')'
                   : 'url("#{ ASSETS_URL_BASE }/users/pictures/no_pic.png")'
-              }
+              }  
             });
-            $('#call-image').before($userImage);
-            if (user.loaded === undefined) {
-              beltUsers[i].loaded = true;
-              $userImage.delay(500 + delay * 500).show('slow');
-              delay++;
+            
+            $('#users-container').append($userImage);
+            $userImage.delay(500 + i * 500).fadeIn('slow');
+            beltUsers[i].image = $userImage;
+            beltUsers[i].position = position;
+            usersLoaded++;
+            
+          }
+          if (usersLoaded < MAX_USERS && !currentUserVisible) {
+            $('#call-image').css({left: usersLoaded * 50}).delay(500 + usersLoaded * 500).fadeIn('slow');
+          } else {
+            // $('#call-image').fadeOut(500);
+          }
+        }
+        
+        function repositionUsers() {
+          beltUsers.sort(sortFunction);
+          
+          for (i in beltUsers) {
+            var user = beltUsers[i];
+            if (user.funded != 0 || user.unfunded != 0) {
+              if (user.currentUser) {
+                currentUserVisible = true;
+                currentUserIndex = i;
+              }
+              if (user.position != i) {
+                user.image.animate({ left: 50 * i }, 500);
+                user.position = i;
+                user.image.attr('data-position', i);
+              }
             } else {
-              $userImage.show();
+              user.image.css({left: 50 * MAX_USERS + 1});
+              currentUserVisible = false;
+            }
+            if (currentUserVisible) {
+              $('#call-image').hide();
+            } else {
+              $('#call-image').show();
             }
           }
         }
@@ -277,10 +324,16 @@ html(lang="en")
         $('#users-container').on({
           mouseenter: function() {
             var $this = $(this);
-            var user = beltUsers[$this.attr('data-id')];
-            user.left = $this.offset().left;
+            var user = beltUsers[$this.attr('data-position')];
+            var userData = {
+              left: $this.offset().left,
+              name: user.name,
+              url: user.profileUrl,
+              funded: user.funded,
+              unfunded: user.unfunded
+            }
             $.postMessage(
-              JSON.stringify({command: 'user', user: user}),
+              JSON.stringify({command: 'user', user: userData}),
               "#{req.header('Referer')}"
             );
           },
@@ -307,6 +360,12 @@ html(lang="en")
           }
         });
         getUserInfo();
+        
+        // DEBUG
+        setTimeout(function() {
+          repositionUsers();
+        }, 5000);
+        
       });
         
     style(type="text/css")
@@ -367,6 +426,7 @@ html(lang="en")
         height: 12px;
       }
       #users-container {
+        position: relative;
         width: 200%;
         margin: 0 0 0 82px;
       }
@@ -377,12 +437,13 @@ html(lang="en")
         float: left;
       }
       .user-image, #call-image {
-        //- position: absolute;
-        float: left;
-        display: block;
+        position: absolute;
+        //- float: left;
+        top: 20px;
+        display: none;
         height: 37px;
         width: 40px;
-        margin: 0 10px 0 0;
+        //- margin: 0 10px 0 0;
         padding: 3px 0 0 0;
         //- border-radius: 5px;
         background-repeat: no-repeat;
@@ -391,6 +452,9 @@ html(lang="en")
         font-size: 11px;
         line-height: 1.1em;
         color: white;
+      }
+      #call-image {
+        display: block;
       }
       #call-arrow {
         height: 12px;
