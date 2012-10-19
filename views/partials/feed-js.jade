@@ -1,0 +1,168 @@
+script
+  $(function() {
+  
+    var MAX_USERS = 5;
+    var beltUsers = [];
+    var baseAmount = null;
+    var currentUserIndex = -1;
+    var currentUserVisible = false;
+    window.hasTooltip = true;
+    var hasUsers = false;
+  
+    // FUNCTIONS
+    function getUserInfo() {
+      $.ajax({
+        type: "POST",
+        url: "/belt/" + buttonUuid,
+        data: {_csrf: sessionCsrf},
+        success: function(data) {
+          if (!data.beltUsers) {
+            // something went wrong
+          } else {
+            beltUsers = data.beltUsers;
+            populateUsers();
+          }
+        },
+        dataType: "json",
+        async: false
+      });
+    }
+  
+    function sortFunction(a, b) {
+      if (a.funded == 0 && b.funded == 0) return(b.unfunded - a.unfunded);
+      else return(b.funded - a.funded);
+    }
+  
+    function populateUsers() {
+  
+      var usersLoaded = 0;
+      beltUsers.sort(sortFunction);
+      $('#call-arrow, #call-message, #call-image').hide();
+    
+      for (i in beltUsers) {
+    
+        var user = beltUsers[i];
+        var position = i;
+      
+        if (user.currentUser) {
+          currentUserIndex = i;
+          if (baseAmount === null) baseAmount = user.unfunded;
+          if (i >= MAX_USERS || (user.funded == 0 && user.unfunded == 0)) {
+            position = (MAX_USERS + 1);
+            usersLoaded--;
+          } else {
+            currentUserVisible = true;
+          }
+        } else if (i >= MAX_USERS || (user.funded == 0 && user.unfunded == 0)) {
+          continue;
+        }
+              
+        var $userImage = $('<a />', {
+          class: 'user-image',
+          href: user.profileUrl || 'javascript:void(0)',
+          target: '_blank',
+          'data-position': i,
+          'css': {
+            left: position * 50,
+            'background-image': user.pictureUrl ? 
+              'url(' + user.pictureUrl + ')'
+              : 'url("' + assetsUrlBase + '/users/pictures/no_pic.png")'
+          }
+        });
+        
+        if (!user.profileUrl) $userImage.css('cursor', 'default');
+      
+        $('#users-container').append($userImage);
+        $userImage.delay(500 + i * 500).fadeIn('slow');
+        beltUsers[i].image = $userImage;
+        beltUsers[i].position = position;
+        usersLoaded++;
+      
+      }
+      if (usersLoaded < MAX_USERS && !currentUserVisible) {
+        $('#call-image').css({left: usersLoaded * 50}).delay(500 + usersLoaded * 500).fadeIn('slow');
+      } else {
+        // $('#call-image').fadeOut(500);
+      }
+    }
+  
+    function repositionUsers() {
+      beltUsers.sort(sortFunction);
+    
+      for (i in beltUsers) {
+        var user = beltUsers[i];
+        if (user.funded != 0 || user.unfunded != 0) {
+          if (user.currentUser) {
+            currentUserVisible = true;
+            currentUserIndex = i;
+          }
+          if (user.position != i) {
+            user.image.animate({ left: 50 * i }, 500);
+            user.position = i;
+            user.image.attr('data-position', i);
+          }
+        } else {
+          user.image.css({left: 50 * MAX_USERS + 1});
+          currentUserVisible = false;
+        }
+        if (currentUserVisible) {
+          $('#call-image').hide();
+        } else {
+          $('#call-image').show();
+        }
+      }
+    }
+  
+    $('#users-container').on({
+      mouseenter: function() {
+        var $this = $(this);
+        var user = beltUsers[$this.attr('data-position')];
+        var userData = {
+          left: $this.offset().left,
+          name: user.name,
+          url: user.profileUrl,
+          funded: user.funded,
+          unfunded: user.unfunded
+        }
+        $.postMessage(
+          JSON.stringify({command: 'user', user: userData}),
+          parentUrl
+        );
+      },
+      mouseleave: function() {
+        $.postMessage(
+          JSON.stringify({command: 'hide'}),
+          parentUrl
+        );
+      }, 
+    }, '.user-image');
+  
+    $('#button-wrapper').bind({
+      mouseenter: function() {
+        $.postMessage(
+          JSON.stringify({command: 'button', uuid: buttonUuid}),
+          parentUrl
+        );
+      },
+      mouseleave: function() {
+        $.postMessage(
+          JSON.stringify({command: 'hide'}),
+          parentUrl
+        );
+      }
+    });
+    
+    $("form").ajaxSuccess(function(event, request, settings) {
+      if (settings.url.indexOf('button') != -1) {
+        if (currentUserIndex >= 0) beltUsers[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
+        repositionUsers();
+      }
+    });
+    
+    getUserInfo();
+  
+    // DEBUG
+    setTimeout(function() {
+      repositionUsers();
+    }, 5000);
+  });

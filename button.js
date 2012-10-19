@@ -33,20 +33,6 @@ airbrake.handleExceptions();
 var nus_config = require('./lib/short25c/lib/get-config.js');
 var nus = require('./lib/short25c/lib/nus.js');
 
-var fs = require('fs');
-var nodemailer = require("nodemailer");
-var EMAIL_SERVICE = "SendGrid";
-var EMAIL_USERNAME = "corp25c";
-var EMAIL_PASSWORD = "sup3rl!k3";
-var EMAIL_FROM = "no-reply@25c.com";
-var smtpTransport = nodemailer.createTransport("SMTP", {
-    service: EMAIL_SERVICE,
-    auth: {
-        user: EMAIL_USERNAME,
-        pass: EMAIL_PASSWORD
-    }
-});
-
 var redisDataClient;
 var redisWebClient;
 var redisApiClient;
@@ -344,8 +330,6 @@ app.post('/button/:button_uuid', function(req, res) {
                 res
               );
             }
-            // Send initial overdraft email
-            // if (balance == -39) sendOverdraftEmail(user_uuid);
           }
         });
       }
@@ -369,6 +353,7 @@ app.get('/belt/:button_uuid', function(req, res) {
 });
 
 app.post('/belt/:button_uuid', function(req, res) {
+  
   var button_uuid = req.params.button_uuid;
   var user_uuid = "";
   
@@ -504,6 +489,18 @@ app.post('/belt/:button_uuid', function(req, res) {
   }
 });
 
+app.get('/feed/:button_uuid', function(req, res) {  
+	referrer = req.header('referrer');
+  req.session.clickUuids = {};
+	res.render("feed.jade", {
+	  req: req,
+	  referrer: referrer,
+	  WEB_URL_BASE: WEB_URL_BASE,
+	  ASSETS_URL_BASE: ASSETS_URL_BASE,
+	  USERS_URL_BASE: USERS_URL_BASE
+	});
+});
+
 function enqueueClick(amount, click_uuid, user_uuid, button_uuid, referrer_user_uuid, referrer, user_agent, ip_address, res) {
   click_uuid = click_uuid || uuid.v1();
   amount = parseInt(amount);
@@ -527,68 +524,6 @@ function enqueueClick(amount, click_uuid, user_uuid, button_uuid, referrer_user_
 		}
   });
   return click_uuid;
-}
-
-function sendEmail(to, filename, args) {
-  fs.readFile(filename, "utf8", function(err, data) {
-    if (err) {
-      "Error reading email file: " + console.log(err);
-    } else {
-      subject = data.split("#{", 2)[1].split("}", 1)[0];
-      body = data.substring(data.indexOf("}")).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-      
-      parts = body.split("#{");
-      for (key in args) {
-        for (i = 1; i < parts.length; i++) {
-          if (parts[i].split("}", 1)[0].indexOf(key) != -1) {
-            parts[i] = parts[i].replace(/.*}/, args[key]);
-          }
-        }
-      }
-      if (parts.length > 1) {
-        parts[0] = parts[0].replace(/.*}\s*/, '');
-        body = parts.join("");
-      }
-      var mailOptions = {
-        from: EMAIL_FROM,
-        to: to,
-        subject: subject,
-        html: body,
-        generateTextFromHTML: true
-      };
-      smtpTransport.sendMail(mailOptions, function(err, response) {
-        if(err){
-          console.log("Could not send email: " + err);
-        }
-      });
-    }
-  });
-}
-
-function sendOverdraftEmail(uuid) {
-  pg.connect(pgWebUrl, function(err, pgWebClient) {
-		if (err != null) {
-			console.log("Could not connect to web postgres: " + err);
-			airbrake.notify(err);
-			callback(err);
-		} else {
-      pgWebClient.query("SELECT email, first_name, nickname FROM users WHERE uuid = LOWER($1)", [ uuid ], function(err, result) {
-    	  if (err != null) {
-    	    console.log("Getting user email error: " + err);
-        } else if (result.rows[0] == undefined) {
-          console.log("User not found!");
-        } else if (!result.rows[0].email) {
-          console.log("User does not have an email address!");
-        } else {
-          userEmail = result.rows[0].email;
-          userFirstName = result.rows[0].first_name;
-          userNickname = result.rows[0].nickname;
-          toName = userFirstName || userNickname || userEmail;
-    		  sendEmail(userEmail, "overdraft_email.txt", {name: toName});
-        }
-      });
-    }
-  });
 }
 
 var port = process.env.PORT || 5000;

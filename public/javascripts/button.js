@@ -24,7 +24,7 @@ _tip25c_jquery(document).ready(function($) {
   }
   function setTooltipCount(count, showZero) {
     $('#count-input').hide();
-    $('.if-input').hide();    
+    $('.if-input').hide();
     if (count > 0) {
       $tooltip.find('.if-number, .if-count').show();
       $tooltip.find('.no-count').hide();
@@ -62,12 +62,11 @@ _tip25c_jquery(document).ready(function($) {
         var testTooltip = false;
       }
       
-      // DEBUG
-      testTooltip = true;
       var button = buttons[uuid];
+      button.selfButton = !testTooltip && (userName == button.user || pledgeName == button.user);
       
       if (button.count > 0) {
-        if (!testTooltip && (userName == button.user || pledgeName == button.user)) {
+        if (button.selfButton) {
           $tooltip.find('.if-self').show();
         } else {
           setTooltipCount(button.count);
@@ -144,24 +143,33 @@ _tip25c_jquery(document).ready(function($) {
   src = src.substr(0, src.indexOf("/public"));
   
   $.receiveMessage(function(e) {
-    var uuid = e.data.split(",")[0];
-    var command = e.data.split(",")[1] || "";
+    var data = JSON.parse(e.data);
+    var command = data.command;
+    if (buttons[data.uuid].selfButton) {
+      $tooltip.find('.if-self').show();
+      $.postMessage(
+        String(0),
+        (src.indexOf("localhost") > 0 ? "http:" : "https:") + src,
+        window.frames[data.uuid]
+      );
+      return;
+    }
     switch (command) {
       case "increment":
-        if (buttons[uuid].count + 25 < maxCount) buttons[uuid].count += 25;
-        setTooltipCount(buttons[uuid].count);
+        if (buttons[data.uuid].count + 25 < maxCount) buttons[data.uuid].count += 25;
+        setTooltipCount(buttons[data.uuid].count);
         $('#check-icon').hide();
         break;
       case "decrement":
-        buttons[uuid].count -= 25;
-        setTooltipCount(buttons[uuid].count);
+        buttons[data.uuid].count -= 25;
+        setTooltipCount(buttons[data.uuid].count);
         break;
       case "clear":
-        buttons[uuid].count = 0;
+        buttons[data.uuid].count = 0;
         setTooltipCount(0, true);
         break;
       case "reset":
-        buttons[uuid].count = 0;
+        buttons[data.uuid].count = 0;
         setTooltipCount(0);
         hideTooltip();
         $tooltip.text("");

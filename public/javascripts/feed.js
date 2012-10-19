@@ -242,7 +242,7 @@ _tip25c_belt_jquery(document).ready(function($) {
       css: {
         display: 'none',
         width: 400,
-        height: 75
+        height: 200
       }
     });
     a.after($iframe);
