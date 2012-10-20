@@ -2,7 +2,7 @@ script
   $(function() {
   
     var MAX_USERS = 5;
-    var beltUsers = [];
+    var users = [];
     var baseAmount = null;
     var currentUserIndex = -1;
     var currentUserVisible = false;
@@ -13,13 +13,13 @@ script
     function getUserInfo() {
       $.ajax({
         type: "POST",
-        url: "/belt/" + buttonUuid,
+        url: "/users/" + buttonUuid,
         data: {_csrf: sessionCsrf},
         success: function(data) {
-          if (!data.beltUsers) {
+          if (!data.users) {
             // something went wrong
           } else {
-            beltUsers = data.beltUsers;
+            users = data.users;
             populateUsers();
           }
         },
@@ -36,12 +36,12 @@ script
     function populateUsers() {
   
       var usersLoaded = 0;
-      beltUsers.sort(sortFunction);
+      users.sort(sortFunction);
       $('#call-arrow, #call-message, #call-image').hide();
     
-      for (i in beltUsers) {
+      for (i in users) {
     
-        var user = beltUsers[i];
+        var user = users[i];
         var position = i;
       
         if (user.currentUser) {
@@ -74,8 +74,8 @@ script
       
         $('#users-container').append($userImage);
         $userImage.delay(500 + i * 500).fadeIn('slow');
-        beltUsers[i].image = $userImage;
-        beltUsers[i].position = position;
+        users[i].image = $userImage;
+        users[i].position = position;
         usersLoaded++;
       
       }
@@ -87,18 +87,17 @@ script
     }
   
     function repositionUsers() {
-      beltUsers.sort(sortFunction);
+      users.sort(sortFunction);
     
-      for (i in beltUsers) {
-        var user = beltUsers[i];
+      for (i in users) {
+        var user = users[i];
+        if (user.currentUser) {
+          currentUserVisible = true;
+          currentUserIndex = i;
+        }
         if (user.funded != 0 || user.unfunded != 0) {
-          if (user.currentUser) {
-            currentUserVisible = true;
-            currentUserIndex = i;
-          }
           if (user.position != i) {
             user.image.animate({ left: 50 * i }, 500);
-            user.position = i;
             user.image.attr('data-position', i);
           }
         } else {
@@ -116,7 +115,7 @@ script
     $('#users-container').on({
       mouseenter: function() {
         var $this = $(this);
-        var user = beltUsers[$this.attr('data-position')];
+        var user = users[$this.attr('data-position')];
         var userData = {
           left: $this.offset().left,
           name: user.name,
@@ -154,7 +153,7 @@ script
     
     $("form").ajaxSuccess(function(event, request, settings) {
       if (settings.url.indexOf('button') != -1) {
-        if (currentUserIndex >= 0) beltUsers[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
+        if (currentUserIndex >= 0) users[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
         repositionUsers();
       }
     });
@@ -162,7 +161,7 @@ script
     getUserInfo();
   
     // DEBUG
-    setTimeout(function() {
-      repositionUsers();
-    }, 5000);
+    // setTimeout(function() {
+    //   repositionUsers();
+    // }, 5000);
   });

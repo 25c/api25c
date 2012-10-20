@@ -352,7 +352,7 @@ app.get('/belt/:button_uuid', function(req, res) {
 	});
 });
 
-app.post('/belt/:button_uuid', function(req, res) {
+app.post('/users/:button_uuid', function(req, res) {
   
   var button_uuid = req.params.button_uuid;
   var user_uuid = "";
@@ -436,7 +436,7 @@ app.post('/belt/:button_uuid', function(req, res) {
                         airbrake.notify("Number of users found doesn't match tips found.");
                         res.json({ error: true });
                       } else {
-                        var beltUsers = [];
+                        var users = [];
                         var offset = 0;                  
                         for (i = 0 ; i < result.rows.length; i++) {
                           var user = result.rows[i];
@@ -464,7 +464,7 @@ app.post('/belt/:button_uuid', function(req, res) {
                             var unfunded = parseInt(userTips[i + offset].unfunded) || 0;
                             
                           }
-                          beltUsers.push({
+                          users.push({
                             currentUser: currentUser,
                             uuid: user.uuid,
                             name: name,
@@ -475,7 +475,7 @@ app.post('/belt/:button_uuid', function(req, res) {
                           });
                           
                         }
-                        res.json({ beltUsers: beltUsers });
+                        res.json({ users: users });
                       }
                     });
                   }
