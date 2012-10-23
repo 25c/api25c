@@ -145,7 +145,7 @@ _tip25c_jquery(document).ready(function($) {
   $.receiveMessage(function(e) {
     var data = JSON.parse(e.data);
     var command = data.command;
-    if (buttons[data.uuid].selfButton) {
+    if (data.uuid && buttons[data.uuid].selfButton) {
       $tooltip.find('.if-self').show();
       $.postMessage(
         String(0),

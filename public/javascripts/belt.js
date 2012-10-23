@@ -43,7 +43,7 @@ _tip25c_belt_jquery(document).ready(function($) {
     var left = offset.left + user.left;
     var top = offset.top + $iframe.height() - 5;
     if (user.url) {
-      var userElement = '<a id="user-profile" href="' + user.profileUrl  +'" target="_blank">' + user.name + '</a>';
+      var userElement = '<a id="user-profile" href="' + user.url  +'" target="_blank">' + user.name + '</a>';
     } else {
       var userElement = '<span id="user-profile">' + user.name + '</span>';
     }
@@ -102,10 +102,17 @@ _tip25c_belt_jquery(document).ready(function($) {
         var testTooltip = false;
       }
       
-      // DEBUG
-      testTooltip = true;
       var button = buttons[uuid];
+      button.selfButton = !testTooltip && (userName == button.user || pledgeName == button.user);
       
+      if (button.count > 0) {
+        if (button.selfButton) {
+          $tooltip.find('.if-self').show();
+        } else {
+          setTooltipCount(button.count);
+        }
+      }
+            
       if (button.count > 0) {
         if (!testTooltip && (userName == button.user || pledgeName == button.user)) {
           $tooltip.find('.if-self').show();
@@ -186,6 +193,16 @@ _tip25c_belt_jquery(document).ready(function($) {
   $.receiveMessage(function(e) {
     var data = JSON.parse(e.data);
     var command = data.command;
+    if (data.uuid && buttons[data.uuid].selfButton) {
+      $tooltip.find('.if-self').show();
+      $.postMessage(
+        String(0),
+        (src.indexOf("localhost") > 0 ? "http:" : "https:") + src,
+        window.frames[data.uuid]
+      );
+      showButtonTooltip(data.uuid);
+      return;
+    }
     switch (command) {
       case "increment":
         if (buttons[data.uuid].count + 25 < maxCount) buttons[data.uuid].count += 25;

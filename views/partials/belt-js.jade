@@ -99,6 +99,7 @@ script
           if (user.position != i) {
             user.image.animate({ left: 50 * i }, 500);
             user.image.attr('data-position', i);
+            users[i].position = i;
           }
         } else if (user.currentUser) {
           user.image.css({left: 50 * MAX_USERS + 1});
