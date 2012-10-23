@@ -30,7 +30,7 @@ html(lang="en")
         border: 1px solid #ddd;
         border-radius: 5px;
         width: 398px;
-        height: 322px;
+        height: 315px;
         overflow: hidden;
       }
       #input-container {
@@ -46,26 +46,32 @@ html(lang="en")
       }
       #input-text {
         font: inherit;
-        color: #aaa;
         float: left;
-        height: 44px;
+        height: 46px;
         width: 230px;
         border: 1px solid #ddd;
         margin: 0 0 0 10px;
-        padding: 1px 0 0 0;
+        padding: 2px 0 0 0;
         border-radius: 5px;
         line-height: 14px;
       }
       #input-text:focus {
         display: block;
-        color: #333;
       }
-      #button-container {
+      #example-text {
+        position: absolute;
+        top: 2px;
+        left: 63px;
+        color: #aaa;
+        width: 230px;
+      }
+      #button-container{
+        position: relative;
+      }
+      #button-wrapper {
         margin-top: 5px;
         float: right;
         width: 72px;
-      }
-      #button-wrapper {
         position: relative;
       }
       #submit-button, #undo {
@@ -153,8 +159,9 @@ html(lang="en")
     #outer-container
       #input-container
         a#input-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
-        textarea#input-text() Leave a message and a tip. Your message will get higher the more you tip!
         form#button-container(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
+          textarea#input-text(name="message")
+          div#example-text Leave a message and a tip. Your message will get higher the more you tip!
           input(type="hidden", name="_csrf", value=req.session._csrf)
           input(type="hidden", name="_referrer", value=referrer)
           #button-wrapper(class="btn-large")
@@ -170,14 +177,3 @@ html(lang="en")
             .item-body Show your appreciation and be recognized for your support. 
               a(href="#{ WEB_URL_BASE }/faq", target="_blank") Learn more about 25c...
           .clear
-        
-      
-      
-      
-      
-      
-      
-      
-      
-      
-

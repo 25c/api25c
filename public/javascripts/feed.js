@@ -13,6 +13,7 @@ _tip25c_belt_jquery(document).ready(function($) {
   var $userInfo = $();
   var maxCount = 9999;
   var hoverUser = {};
+  var persistUserTooltip = false;
   
   function hideTooltip() {
     clearTimeout(timer);
@@ -207,17 +208,19 @@ _tip25c_belt_jquery(document).ready(function($) {
         hideTooltip();
         $tooltip.text("");
         break;
-      case "user":
-        clearTimeout(timer);
-        showUserInfo(data.user);
-        break;
+      // case "user":
+      //   clearTimeout(timer);
+      //   showUserInfo(data.user);
+      //   break;
       case "button":
         clearTimeout(timer);
         showButtonTooltip(data.uuid);
         break;
       case "hide":
-        clearTimeout(timer);
-        timer = setTimeout(hideTooltip, 500);
+        if (!persistUserTooltip) {
+          clearTimeout(timer);
+          timer = setTimeout(hideTooltip, 500);
+        }
         break;
     }
   }, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
@@ -243,7 +246,7 @@ _tip25c_belt_jquery(document).ready(function($) {
       css: {
         display: 'none',
         width: 400,
-        height: 400
+        height: 320
       }
     });
     a.after($iframe);
@@ -254,18 +257,20 @@ _tip25c_belt_jquery(document).ready(function($) {
   });
   
   $tooltip = $('<div id="tip-25c-tooltip"></div>');
-  $userInfo = $('<div id="tip-25c-user-info"></div>');
+  // $userInfo = $('<div id="tip-25c-user-info"></div>');
   $tooltip.add($userInfo).bind({
     mouseenter: function() {
-      clearTimeout(timer);      
+      clearTimeout(timer);
+      persistUserTooltip = true;     
     },
     mouseleave: function() {
       timer = setTimeout(hideTooltip, 500);
+      persistUserTooltip = false;
     }
   });
   
   $("body").append($tooltip);
-  $("body").append($userInfo);
+  // $("body").append($userInfo);
   $("head").append('<style type="text/css">\
     #tip-25c-tooltip, #tip-25c-user-info {\
       position: absolute;\

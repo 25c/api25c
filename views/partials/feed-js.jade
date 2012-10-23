@@ -15,7 +15,7 @@ script
       $.ajax({
         type: "POST",
         url: "/users/" + buttonUuid,
-        data: {_csrf: sessionCsrf},
+        data: {messages: 'true', referrer: parentUrl, _csrf: sessionCsrf},
         success: function(data) {
           if (!data.users) {
             // something went wrong
@@ -43,10 +43,7 @@ script
   
         var user = users[i];
         var position = i;
-        
-        // DEBUG
-        user.message = "This is a dummy message. Please take me out before pushing!";
-      
+              
         if (user.currentUser) {
           currentUserIndex = i;
           if (baseAmount === null) baseAmount = user.unfunded;
@@ -84,8 +81,8 @@ script
         }
         
         var title = (user.currentUser ? "You" : user.name) 
-          + " (pledged $" + ((user.funded + user.unfunded)/ 100000000).toFixed(2) + ")";
-        $itemTitle.addClass('item-title').text(title);
+          + " (pledged $<span class='tip-amount'>" + ((user.funded + user.unfunded)/ 100000000).toFixed(2) + "</span>)";
+        $itemTitle.addClass('item-title').html(title);
         
         var $itemBody = $('<div />', {
           class: 'item-body'
@@ -130,8 +127,9 @@ script
             user.position = i;
             user.item.attr('data-position', i);
           }
-        } else {
+        } else if (user.currentUser) {
           user.item.css({top: itemHeight * MAX_USERS + 1});
+          users[i].position = -1;
           currentUserVisible = false;
         }
         if (currentUserVisible) {
@@ -195,17 +193,27 @@ script
     
     $("form").ajaxSuccess(function(event, request, settings) {
       if (settings.url.indexOf('button') != -1) {
-        if (currentUserIndex >= 0) users[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
+        if (currentUserIndex >= 0) {
+          var user = users[currentUserIndex];
+          user.unfunded = baseAmount + totalAmount * 1000000;
+          user.message = $("#input-text").val();
+          user.item.find('.tip-amount').text(((user.funded + user.unfunded)/ 100000000).toFixed(2));
+          user.item.find('.item-body').text(user.message);
+        }
         repositionUsers();
       }
     });
     
     var inputDefaultText = $("#input-text").val();
     
+    $('#example-text').click(function() {
+      $("textarea#input-text").focus();
+    });
+    
     $("textarea#input-text").focusin(function() {
-      if ($(this).val() == inputDefaultText) $(this).val('').css('display', 'block');
+      $('#example-text').hide();
     }).focusout(function() {
-      if (!/[^\s]/.test($(this).val())) $(this).val(inputDefaultText);
+      if (!/[^\s]/.test($(this).val())) $('#example-text').show();
     });
     
     getUserInfo();

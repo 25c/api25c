@@ -100,8 +100,9 @@ script
             user.image.animate({ left: 50 * i }, 500);
             user.image.attr('data-position', i);
           }
-        } else {
+        } else if (user.currentUser) {
           user.image.css({left: 50 * MAX_USERS + 1});
+          users[i].position = -1;
           currentUserVisible = false;
         }
         if (currentUserVisible) {
