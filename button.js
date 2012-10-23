@@ -457,7 +457,7 @@ app.post('/users/:button_uuid', function(req, res) {
                       }
                       queryString += " ORDER BY id;";
                     }
-                                                        
+                                      
                     pgWebClient.query(queryString, function(err, result) {
                       usersResult = result;
                       if (err != null) {
