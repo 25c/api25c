@@ -66,12 +66,12 @@ catch (err)
 
 var pgWebUrl = process.env.DATABASE_WEB_URL;
 if (pgWebUrl == undefined) {
-	pgWebUrl = "tcp://localhost/web25c_development";
+	pgWebUrl = "tcp://superuser@localhost/web25c_development";
 }
 
 var pgDataUrl = process.env.DATABASE_DATA_URL;
 if (pgDataUrl == undefined) {
-	pgDataUrl = "tcp://localhost/data25c_development";
+	pgDataUrl = "tcp://superuser@localhost/data25c_development";
 }
 
 if (process.env.NODE_ENV == "production") {
