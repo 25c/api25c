@@ -13,6 +13,7 @@ _tip25c_belt_jquery(document).ready(function($) {
   var $userInfo = $();
   var maxCount = 9999;
   var hoverUser = {};
+  var persistUserTooltip = false;
   
   function hideTooltip() {
     clearTimeout(timer);
@@ -24,8 +25,8 @@ _tip25c_belt_jquery(document).ready(function($) {
   function showButtonTooltip(uuid) {
     hideTooltip();
     var offset = $iframe.offset();
-    var left = offset.left;
-    var top = offset.top + $iframe.height() - 5;
+    var left = offset.left + 312;
+    var top = offset.top + 59;
     $tooltip.css({
       visibility: "visible",
       left: left + 5,
@@ -41,12 +42,13 @@ _tip25c_belt_jquery(document).ready(function($) {
     if (user.unfunded) tipHtml += "<div class='user-tip'>$" + (user.unfunded / 100000000).toFixed(2) + " Pledged</div>";
     var offset = $iframe.offset();
     var left = offset.left + user.left;
-    var top = offset.top + $iframe.height() - 5;
+    var top = offset.top + user.top;
     if (user.url) {
-      var userElement = '<a id="user-profile" href="' + user.profileUrl  +'" target="_blank">' + user.name + '</a>';
+      var userElement = '<a id="user-profile" href="' + user.url  +'" target="_blank">' + user.name + '</a>';
     } else {
       var userElement = '<span id="user-profile">' + user.name + '</span>';
     }
+    // if (user.currentUser) userElement += ' <span>(You)</span>';
     $userInfo.empty().append(userElement).append(tipHtml).css({
       visibility: 'visible',
       left: left,
@@ -102,12 +104,11 @@ _tip25c_belt_jquery(document).ready(function($) {
         var testTooltip = false;
       }
       
-      // DEBUG
-      testTooltip = true;
       var button = buttons[uuid];
+      button.selfButton = !testTooltip && (userName == button.user || pledgeName == button.user);
       
       if (button.count > 0) {
-        if (!testTooltip && (userName == button.user || pledgeName == button.user)) {
+        if (button.selfButton) {
           $tooltip.find('.if-self').show();
         } else {
           setTooltipCount(button.count);
@@ -186,6 +187,16 @@ _tip25c_belt_jquery(document).ready(function($) {
   $.receiveMessage(function(e) {
     var data = JSON.parse(e.data);
     var command = data.command;
+    if (data.uuid && buttons[data.uuid].selfButton) {
+      $tooltip.find('.if-self').show();
+      $.postMessage(
+        String(0),
+        (src.indexOf("localhost") > 0 ? "http:" : "https:") + src,
+        window.frames[data.uuid]
+      );
+      showButtonTooltip(data.uuid);
+      return;
+    }
     switch (command) {
       case "increment":
         if (buttons[data.uuid].count + 25 < maxCount) buttons[data.uuid].count += 25;
@@ -206,22 +217,24 @@ _tip25c_belt_jquery(document).ready(function($) {
         hideTooltip();
         $tooltip.text("");
         break;
-      case "user":
-        clearTimeout(timer);
-        showUserInfo(data.user);
-        break;
+      // case "user":
+      //   clearTimeout(timer);
+      //   showUserInfo(data.user);
+      //   break;
       case "button":
         clearTimeout(timer);
         showButtonTooltip(data.uuid);
         break;
       case "hide":
-        clearTimeout(timer);
-        timer = setTimeout(hideTooltip, 500);
+        if (!persistUserTooltip) {
+          clearTimeout(timer);
+          timer = setTimeout(hideTooltip, 500);
+        }
         break;
     }
   }, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
   
-  $("a.tip-25c-belt").each(function() {
+  $("a.tip-25c-feed").each(function() {
     var a = $(this);
     var uuid = a.attr("data-id");
     
@@ -232,7 +245,7 @@ _tip25c_belt_jquery(document).ready(function($) {
     button.count = 0;
     
     buttons[uuid] = button;
-    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/belt/' + uuid;
+    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/feed/' + uuid;
     $iframe = $('<iframe />', {
       name: uuid,
       src: src_url,
@@ -242,7 +255,7 @@ _tip25c_belt_jquery(document).ready(function($) {
       css: {
         display: 'none',
         width: 400,
-        height: 200
+        height: 320
       }
     });
     a.after($iframe);
@@ -251,19 +264,22 @@ _tip25c_belt_jquery(document).ready(function($) {
       $(this).show();
     });
   });
+  
   $tooltip = $('<div id="tip-25c-tooltip"></div>');
-  $userInfo = $('<div id="tip-25c-user-info"></div>');
+  // $userInfo = $('<div id="tip-25c-user-info"></div>');
   $tooltip.add($userInfo).bind({
     mouseenter: function() {
-      clearTimeout(timer);      
+      clearTimeout(timer);
+      persistUserTooltip = true;     
     },
     mouseleave: function() {
       timer = setTimeout(hideTooltip, 500);
+      persistUserTooltip = false;
     }
   });
   
   $("body").append($tooltip);
-  $("body").append($userInfo);
+  // $("body").append($userInfo);
   $("head").append('<style type="text/css">\
     #tip-25c-tooltip, #tip-25c-user-info {\
       position: absolute;\
@@ -292,6 +308,9 @@ _tip25c_belt_jquery(document).ready(function($) {
       -webkit-box-sizing: content-box;\
       -moz-box-sizing: content-box;\
       box-sizing: content-box;\
+      font-smooth: always;\
+      -webkit-font-smoothing: antialiased;\
+      font-smoothing: antialiased;\
     }\
     #tip-25c-user-info {\
       width: 140px;\

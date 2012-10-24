@@ -22,27 +22,56 @@ html(lang="en")
         -moz-user-select: none;
         -o-user-select: none;
         user-select: none;
+        font-smooth: always;
+        -webkit-font-smoothing: antialiased;
+        font-smoothing: antialiased;
       }
       #outer-container{
-        padding: 5px;
-        border: 1px solid #ccc;
+        border: 1px solid #ddd;
         border-radius: 5px;
-        background-color: #f6f6f6;
-        width: 322px;
-        height: 63px;
+        width: 398px;
+        height: 315px;
         overflow: hidden;
       }
-      #button-container{
+      #input-container {
+        background-color: #f6f6f6;
+        padding: 10px;
+      }
+      #input-image {
         float: left;
-        width: 72px;
+        width: 50px;
+        height: 50px;
+        background-repeat: no-repeat;
+        background-size: 50px 50px;
       }
-      #button-message {
-        margin: 0 0 5px 0;
+      #input-text {
+        font: inherit;
+        float: left;
+        height: 46px;
+        width: 234px;
+        border: 1px solid #ddd;
+        margin: 0 0 0 10px;
+        padding: 2px 0 0 0;
+        border-radius: 5px;
+        line-height: 14px;
       }
-      form {
-        //- float: left;
+      #input-text:focus {
+        display: block;
+      }
+      #example-text {
+        position: absolute;
+        top: 2px;
+        left: 63px;
+        color: #aaa;
+        width: 230px;
+      }
+      #button-container{
+        position: relative;
       }
       #button-wrapper {
+        margin-top: 5px;
+        float: right;
+        width: 72px;
         position: relative;
       }
       #submit-button, #undo {
@@ -69,52 +98,50 @@ html(lang="en")
         width: 12px;
         height: 12px;
       }
-      #users-container {
+      #feed-container {
         position: relative;
-        width: 200%;
-        margin: 0 0 0 82px;
+        margin: 10px;
       }
-      #users-message {
-        margin: 0 0 5px 0;
-      }
-      #users-image-container {
-        float: left;
-      }
-      .user-image, #call-image {
+      .feed-item {
         position: absolute;
-        //- float: left;
-        top: 20px;
-        display: none;
-        height: 37px;
-        width: 40px;
-        //- margin: 0 10px 0 0;
-        padding: 3px 0 0 0;
-        //- border-radius: 5px;
+        top: 0;
+        left: 0;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+        width: 378px;
+      }
+      .item-image {
+        float: left;
+        height: 42px;
+        width: 50px;
+        padding: 8px 0 0 0;
         background-repeat: no-repeat;
-        background-size: 40px 40px;
+        background-size: 50px 50px;
         text-align: center;
         font-size: 11px;
         line-height: 1.1em;
         color: white;
       }
-      #call-image {
+      
+      .item-text {
+        float: left;
+        width: 318px;
+        margin: 0 0 0 10px;
+      }
+      
+      .item-title {
         display: block;
+        margin-bottom: 5px;
+        color: #f26422;
       }
-      #call-arrow {
-        height: 12px;
-        width: 40px;
-        margin: 17px 10px 0 0;
-        background-repeat: no-repeat;
-        background-image: url("#{ ASSETS_URL_BASE }/style/arrow.png");
-        float: left;
+      
+      .clear{
+        clear: both;
       }
-      #call-message {
-        float: left;
-        width: 140px;
-        margin: px 0 0 0;
-        font-weight: bold;
-        //- font-size: 16px;
-        line-height: 1em;
+      
+      a:link, a:visited {
+        color: #08c;
+        text-decoration: none;
       }
       
     script
@@ -130,20 +157,23 @@ html(lang="en")
 
   body
     #outer-container
-      #button-container
-        #button-message Click to tip:
-        form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
+      #input-container
+        a#input-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
+        form#button-container(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
+          textarea#input-text(name="message")
+          div#example-text Leave a message and a tip. Your message will get higher the more you tip!
           input(type="hidden", name="_csrf", value=req.session._csrf)
           input(type="hidden", name="_referrer", value=referrer)
           #button-wrapper(class="btn-large")
             #submit-button
             #undo
-      #users-container 
-        #users-message Top Contributors
-        #call-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
-          div YOUR FACE HERE
-        #call-arrow 
-        #call-message Give a tip and appear as a top contributor!
-        div(style="clear:both;") 
-      div(style="clear:both;")
-
+        .clear
+      #feed-container
+        .feed-item#call-item
+          .item-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
+            div YOUR FACE HERE
+          .item-text#call-text
+            .item-title Give a tip and your message will appear!
+            .item-body Show your appreciation and be recognized for your support. 
+              a(href="#{ WEB_URL_BASE }/faq", target="_blank") Learn more about 25c...
+          .clear

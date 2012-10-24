@@ -25,6 +25,7 @@ var uuid = require('node-uuid');
 var pg = require('pg').native;
 var express = require('express');
 var querystring = require('querystring');
+var crypto = require('crypto');
 
 var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a900');
 airbrake.developmentEnvironments = ['development'];
@@ -261,6 +262,14 @@ app.post('/button/:button_uuid', function(req, res) {
 
   //// get number of clicks to send
   var amount = req.param('amount') || 25;
+  var button_uuid = req.params.button_uuid;
+  var message = req.param('message');  
+  
+  var referrer = req.param('_referrer');
+  if (referrer) {
+    referrer = /^[a-z]+:\/\/\/?[^\/]+(\/[^?]*)/i.exec(referrer)[0];
+    var referrer_hash = crypto.createHash('md5').update(referrer).digest("hex");
+  }
   
 	if (req.signedRailsCookies['_25c_session']) {
     redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
@@ -269,6 +278,19 @@ app.post('/button/:button_uuid', function(req, res) {
         airbrake.notify(err);
         res.json({ error: true });
       } else {
+        
+        //// push user message to DB
+        if (referrer && message) {
+          redisDataClient.set(user_uuid + ':' + button_uuid + ':' + referrer_hash, message, function(err, balance_str) {
+            if (err != null) {
+              console.log("POST error setting user message.");
+              airbrake.notify(err);
+            } else {
+              // message sent.
+            }
+          });
+        }
+        
         //// fetch user and check balance
         redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
           if (err != null) {
@@ -352,10 +374,21 @@ app.get('/belt/:button_uuid', function(req, res) {
 	});
 });
 
-app.post('/belt/:button_uuid', function(req, res) {
+app.post('/users/:button_uuid', function(req, res) {
   
   var button_uuid = req.params.button_uuid;
   var user_uuid = "";
+  var userTips = [];
+  var usersResult = [];
+  var messages = [];
+  
+  var referrer = req.body.referrer;
+  if (referrer) {
+    referrer = /^[a-z]+:\/\/\/?[^\/]+(\/[^?]*)/i.exec(referrer)[0];
+    var referrer_hash = crypto.createHash('md5').update(referrer).digest("hex");
+  }
+  var retrieveMessages = req.body.messages == "true";
+  
   
   if (req.signedRailsCookies['_25c_session']) {
     redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, uuid) {
@@ -392,19 +425,21 @@ app.post('/belt/:button_uuid', function(req, res) {
             var button_id = result.rows[0].id;
             pg.connect(pgDataUrl, function(err, pgDataClient) {
               if (err != null) {
-               console.log("Could not connect to data postgres: " + err);
-               airbrake.notify(err);
-               res.json({ error: true });
-             } else {
-                pgDataClient.query(
-                  "SELECT user_id, SUM(CASE WHEN clicks.state=1 THEN clicks.amount ELSE null END) AS unfunded, \
+                console.log("Could not connect to data postgres: " + err);
+                airbrake.notify(err);
+                res.json({ error: true });
+              } else {
+                var queryString = "SELECT user_id, SUM(CASE WHEN clicks.state=1 THEN clicks.amount ELSE null END) AS unfunded, \
                   SUM(CASE when clicks.state BETWEEN 2 AND 4 THEN clicks.amount ELSE null END) AS funded \
-                  FROM clicks WHERE state BETWEEN 1 AND 4 AND clicks.button_id=$1 \
-                  GROUP BY user_id ORDER BY user_id;", [ button_id ], function(err, result) {
+                  FROM clicks WHERE state BETWEEN 1 AND 4 AND clicks.button_id=$1";
+                if (referrer) queryString += " AND clicks.referrer LIKE '" + referrer + "%'";
+                queryString += " GROUP BY user_id ORDER BY user_id;";
+                
+                pgDataClient.query(queryString, [ button_id ], function(err, result) {
                  if (err != null) {
                    console.log("Getting click count error: " + err);
                   } else {
-                    var userTips = result.rows;
+                    userTips = result.rows;
                     
                     var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE";
                     
@@ -422,60 +457,52 @@ app.post('/belt/:button_uuid', function(req, res) {
                       }
                       queryString += " ORDER BY id;";
                     }
-                                                        
+                                      
                     pgWebClient.query(queryString, function(err, result) {
+                      usersResult = result;
                       if (err != null) {
                         console.log("Getting user email error: " + err);
                         airbrake.notify(err);
                         res.json({ error: true });
-                      } else if (result.rows[0] == undefined) {
+                      } else if (usersResult.rows[0] == undefined) {
                         console.log("No users found.");
                         res.json({});
-                      } else if (result.rows.length != userTips.length && result.rows.length != userTips.length + 1) {
+                      } else if (usersResult.rows.length != userTips.length && usersResult.rows.length != userTips.length + 1) {
                         console.log("Number of users found doesn't match tips found.");
                         airbrake.notify("Number of users found doesn't match tips found.");
                         res.json({ error: true });
                       } else {
-                        var beltUsers = [];
-                        var offset = 0;                  
-                        for (i = 0 ; i < result.rows.length; i++) {
-                          var user = result.rows[i];
-                          if (user.first_name || user.last_name) {
-                            var name = user.first_name + " " + user.last_name;
-                          } else {
-                            var name = user.nickname || user.email.substring(0, user.email.indexOf("@"));
-                          }
-                          var profileUrl = user.nickname ? TIP_URL_BASE + "/" + user.nickname : '';
-                          var pictureUrl = user.picture_file_name ? USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg" : '';
+                        if (retrieveMessages) {
+                          var multi = redisDataClient.multi();
+                          var userUuids = [];
                           
-                          if (user.uuid == user_uuid) {
-                            var currentUser = true;
-                          } else {
-                            var currentUser = false;
+                          for (i = 0 ; i < usersResult.rows.length; i++) {
+                            var user = usersResult.rows[i];
+                            userUuids.push(user.uuid);                            
+                            multi.get(user.uuid + ':' + button_uuid + ':' + referrer_hash);
                           }
                           
-                          if (user.uuid == user_uuid && result.rows.length > userTips.length) {
-                            offset = -1;
-                            var funded = 0;
-                            var unfunded = 0;
-                          } else {
-                            
-                            var funded = parseInt(userTips[i + offset].funded) || 0;
-                            var unfunded = parseInt(userTips[i + offset].unfunded) || 0;
-                            
-                          }
-                          beltUsers.push({
-                            currentUser: currentUser,
-                            uuid: user.uuid,
-                            name: name,
-                            profileUrl: profileUrl,
-                            pictureUrl: pictureUrl,
-                            funded: funded,
-                            unfunded: unfunded
+                          multi.exec(function(err, result) {
+                            if (err) {
+                              console.log("Error getting user messages.");
+                              airbrake.notify(err);
+                        			res.json({ error: true });
+                            } else {
+                              for (i in userUuids) {
+                                messages[userUuids[i]] = result[i] || '';
+                              }
+                              sendUserData();
+                            }
                           });
                           
+                          redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
+                            
+                        
+                            
+                          });
+                        } else {
+                          sendUserData();
                         }
-                        res.json({ beltUsers: beltUsers });
                       }
                     });
                   }
@@ -487,6 +514,51 @@ app.post('/belt/:button_uuid', function(req, res) {
       }
     });
   }
+  
+  function sendUserData() {
+    var users = [];
+    var offset = 0;                  
+    for (i = 0 ; i < usersResult.rows.length; i++) {
+      var user = usersResult.rows[i];
+      if (user.first_name || user.last_name) {
+        var name = user.first_name + " " + user.last_name;
+      } else {
+        var name = user.nickname || user.email.substring(0, user.email.indexOf("@"));
+      }
+      var profileUrl = user.nickname ? TIP_URL_BASE + "/" + user.nickname : '';
+      var pictureUrl = user.picture_file_name ? USERS_URL_BASE + "/users/pictures/" + user.uuid + "/thumb.jpg" : '';
+    
+      if (user.uuid == user_uuid) {
+        var currentUser = true;
+      } else {
+        var currentUser = false;
+      }
+    
+      if (user.uuid == user_uuid && usersResult.rows.length > userTips.length) {
+        offset = -1;
+        var funded = 0;
+        var unfunded = 0;
+      } else {
+      
+        var funded = parseInt(userTips[i + offset].funded) || 0;
+        var unfunded = parseInt(userTips[i + offset].unfunded) || 0;
+      
+      }
+      users.push({
+        currentUser: currentUser,
+        uuid: user.uuid,
+        name: name,
+        profileUrl: profileUrl,
+        pictureUrl: pictureUrl,
+        funded: funded,
+        unfunded: unfunded,
+        message: messages[user.uuid] || ''
+      });
+    
+    }
+    res.json({ users: users });
+  }
+  
 });
 
 app.get('/feed/:button_uuid', function(req, res) {  

@@ -2,24 +2,25 @@ script
   $(function() {
   
     var MAX_USERS = 5;
-    var beltUsers = [];
+    var users = [];
     var baseAmount = null;
     var currentUserIndex = -1;
     var currentUserVisible = false;
     window.hasTooltip = true;
     var hasUsers = false;
+    var itemHeight = 60;
   
     // FUNCTIONS
     function getUserInfo() {
       $.ajax({
         type: "POST",
-        url: "/belt/" + buttonUuid,
-        data: {_csrf: sessionCsrf},
+        url: "/users/" + buttonUuid,
+        data: {messages: 'true', referrer: parentUrl, _csrf: sessionCsrf},
         success: function(data) {
-          if (!data.beltUsers) {
+          if (!data.users) {
             // something went wrong
           } else {
-            beltUsers = data.beltUsers;
+            users = data.users;
             populateUsers();
           }
         },
@@ -36,14 +37,13 @@ script
     function populateUsers() {
   
       var usersLoaded = 0;
-      beltUsers.sort(sortFunction);
-      $('#call-arrow, #call-message, #call-image').hide();
+      users.sort(sortFunction);
     
-      for (i in beltUsers) {
-    
-        var user = beltUsers[i];
+      for (i in users) {
+  
+        var user = users[i];
         var position = i;
-      
+              
         if (user.currentUser) {
           currentUserIndex = i;
           if (baseAmount === null) baseAmount = user.unfunded;
@@ -56,73 +56,112 @@ script
         } else if (i >= MAX_USERS || (user.funded == 0 && user.unfunded == 0)) {
           continue;
         }
-              
-        var $userImage = $('<a />', {
-          class: 'user-image',
-          href: user.profileUrl || 'javascript:void(0)',
-          target: '_blank',
+                        
+        if (user.profileUrl) {
+          var $itemImage = $('<a />', {
+            target: '_blank',
+            href: user.profileUrl
+          });
+          var $itemTitle = $('<a />', {
+            target: '_blank',
+            href: user.profileUrl
+          });
+        } else {
+          var $itemImage = $('<div />');
+          var $itemTitle = $('<div />');
+        }
+                
+        $itemImage.addClass('item-image').css(
+          'background-image',
+          user.pictureUrl ? 'url(' + user.pictureUrl + ')' : 'url("' + assetsUrlBase + '/users/pictures/no_pic.png")'
+        );
+        
+        if (user.currentUser) {
+          $('#input-image').replaceWith($itemImage.clone().removeClass('item-image').attr('id', 'input-image'));
+        }
+        
+        var title = (user.currentUser ? "You" : user.name) 
+          + " (pledged $<span class='tip-amount'>" + ((user.funded + user.unfunded)/ 100000000).toFixed(2) + "</span>)";
+        $itemTitle.addClass('item-title').html(title);
+        
+        var $itemBody = $('<div />', {
+          class: 'item-body'
+        }).text(user.message);
+        
+        var $itemText = $('<div />', { class: 'item-text' }).append($itemTitle, $itemBody);
+        
+        var $feedItem = $('<div />', {
+          class: 'feed-item',
           'data-position': i,
           'css': {
-            left: position * 50,
-            'background-image': user.pictureUrl ? 
-              'url(' + user.pictureUrl + ')'
-              : 'url("' + assetsUrlBase + '/users/pictures/no_pic.png")'
+            top: itemHeight * position
           }
-        });
+        }).append($itemImage, $itemText);
         
-        if (!user.profileUrl) $userImage.css('cursor', 'default');
-      
-        $('#users-container').append($userImage);
-        $userImage.delay(500 + i * 500).fadeIn('slow');
-        beltUsers[i].image = $userImage;
-        beltUsers[i].position = position;
+        $('#feed-container').append($feedItem);
+        $feedItem.delay(500 + i * 500).fadeIn('slow');
+        users[i].item = $feedItem;
+        users[i].position = position;
         usersLoaded++;
-      
       }
+      
+      $('#call-item').hide();      
+      
       if (usersLoaded < MAX_USERS && !currentUserVisible) {
-        $('#call-image').css({left: usersLoaded * 50}).delay(500 + usersLoaded * 500).fadeIn('slow');
-      } else {
-        // $('#call-image').fadeOut(500);
+        $('#call-item').css({top: usersLoaded * itemHeight}).delay(500 + usersLoaded * 500).fadeIn('slow');
       }
     }
   
     function repositionUsers() {
-      beltUsers.sort(sortFunction);
+      users.sort(sortFunction);
     
-      for (i in beltUsers) {
-        var user = beltUsers[i];
+      for (i in users) {
+        var user = users[i];
+        if (user.currentUser) {
+          currentUserVisible = true;
+          currentUserIndex = i;
+        }
         if (user.funded != 0 || user.unfunded != 0) {
-          if (user.currentUser) {
-            currentUserVisible = true;
-            currentUserIndex = i;
-          }
           if (user.position != i) {
-            user.image.animate({ left: 50 * i }, 500);
+            user.item.animate({ top: itemHeight * i }, 500);
             user.position = i;
-            user.image.attr('data-position', i);
+            user.item.attr('data-position', i);
           }
-        } else {
-          user.image.css({left: 50 * MAX_USERS + 1});
+        } else if (user.currentUser) {
+          user.item.css({top: itemHeight * MAX_USERS + 1});
+          users[i].position = -1;
           currentUserVisible = false;
         }
         if (currentUserVisible) {
-          $('#call-image').hide();
+          $('#call-item').hide();
         } else {
-          $('#call-image').show();
+          $('#call-item').show();
         }
       }
     }
   
-    $('#users-container').on({
+    $('#outer-container').on({
       mouseenter: function() {
-        var $this = $(this);
-        var user = beltUsers[$this.attr('data-position')];
+        if ($(this).attr('id') == 'input-image') {
+          if (currentUserIndex != -1) {
+            var $item = $(this);
+            var user = users[currentUserIndex];
+          } else {
+            return;
+          }
+        } else {
+          var $item = $(this).parent();
+          if ($item.attr('id') == "call-item") return;
+          var user = users[$item.attr('data-position')];
+        }
         var userData = {
-          left: $this.offset().left,
+          left: $item.offset().left,
+          top: $item.offset().top + $item.height(),
           name: user.name,
           url: user.profileUrl,
           funded: user.funded,
-          unfunded: user.unfunded
+          unfunded: user.unfunded,
+          currentUser: user.currentUser
         }
         $.postMessage(
           JSON.stringify({command: 'user', user: userData}),
@@ -135,7 +174,7 @@ script
           parentUrl
         );
       }, 
-    }, '.user-image');
+    }, '.item-image, #input-image');
   
     $('#button-wrapper').bind({
       mouseenter: function() {
@@ -154,15 +193,33 @@ script
     
     $("form").ajaxSuccess(function(event, request, settings) {
       if (settings.url.indexOf('button') != -1) {
-        if (currentUserIndex >= 0) beltUsers[currentUserIndex].unfunded = baseAmount + totalAmount * 1000000;
+        if (currentUserIndex >= 0) {
+          var user = users[currentUserIndex];
+          user.unfunded = baseAmount + totalAmount * 1000000;
+          user.message = $("#input-text").val();
+          user.item.find('.tip-amount').text(((user.funded + user.unfunded)/ 100000000).toFixed(2));
+          user.item.find('.item-body').text(user.message);
+        }
         repositionUsers();
       }
+    });
+    
+    var inputDefaultText = $("#input-text").val();
+    
+    $('#example-text').click(function() {
+      $("textarea#input-text").focus();
+    });
+    
+    $("textarea#input-text").focusin(function() {
+      $('#example-text').hide();
+    }).focusout(function() {
+      if (!/[^\s]/.test($(this).val())) $('#example-text').show();
     });
     
     getUserInfo();
   
     // DEBUG
-    setTimeout(function() {
-      repositionUsers();
-    }, 5000);
+    // setTimeout(function() {
+    //   repositionUsers();
+    // }, 5000);
   });
