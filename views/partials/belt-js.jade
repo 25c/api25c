@@ -54,7 +54,6 @@ script
             currentUserVisible = true;
           }
         } else if (i >= MAX_USERS || (user.funded == 0 && user.unfunded == 0)) {
-          users = users.splice(i, 1);
           continue;
         }
               
@@ -97,7 +96,7 @@ script
           currentUserIndex = i;
         }
         if (user.funded != 0 || user.unfunded != 0) {
-          if (user.position != i) {
+          if (user.position != i && user.image) {
             user.image.animate({ left: 50 * i }, 500);
             user.image.attr('data-position', i);
             users[i].position = i;
