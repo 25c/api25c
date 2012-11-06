@@ -441,7 +441,7 @@ app.post('/users/:button_uuid', function(req, res) {
                   } else {
                     userTips = result.rows;
                     
-                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE";
+                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE is_suspended = 0 AND ";
                     
                     if (user_uuid && userTips.length == 0) {
                       queryString += " uuid=LOWER('" + user_uuid + "');";
