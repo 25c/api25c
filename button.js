@@ -511,9 +511,9 @@ app.post('/users/:button_uuid', function(req, res) {
     var users = [];
     var tipDict = {};
     for (i in userTips) {
-      tipDict[userTips.user_id] = userTips[i];
+      tipDict[userTips[i].user_id] = userTips[i];
     }
-                  
+    
     for (i = 0 ; i < usersResult.rows.length; i++) {
       var user = usersResult.rows[i];
       if (user.first_name || user.last_name) {

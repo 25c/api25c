@@ -112,14 +112,6 @@ _tip25c_belt_jquery(document).ready(function($) {
           setTooltipCount(button.count);
         }
       }
-            
-      if (button.count > 0) {
-        if (!testTooltip && (userName == button.user || pledgeName == button.user)) {
-          $tooltip.find('.if-self').show();
-        } else {
-          setTooltipCount(button.count);
-        }
-      }
       
       if (button.user && !(/^\s+$/.test(button.user))) {
         var userHTML = button.user.replace(' ', "&nbsp;");
