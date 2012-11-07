@@ -441,12 +441,12 @@ app.post('/users/:button_uuid', function(req, res) {
                   } else {
                     userTips = result.rows;
                     
-                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE is_suspended = 0 AND ";
+                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE is_suspended = FALSE AND";
                     
                     if (user_uuid && userTips.length == 0) {
                       queryString += " uuid=LOWER('" + user_uuid + "');";
                     } else {
-                      queryString += " id IN (";
+                      queryString += " (id IN (";
                       for (i in userTips) {
                         queryString += userTips[i].user_id;
                         if (i < userTips.length - 1) queryString += ",";
@@ -455,7 +455,7 @@ app.post('/users/:button_uuid', function(req, res) {
                       if (user_uuid) {
                         queryString += " OR uuid=LOWER('" + user_uuid + "')";
                       }
-                      queryString += " ORDER BY id;";
+                      queryString += ") ORDER BY id;";
                     }
                                       
                     pgWebClient.query(queryString, function(err, result) {
