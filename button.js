@@ -419,7 +419,7 @@ app.post('/users/:button_uuid', function(req, res) {
       			res.json({ error: true });
           } else if (result.rows[0] == undefined) {
             console.log("No buttons found.");
-      	    airbrake.notify("No buttons found for fan belt.");
+            // airbrake.notify("No buttons found for fan belt.");
       			res.json({ error: true });
           } else {
             var button_id = result.rows[0].id;
@@ -441,7 +441,7 @@ app.post('/users/:button_uuid', function(req, res) {
                   } else {
                     userTips = result.rows;
                     
-                    var queryString = "SELECT uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE is_suspended = FALSE AND";
+                    var queryString = "SELECT id, uuid, first_name, last_name, nickname, email, picture_file_name FROM users WHERE is_suspended = FALSE AND";
                     
                     if (user_uuid && userTips.length == 0) {
                       queryString += " uuid=LOWER('" + user_uuid + "');";
@@ -467,10 +467,6 @@ app.post('/users/:button_uuid', function(req, res) {
                       } else if (usersResult.rows[0] == undefined) {
                         console.log("No users found.");
                         res.json({});
-                      } else if (usersResult.rows.length != userTips.length && usersResult.rows.length != userTips.length + 1) {
-                        console.log("Number of users found doesn't match tips found.");
-                        airbrake.notify("Number of users found doesn't match tips found.");
-                        res.json({ error: true });
                       } else {
                         if (retrieveMessages) {
                           var multi = redisDataClient.multi();
@@ -495,11 +491,6 @@ app.post('/users/:button_uuid', function(req, res) {
                             }
                           });
                           
-                          redisDataClient.get("user:" + user_uuid, function(err, balance_str) {
-                            
-                        
-                            
-                          });
                         } else {
                           sendUserData();
                         }
@@ -516,8 +507,13 @@ app.post('/users/:button_uuid', function(req, res) {
   }
   
   function sendUserData() {
+    
     var users = [];
-    var offset = 0;                  
+    var tipDict = {};
+    for (i in userTips) {
+      tipDict[userTips.user_id] = userTips[i];
+    }
+                  
     for (i = 0 ; i < usersResult.rows.length; i++) {
       var user = usersResult.rows[i];
       if (user.first_name || user.last_name) {
@@ -534,15 +530,12 @@ app.post('/users/:button_uuid', function(req, res) {
         var currentUser = false;
       }
     
-      if (user.uuid == user_uuid && usersResult.rows.length > userTips.length) {
-        offset = -1;
+      if (tipDict[user.id] == undefined) {
         var funded = 0;
         var unfunded = 0;
       } else {
-      
-        var funded = parseInt(userTips[i + offset].funded) || 0;
-        var unfunded = parseInt(userTips[i + offset].unfunded) || 0;
-      
+        var funded = parseInt(tipDict[user.id].funded) || 0;
+        var unfunded = parseInt(tipDict[user.id].unfunded) || 0;
       }
       users.push({
         currentUser: currentUser,
