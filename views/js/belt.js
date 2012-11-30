@@ -38,7 +38,7 @@ $(function() {
         currentUser = {
           uuid: 99,
           name: 'Joseph',
-          pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/61b300c0b1d8012fff2112313b032602/thumb.jpg"
+          pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"
         };
         
         users = [
@@ -51,7 +51,7 @@ $(function() {
             uuid: 101, 
             amount: 5,
             name: "Cameron", 
-            pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"
+            pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"
           }, {
             uuid: 102, 
             amount: 6, 

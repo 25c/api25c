@@ -182,7 +182,7 @@ $(function() {
               {uuid: 111, amount: 1, name: "Carol", pictureUrl: ""},
               {uuid: 112, amount: 1, name: "Cher", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/988e1d90de80012fca7b12313d13fc17/thumb.jpg"},
               {uuid: 113, amount: 1, name: "Cesaria", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/a89f3870b439012f99ca12313809465c/thumb.jpg"},
-              {uuid: 114, amount: 1, name: "Claire", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/61b300c0b1d8012fff2112313b032602/thumb.jpg"},
+              {uuid: 114, amount: 1, name: "Claire", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
               {uuid: 115, amount: 1, name: "Chloe", pictureUrl: ""},
               {uuid: 116, amount: 1, name: "Christine", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"}
             ]
@@ -198,7 +198,7 @@ $(function() {
             uuid: 1004,
             amount: 10,
             text: "Check out my great response to this article on my personal blog: http://www.something.com/",
-            owner: {uuid: 104, amount: 1, name: "Eric", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/61b300c0b1d8012fff2112313b032602/thumb.jpg"},
+            owner: {uuid: 104, amount: 1, name: "Eric", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
             promoters: []
           },
           {
@@ -357,7 +357,7 @@ $(function() {
       $feedExpand.css({
         'top': '',
         'bottom': ''
-      }).html('<h3>Show Fewer Testimonials</h3>');
+      }).html('<h3>Show Fewer Notes</h3>');
     } else {
       isExpanded = false;
       var $lastDefaultShown = $('.last-default-shown');
@@ -365,7 +365,7 @@ $(function() {
       $('#feed-expand').css({
         'top': newHeight - 56,
         'bottom': 'auto'
-      }).html('<h3>Show All Testimonials</h3>');
+      }).html('<h3>Show All Notes</h3>');
     }
         
     $.postMessage(
