@@ -1,149 +1,72 @@
-doctype 5
-html(lang="en")
-  head
-    script
-      window.buttonUuid = "#{req.params.button_uuid}";
-      window.sessionCsrf = "#{req.session._csrf}";
-      window.assetsUrlBase = "#{ASSETS_URL_BASE}";
-      window.parentUrl = "#{req.header('Referer')}";
-      window.webUrlBase = "#{WEB_URL_BASE}";
-    
-    include partials/jquery-js.jade
-    include partials/button-js.jade
-    include partials/belt-js.jade
+extends widget
 
-    style(type="text/css")
-      body { 
-        margin: 0; 
-        color: #333;
-        font: normal normal 400 13px helvetica, arial, sans-serif;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -o-user-select: none;
-        user-select: none;
-      }
-      #outer-container{
-        padding: 5px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f6f6f6;
-        width: 322px;
-        height: 63px;
-        overflow: hidden;
-      }
-      #button-container{
-        float: left;
-        width: 72px;
-      }
-      #button-message {
-        margin: 0 0 5px 0;
-      }
-      form {
-        //- float: left;
-      }
-      #button-wrapper {
-        position: relative;
-      }
-      #submit-button, #undo {
-        background-image: url("#{ ASSETS_URL_BASE }/buttons/25c-btn-large.png");
-      }
-      #submit-button {
-        margin: 0; 
-        padding: 0;
-        border: 0px none transparent;
-        cursor: pointer;
-        width: 72px;
-        height: 40px;
-      }
-      #undo {
-        display: none;
-        cursor: pointer;
-        position: absolute;
-        top: 0;
-        right: 0;
-        z-index: 10;
-      }
-      .btn-large > #undo, .icon-large > #undo {
-        background-position: 0 12px;
-        width: 12px;
-        height: 12px;
-      }
-      #users-container {
-        position: relative;
-        width: 200%;
-        margin: 0 0 0 82px;
-      }
-      #users-message {
-        margin: 0 0 5px 0;
-      }
-      #users-image-container {
-        float: left;
-      }
-      .user-image, #call-image {
-        position: absolute;
-        //- float: left;
-        top: 20px;
-        display: none;
-        height: 37px;
-        width: 40px;
-        //- margin: 0 10px 0 0;
-        padding: 3px 0 0 0;
-        //- border-radius: 5px;
-        background-repeat: no-repeat;
-        background-size: 40px 40px;
-        text-align: center;
-        font-size: 11px;
-        line-height: 1.1em;
-        color: white;
-      }
-      #call-image {
-        display: block;
-      }
-      #call-arrow {
-        height: 12px;
-        width: 40px;
-        margin: 17px 10px 0 0;
-        background-repeat: no-repeat;
-        background-image: url("#{ ASSETS_URL_BASE }/style/arrow.png");
-        float: left;
-      }
-      #call-message {
-        float: left;
-        width: 140px;
-        margin: px 0 0 0;
-        font-weight: bold;
-        //- font-size: 16px;
-        line-height: 1em;
-      }
-      
-    script
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-34638501-1']);
-      _gaq.push(['_setDomainName', '25c.com']);
-      _gaq.push(['_trackPageview']);
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
+block scripts
+  | <script>
+  include js/belt.js
+  | </script>
 
-  body
-    #outer-container
-      #button-container
-        #button-message Click to tip:
-        form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
-          input(type="hidden", name="_csrf", value=req.session._csrf)
-          input(type="hidden", name="_referrer", value=referrer)
-          #button-wrapper(class="btn-large")
-            #submit-button
-            #undo
-      #users-container 
-        #users-message Top Contributors
-        #call-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
-          div YOUR FACE HERE
-        #call-arrow 
+block css
+  style(type="text/css")
+    #outer-container{
+      padding: 3px;
+      border: 1px solid #d2cfcf;
+      width: 449px;
+      height: 60px;
+      overflow: hidden;
+      background-color: #eff5f7;
+    }
+    #users-container {
+      float: left;
+      width: 300px;
+      margin: 0 0 0 0;
+    }
+    #users {
+      position: relative;
+      width: 200%;
+      margin: 0 0 0 0;
+    }
+    .user-image, #call-image {
+      position: absolute;
+      top: 0;
+      margin: 0;
+      display: none;
+      height: 60px;
+      width: 60px;
+      background-repeat: no-repeat;
+      background-size: 60px;
+    }
+    #call-image {
+      height: 58px;
+      line-height: 58px !important;
+      width: 58px;
+      border: 1px dotted #d2cfcf;
+      text-align: center;
+      color: #202223;
+      font: normal normal 600 12px helvetica, arial, sans-serif;
+      background-color: white;
+    }
+    #call-message {
+      float: left;
+      line-height: 60px;
+      font-style: italic;
+      color: #4c4c4c;
+    }
+    #input-container {
+      padding: 10px 3px 0 0;
+      float: right;
+    }
+
+block content
+  h1 Top Fans
+  #outer-container
+    #users-container
+      #users
+        #info-container
         #call-message Give a tip and appear as a top contributor!
-        div(style="clear:both;") 
-      div(style="clear:both;")
+        //- #call-image And you!
+        .clear
+    #input-container
+      form.tip-form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
+        include partials/_button_standard.jade 
+    .clear
 
