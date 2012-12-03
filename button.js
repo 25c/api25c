@@ -7,7 +7,7 @@
 //
 // Date : May 7th 2012
 //
-// (C) Copyright 2012 25c inc. 
+// (C) Copyright 2012 25c inc.
 //
 //
 	 
@@ -373,6 +373,8 @@ app.get('/belt/:button_uuid', function(req, res) {
 	  USERS_URL_BASE: USERS_URL_BASE
 	});
 });
+
+app.post
 
 app.post('/users/:button_uuid', function(req, res) {
   
