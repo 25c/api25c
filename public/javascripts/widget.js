@@ -27,7 +27,7 @@ _tip25c_feed_jquery(document).ready(function($) {
         
     if ($this.hasClass('tip-25c-belt')) {
       var widgetType = 'belt';
-      var widgetWidth = 460;
+      var widgetWidth = 457;
       var widgetHeight = 100;
     } else if ($this.hasClass('tip-25c-feed')) {
       var widgetType = 'feed';
@@ -36,7 +36,13 @@ _tip25c_feed_jquery(document).ready(function($) {
     }
     
     var uuid = $this.attr("data-id");
-    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/' + widgetType + '/' + uuid;
+    var url = $this.attr("data-url");
+    
+    // DEBUG
+    url = 'http://www.test.com';
+    
+    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/' + widgetType 
+    + '/' + uuid + "?url=" + encodeURIComponent(url);
     
     $iframe = $('<iframe />', {
       'data-uuid': uuid,
@@ -53,7 +59,5 @@ _tip25c_feed_jquery(document).ready(function($) {
     
     $this.append($iframe);
   });
-  
-  
   
 });

@@ -8,8 +8,7 @@ $(function() {
 
   // STATE VARIABLES
   var isExpanded = false;
-  var testObject = {uuid: '', amount: 0.25};
-  var user = [];
+  var user = {};
   var comments = [];
   var promoteTips = {};
   
@@ -17,8 +16,79 @@ $(function() {
   var $commentInput = $('textarea#comment-input');
   var $feedExpand = $('#feed-expand');
   
+  // TEXT
   var DEFAULT_COMMENT = $commentInput.val();
   var ERROR_COMMENT = "Please enter a comment.";
+  
+  // DEBUG
+  var DEBUG_MODE = false;
+  
+  var fakeUser = {
+    uuid: 99,
+    name: 'Lionel',
+    pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/0d6174d0ec9a012fc7f71231381d4d5a/thumb.jpg"
+  };
+  
+  fakeComments = [
+    {
+      uuid: 1000,
+      amount: 25,
+      text: "This is my awesome comment.",
+      owner: {uuid: 100, amount: 25, name: "Al", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/12548470f9f3012ff5c71231381369e0/thumb.jpg"},
+      promoters: [
+        {uuid: 106, amount: 25, name: "Alice", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/e4788250f48e012f6e12123139081365/thumb.jpg"},
+        {uuid: 107, amount: 25, name: "Ann", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/22cf6310d918012ff891123138152cb3/thumb.jpg"}
+      ]
+    },
+    {
+      uuid: 1001,
+      amount: 55,
+      text: "Thanks so much for the great article!",
+      owner: {uuid: 101, amount: 50, name: "Bob", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/31a365c0b25e012f50491231381d2446/thumb.jpg"},
+      promoters: [
+        {uuid: 108, amount: 5, name: "Barbara", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/41c86070aebd012f4c7222000a8c4def/thumb.jpg"}
+      ]
+    },
+    {
+      uuid: 1002,
+      amount: 40,
+      text: "Excellent job getting this info.",
+      owner: {uuid: 102, amount: 25, name: "Carl", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/4fe81770f48b012f49af1231381554d7/thumb.jpg"},
+      promoters: [
+        {uuid: 109, amount: 25, name: "Charlotte", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"},
+        {uuid: 110, amount: 2, name: "Cameron", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/57853590de7f012fca7512313d13fc17/thumb.jpg"},
+        {uuid: 111, amount: 25, name: "Carol", pictureUrl: ""},
+        {uuid: 112, amount: 25, name: "Cher", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/988e1d90de80012fca7b12313d13fc17/thumb.jpg"},
+        {uuid: 113, amount: 25, name: "Cesaria", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/a89f3870b439012f99ca12313809465c/thumb.jpg"},
+        {uuid: 114, amount: 25, name: "Claire", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
+        {uuid: 115, amount: 25, name: "Chloe", pictureUrl: ""},
+        {uuid: 116, amount: 25, name: "Christine", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"}
+      ]
+    },
+    {
+      uuid: 1003,
+      amount: 40,
+      text: "Wow! I didn't realize that this was such an interesting topic.",
+      owner: {uuid: 103, amount: 40, name: "Dave", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"},
+      promoters: []
+    },
+    {
+      uuid: 1004,
+      amount: 100,
+      text: "Check out my great response to this article on my personal blog: http://www.something.com/",
+      owner: {uuid: 104, amount: 25, name: "Eric", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
+      promoters: []
+    },
+    {
+      uuid: 1005,
+      amount: 60,
+      text: "Great job!",
+      owner: {uuid: 105, amount: 25, name: "Frank", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/79ca5a80d8f7012f6c8012313d04f26e/thumb.jpg"},
+      promoters: [
+        {uuid: 117, amount: 25, name: "Flore", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/7b6fd560aed4012fd5e0123139180e6a/thumb.jpg"}
+      ]
+    }
+  ];
 
   // FUNCTIONS
   
@@ -41,16 +111,15 @@ $(function() {
   window.submitSuccessCallback = function(form, response) {
     
     // DEBUG
-    response = {uuid: '999'};
+    // response = {uuid: '999'};
     
-    
-    var uuid = form.comment_uuid || response.uuid;
+    var uuid = form.comment_uuid || response.comment_uuid;
     
     var newComment = {};
     var existingComment = findCommentByUuid(uuid);
-    var amount = parseFloat(form.amount.replace('$', ''));
-    
-    if (form.message) {
+    var amount = parseInt(form.amount);
+        
+    if (form.comment_text) {
       if (existingComment) {
         newComment = existingComment;
         promoteTips[uuid] = {
@@ -62,7 +131,7 @@ $(function() {
         newComment.uuid = uuid;
         newComment.owner = user;
       }
-      newComment.text = form.message;
+      newComment.content = form.comment_text;
       newComment.owner.amount = amount;
       newComment.amount = amount;
     } else {
@@ -131,100 +200,28 @@ $(function() {
     return comment;
   }
   
-  function getUserInfo() {
-    $.ajax({
-      type: "POST",
-      url: "/users/" + buttonUuid,
-      data: {messages: 'true', referrer: parentUrl, _csrf: sessionCsrf},
-      success: function(data) {
-        if (!data.users) {
-          // something went wrong
-        } else {
-          
-        }  
-          
-        // DEBUG
-        user = {
-          uuid: 99,
-          name: 'Lionel',
-          pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/0d6174d0ec9a012fc7f71231381d4d5a/thumb.jpg"
-        };
-        
-        // DEBUG
-        comments = [
-          {
-            uuid: 1000,
-            amount: 20,
-            text: "This is my awesome comment.",
-            owner: {uuid: 100, amount: 1, name: "Al", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/12548470f9f3012ff5c71231381369e0/thumb.jpg"},
-            promoters: [
-              {uuid: 106, amount: 1, name: "Alice", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/e4788250f48e012f6e12123139081365/thumb.jpg"},
-              {uuid: 107, amount: 1, name: "Ann", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/22cf6310d918012ff891123138152cb3/thumb.jpg"}
-            ]
-          },
-          {
-            uuid: 1001,
-            amount: 55,
-            text: "Thanks so much for the great article!",
-            owner: {uuid: 101, amount: 50, name: "Bob", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/31a365c0b25e012f50491231381d2446/thumb.jpg"},
-            promoters: [
-              {uuid: 108, amount: 5, name: "Barbara", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/41c86070aebd012f4c7222000a8c4def/thumb.jpg"}
-            ]
-          },
-          {
-            uuid: 1002,
-            amount: 40,
-            text: "Excellent job getting this info.",
-            owner: {uuid: 102, amount: 1, name: "Carl", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/4fe81770f48b012f49af1231381554d7/thumb.jpg"},
-            promoters: [
-              {uuid: 109, amount: 1, name: "Charlotte", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"},
-              {uuid: 110, amount: 2, name: "Cameron", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/57853590de7f012fca7512313d13fc17/thumb.jpg"},
-              {uuid: 111, amount: 1, name: "Carol", pictureUrl: ""},
-              {uuid: 112, amount: 1, name: "Cher", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/988e1d90de80012fca7b12313d13fc17/thumb.jpg"},
-              {uuid: 113, amount: 1, name: "Cesaria", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/a89f3870b439012f99ca12313809465c/thumb.jpg"},
-              {uuid: 114, amount: 1, name: "Claire", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
-              {uuid: 115, amount: 1, name: "Chloe", pictureUrl: ""},
-              {uuid: 116, amount: 1, name: "Christine", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"}
-            ]
-          },
-          {
-            uuid: 1003,
-            amount: 40,
-            text: "Wow! I didn't realize that this was such an interesting topic.",
-            owner: {uuid: 103, amount: 40, name: "Dave", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"},
-            promoters: []
-          },
-          {
-            uuid: 1004,
-            amount: 10,
-            text: "Check out my great response to this article on my personal blog: http://www.something.com/",
-            owner: {uuid: 104, amount: 1, name: "Eric", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
-            promoters: []
-          },
-          {
-            uuid: 1005,
-            amount: 60,
-            text: "Great job!",
-            owner: {uuid: 105, amount: 1, name: "Frank", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/79ca5a80d8f7012f6c8012313d04f26e/thumb.jpg"},
-            promoters: [
-              {uuid: 117, amount: 1, name: "Flore", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/7b6fd560aed4012fd5e0123139180e6a/thumb.jpg"}
-            ]
-          }
-        ];
-        
-        populateUsers();
-      },
-      dataType: "json",
-      async: false
-    });
-  }
-
   function sortFunction(a, b) {
     return(b.amount - a.amount);
   }
 
-  function populateUsers() {
+  function initializeComments(data) {
 
+    if (DEBUG_MODE) {
+      user = fakeUser;
+      comments = fakeComments;
+    } else {
+      user = data.user;
+      comments = data.widget || [];
+    }
+      
+    if (user) {
+      $('#user-image').css({
+        'background-image': DEBUG_MODE ? 'url("' + user.pictureUrl + ')' :
+        'url("' + window.usersUrlBase + '/users/pictures/' + user.uuid + '/thumb.jpg")'
+      }).show();
+      $commentInput.width(391);
+    }
+        
     comments.sort(sortFunction);
   
     for (i in comments) {
@@ -238,7 +235,9 @@ $(function() {
       $('#feed-container').append($feedItem);
     }
     
-    $('#call-item').hide();
+    if (comments.length) {
+      $('#feed-container').show();
+    }
   }
 
   function updateComments(newComment) {
@@ -274,14 +273,15 @@ $(function() {
   }
   
   function createFeedItem(comment) {
+    // TODO: make sure to show original tip amount, not total comment amount, in givenText
+    var givenText = comment.owner.name + ' gave <span class="tip-amount">' + comment.amount;
+    givenText += parseInt(comment.amount) > 1 ? ' points</span>' : ' point</span>';
     var $itemImage = $('<div />', {
-      'data-name': comment.owner.name,
-      'data-amount': comment.owner.amount,
+      'data-given': givenText,
       class: 'item-image',
       css: {
-        'background-image': comment.owner.pictureUrl ?
-        'url(' + comment.owner.pictureUrl + ')' 
-        : 'url("' + assetsUrlBase + '/users/pictures/no_pic.png")'
+        'background-image': DEBUG_MODE ? 'url("' + comment.owner.pictureUrl + ')' :
+          'url("' + window.usersUrlBase + '/users/pictures/' + comment.owner.uuid + '/thumb.jpg")'
       }
     });
     
@@ -291,20 +291,26 @@ $(function() {
     
     var $itemBody = $('<div />', {
       class: 'item-body'
-    }).text(comment.text);
+    }).text(comment.content);
     
     var $itemText = $('<div />', {
       class: 'item-text'
-    }).append($itemBody, $itemName);    
-    
-    var $itemPromote = $('<div />', {
-      class: 'item-controls'
-    }).append($('<span />', {
-        class: 'item-total'
-      }).text('$' + comment.amount.toFixed(2)), 
-      $('<div />', {
-        class: 'item-promote'
-    }));
+    }).append($itemBody, $itemName, $('<div />', {
+        class: 'item-footer'
+      }).append($('<span />', {
+          class: 'item-share'
+        }), 
+        $('<div />', {
+          class: 'item-total'
+        }).text(comment.amount),
+        $('<div />', {
+          class: 'item-promote-container'
+        }).append($('<div />', {
+            class: 'item-promote'
+          })
+        )
+      )
+    );
     
     
     var $feedItem = $('<div />', {
@@ -313,7 +319,6 @@ $(function() {
     }).append(
       $itemImage, 
       $itemText,
-      $itemPromote,
       $('<div class="clear"></div>')
     );
     
@@ -335,15 +340,13 @@ $(function() {
   
     for (j in promoters) {
       var promoter = promoters[j];
+      var givenText = promoter.name + ' gave <span class="tip-amount">' + promoter.amount;
+      givenText += parseInt(promoter.amount) > 1 ? ' points</span>' : ' point</span>';
       $itemPromoters.append($('<div />', {
-        'data-name': promoter.name,
-        'data-amount': promoter.amount,
+        'data-given': givenText,
         class: 'promoter-image',
-        css: {
-          'background-image': promoter.pictureUrl ? 
-          'url(' + promoter.pictureUrl + ')' 
-          : 'url("' + assetsUrlBase + '/users/pictures/no_pic.png")'
-        }
+        css: DEBUG_MODE ? {'background-image': 'url("' + comment.owner.pictureUrl + ')'} :
+          {'background-image': 'url("' + window.usersUrlBase + '/users/pictures/' + comment.owner.uuid + '/thumb.jpg")'}
       }));
     }
     $itemPromoters.append($('<div class="clear"></div>'));
@@ -351,31 +354,40 @@ $(function() {
   }
   
   function toggleIframeHeight(expandIframe) {
-    if (expandIframe) {
-      isExpanded = true;
-      var newHeight = $('#outer-container').height() + 30;
-      $feedExpand.css({
-        'top': '',
-        'bottom': ''
-      }).html('<h3>Show Fewer Notes</h3>');
-    } else {
-      isExpanded = false;
-      var $lastDefaultShown = $('.last-default-shown');
-      var newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 60;
-      $('#feed-expand').css({
-        'top': newHeight - 56,
-        'bottom': 'auto'
-      }).html('<h3>Show All Notes</h3>');
-    }
+    if (comments.length > DEFAULT_SHOW) {
+      if (expandIframe) {
+        isExpanded = true;
+        var newHeight = $('#outer-container').height() + 30;
+        $feedExpand.css({
+          'top': '',
+          'bottom': ''
+        }).html('<h3>Show Fewer Notes</h3>');
+      } else {
+        isExpanded = false;
+        var $lastDefaultShown = $('.last-default-shown');
+        if ($lastDefaultShown.length) {
+          var newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 60;
+          $feedExpand.show();
+        } else {
+          var newHeight = $('#outer-container').height() + 30;
+        }
+        $feedExpand.css({
+          'top': newHeight - 56,
+          'bottom': 'auto'
+        }).html('<h3>Show All Notes</h3>');
+      }
         
-    $.postMessage(
-      JSON.stringify({
-        uuid: buttonUuid,
-        command: 'set-height', 
-        height: newHeight
-      }),
-      parentUrl
-    );
+      $.postMessage(
+        JSON.stringify({
+          uuid: buttonUuid,
+          command: 'set-height', 
+          height: newHeight
+        }),
+        parentUrl
+      );
+    } else {
+      $feedExpand.hide();
+    }
   }
   
   // HANDLERS
@@ -387,7 +399,7 @@ $(function() {
         display: 'block',
         top: $this.position().top + $this.height() + 2,
         left: $this.position().left
-      }).html($this.attr('data-name') + ' tipped <span class="tip-amount">$' + parseFloat($this.attr('data-amount')).toFixed(2) + '</span>');
+      }).html($this.attr('data-given'));
     },
     mouseleave: function() {
       $('#info-container').hide();
@@ -399,17 +411,17 @@ $(function() {
       var $promoteContainer = $('#promote-container');
       var uuid = $this.parent().attr('id');
       var existingTip = promoteTips[uuid];
-      var tipString = '$0.25';
+      var showTip = 1;
       if (existingTip && existingTip.sessionPromoteAmount > 0) {
-        tipString = '$' + existingTip.sessionPromoteAmount.toFixed(2);
+        showTip = existingTip.sessionPromoteAmount;
         $promoteContainer.find('.tip-confirm').show();
         $promoteContainer.find('.tip-send').hide();
       } else {
         $promoteContainer.find('.tip-confirm').hide();
         $promoteContainer.find('.tip-send').show();
       }
-      $promoteContainer.find('.tip-amount').text(tipString);
-      $promoteContainer.find('input.tip-input').val(tipString);
+      $promoteContainer.find('.tip-amount').text(showTip);
+      $promoteContainer.find('input.tip-input').val(showTip);
       $promoteContainer.css({
         display: 'block',
         top: $this.position().top + $this.height() + 2
@@ -457,7 +469,7 @@ $(function() {
     if (!/[^\s]/.test($(this).val())) $('#example-text').show();
   });
   
-  $('#feed-expand').click(function() {
+  $feedExpand.click(function() {
     toggleIframeHeight(!isExpanded);
   });
   
@@ -468,20 +480,9 @@ $(function() {
       $commentInput.removeClass('error default');
     }
   });
-  
-  $('form.tip-form .tip-submit').mousedown(function() {
-    if ($(this).parents('#promote-container').length) {
-      testObject.uuid = $('input#comment-uuid').val();
-      testObject.amount = parseFloat($('#promote-container input.tip-input').val().replace('$', ''));
-    } else {
-      testObject.uuid = '';
-      testObject.amount = parseFloat($('#input-container input.tip-input').val().replace('$', ''));
-    }
-  });
-  
+    
   // INITIALIZATION
-  
-  getUserInfo();
+  getWidgetCache(initializeComments);
   toggleIframeHeight(false);
   
 });

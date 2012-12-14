@@ -2,6 +2,7 @@ doctype 5
 html(lang="en")
 
   head
+    link(href='http://fonts.googleapis.com/css?family=EB+Garamond|Raleway:400,700', rel='stylesheet', type='text/css')
     | <script>
     include js/jquery-1.7.2.min.js
     include js/button.js
@@ -9,10 +10,13 @@ html(lang="en")
 
     script
       window.buttonUuid = "#{req.params.button_uuid}";
+      window.buttonUrl = "#{req.query.url}";
       window.sessionCsrf = "#{req.session._csrf}";
       window.assetsUrlBase = "#{ASSETS_URL_BASE}";
+      window.usersUrlBase = "#{USERS_URL_BASE}";
       window.parentUrl = "#{req.header('Referer')}";
       window.webUrlBase = "#{WEB_URL_BASE}";
+      window.testButton = window.location.pathname.indexOf('/publisher/widgets') != -1;
       var _gaq = _gaq || [];
       _gaq.push(['_setAccount', 'UA-34638501-1']);
       _gaq.push(['_setDomainName', '25c.com']);
@@ -26,10 +30,10 @@ html(lang="en")
     block scripts
     
     style(type="text/css")
-      body { 
+      body {
         margin: 0; 
         color: #000;
-        font: normal normal 400 14px 'Adobe Garamond Pro', Garamond, 'Palatino Linotype', Serif;
+        font: normal normal normal 14px 'EB Garamond', Garamond, 'Palatino Linotype', Serif;
         -webkit-user-select: none;
         -khtml-user-select: none;
         -moz-user-select: none;
@@ -39,31 +43,35 @@ html(lang="en")
         -webkit-font-smoothing: antialiased;
         font-smoothing: antialiased;
       }
-      h1, h2 {
-        font: normal normal 600 12px helvetica, arial, sans-serif;
-        font-weight: 600px;
+      h1  {
+        font: normal normal normal 12px Raleway, helvetica, arial, sans-serif;
+      }
+      h2 {
+        font: normal normal bold 12px Raleway, helvetica, arial, sans-serif;
       }
       h3 {
-        font: normal normal 600 12px helvetica, arial, sans-serif;
-        font-weight: bold;
+        font: normal normal bold 12px Raleway, helvetica, arial, sans-serif;
         text-transform: uppercase;
         color: #7c7b7b;
       }
-            
+      .bold {
+        font-weight: bold;
+      }     
       .tip-container {
-        float: right;
+        padding: 5px;
+        border: 1px solid #d2cfcf;
         position: relative;
         text-align: center;
       }
       input.tip-input, .tip-submit {
-        font: normal normal 600 12px helvetica, arial, sans-serif;
+        font: normal normal bold 12px Raleway, helvetica, arial, sans-serif;
       }
       input.tip-input {
         width: 50px;
         float: left;
         height: 37px;
         padding: 0;
-        margin: 0;
+        margin: 0 2px;
         text-align: center;
         color: #3f4e52;
         border: 1px solid #d2cfcf;
@@ -84,14 +92,16 @@ html(lang="en")
         float: left;
       }
       .tip-increase, .tip-decrease {
-        height: 5px;
-        width: 10px;
-        margin: 0 2px;
-        padding: 7px 5px;
+        height: 19px;
+        width: 20px;
         background-color: #9aaeb4;
         color: white;
         cursor: pointer;
         font-size: 20px;
+        transition: background-color 0.25s;
+        -moz-transition: background-color 0.25s;
+        -webkit-transition: background-color 0.25s;
+        -o-transition: background-color 0.25s;
       }
       .tip-increase:hover, .tip-decrease:hover {
         background-color: #62828c;
@@ -102,14 +112,19 @@ html(lang="en")
       .tip-decrease {
         margin-top: 1px;
       }
-      .tip-increase .tip-arrow, .tip-decrease .tip-arrow {
-        height: 5px;
+      .tip-increase .tip-change, .tip-decrease .tip-change {
+        position: relative;
+        top: 5px;
+        left: 5px;
+        height: 11px;
         width: 10px;
-        background-image: url('#{ ASSETS_URL_BASE }/style/button-arrows.png');
+        background-image: url('#{ ASSETS_URL_BASE }/style/button-plus-minus.png');
         background-repeat: no-repeat;
       }
-      .tip-decrease .tip-arrow {
-        background-position: 0 -5px;
+      .tip-decrease .tip-change {
+        top: 8px;
+        height: 3px;
+        background-position: 0 -11px;
       }
       .tip-submit {
         float: left;
@@ -120,6 +135,10 @@ html(lang="en")
         color: white;
         padding: 0 5px;
         cursor: pointer;
+        transition: background-color 0.25s;
+        -moz-transition: background-color 0.25s;
+        -webkit-transition: background-color 0.25s;
+        -o-transition: background-color 0.25s;
       }
       .tip-submit:hover {
         background-color: #416b76;
@@ -131,7 +150,7 @@ html(lang="en")
         box-shadow:         inset 0 3px 4px #284249;
       }
       .tip-confirm {
-        font: normal normal 400 12px helvetica, arial, sans-serif;
+        font: normal normal normal 12px Raleway, helvetica, arial, sans-serif;
         display: none;
       }
       .tip-confirm > div {
@@ -171,10 +190,10 @@ html(lang="en")
         background-color: #eff5f7;
         border: 1px solid #d2cfcf;
         padding: 5px;
-        font: normal normal 400 12px helvetica, arial, sans-serif;
+        font: normal normal normal 12px Raleway, helvetica, arial, sans-serif;
       }
       #info-container .tip-amount {
-        font-weight: 600;
+        font-weight: bold;
       }
       
       

@@ -52,7 +52,7 @@ block css
       color: #4c4c4c;
     }
     #input-container {
-      padding: 10px 3px 0 0;
+      padding: 1px 3px 0 0;
       float: right;
     }
 
@@ -66,7 +66,7 @@ block content
         //- #call-image And you!
         .clear
     #input-container
-      form.tip-form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
+      form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
         include partials/_button_standard.jade 
     .clear
 

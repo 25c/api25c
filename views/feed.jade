@@ -9,7 +9,7 @@ block scripts
 block css
   style(type="text/css")
     h1 {
-      margin: 0 0 10px 0;
+      margin: 0 0 20px 0;
     }
     h2 {
       margin: 0 0 5px 0;
@@ -22,16 +22,24 @@ block css
     #input-container {
       padding: 20px;
       border-bottom: 1px solid #d2cfcf;
-      background-color: #eff5f7;
+      margin: 0 0 -1px 0;
+      //- background-color: #eff5f7;
+    }
+    #user-image {
+      display: none;
+      float: left;
+      height: 50px;
+      width: 50px;
+      margin: 0 10px 0 0;
     }
     textarea#comment-input {
       font: inherit;
       float: left;
-      height: 40px;
-      width: 432px;
+      height: 39px;
+      width: 451px;
       border: 1px solid #d2cfcf;
-      margin: 0;
-      padding: 10px;
+      margin: 0 0 0 -1px;
+      padding: 5px;
       line-height: 14px;
       resize: none;
     }
@@ -50,13 +58,15 @@ block css
       box-shadow:         inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
     }
     #input-container .tip-container {
-      margin-top: 11px;
+      float: left;
     }
     #feed-container {
+      display: none;
       position: relative;
       margin: 20px 20px 30px 20px;
     }
     #feed-expand {
+      display: none;
       position: absolute;
       bottom: -1px;
       height: 30px;
@@ -111,63 +121,63 @@ block css
       color: white;
       font: normal normal 600 12px helvetica, arial, sans-serif;
     }
+    .item-footer {
+      background-color: #ddd;
+      margin: 20px 0 0 0;
+    }
     .item-total {
-      line-height: 20px;
-      display: none;
-      padding: 0 0 0 8px;
+      
+    }
+    .item-promote-container {
+      height: 19px;
+      width: 20px;
+      background-color: #9aaeb4;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      transition: background-color 0.25s;
+      -moz-transition: background-color 0.25s;
+      -webkit-transition: background-color 0.25s;
+      -o-transition: background-color 0.25s;
+    }
+    .item-promote-container:hover {
+      background-color: #62828c;
+      transition: background-color 0.25s;
+      -moz-transition: background-color 0.25s;
+      -webkit-transition: background-color 0.25s;
+      -o-transition: background-color 0.25s;
     }
     .item-promote {
-      float: right;
-      height: 5px;
+      height: 11px;
       width: 10px;
-      margin: 7px 7px 0 7px;
-      background-image: url('#{ ASSETS_URL_BASE }/style/button-arrows.png');
+      background-image: url('#{ ASSETS_URL_BASE }/style/button-plus-minus.png');
       background-repeat: no-repeat;
-    }
-    .item-promoters {
-      margin: 10px 0 0 0;
-    }
-    .item-promoted-title {
-      height: 20px;
-      line-height: 20px;
-      font-style: italic;
-      float: left;
-      margin: 0 10px 0 0;
-    }
-    .promoter-image {
-      float: left;
-      height: 20px;
-      width: 20px;
-      margin: 0;
-      background-repeat: no-repeat;
-      background-size: 20px 20px;
-      text-align: center;
-      font-size: 11px;
-      line-height: 1.1em;
-      color: white;
     }
 
 block content
-  h1 Want to sponsor this content? It's easy! Add a note and tip as little as $0.25.
   #outer-container
     #input-container
-      form.tip-form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
-        textarea#comment-input.default(name="message") What do you love about this content?
-        include partials/_button_standard.jade 
+      h1
+        span.bold 
+          | Top fan of
+          span#site-name  this site
+          |? 
+        |You have
+        span#balance-amount.bold 12 points
+        |  to give and share your thoughts.
+        //- TODO: Update buy more points URL
+        a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
+      #user-image
+      form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
+        include partials/_button_standard.jade
+        textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
       .clear
     #feed-container
       #info-container
       #promote-container
-        form.tip-form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
+        form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
           input#comment-uuid(name="comment_uuid", type="hidden")
           include partials/_button_small.jade
-      h2 Top Notes
-      .feed-item#call-item
-        .item-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
-          div YOUR FACE HERE
-        .item-text#call-text
-          .item-body Show your appreciation and be recognized for your support. 
-            a(href="#{ WEB_URL_BASE }/faq", target="_blank") Learn more about 25c...
-        .clear
-    #feed-expand 
+      h2 What some of our top fans are thinking:
+    #feed-expand
       h3 Show All Notes
