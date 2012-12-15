@@ -12,9 +12,8 @@ block css
       margin: 0 0 20px 0;
     }
     h2 {
-      margin: 0 0 5px 0;
     }
-    #outer-container {
+    body {
       position: relative;
       border: 1px solid #d2cfcf;
       width: 650px;
@@ -25,7 +24,18 @@ block css
       margin: 0 0 -1px 0;
       //- background-color: #eff5f7;
     }
-    #user-image {
+    #input-container > h1 {
+      float: left;
+    }
+    #top-logo {
+      margin: -8px 0 0 0;
+      width: 43px;
+      height: 30px;
+      float: right;
+      background-repeat: no-repeat;
+      background-image: url('#{ ASSETS_URL_BASE }/style/top-nav-logo.png');
+    }
+    .user-image {
       display: none;
       float: left;
       height: 50px;
@@ -48,7 +58,7 @@ block css
       color: #4c4c4c;
     }
     textarea#comment-input.error {
-      color: red;
+      color: #bf3a3a;
     }
     textarea#comment-input:focus {
       outline: none;
@@ -63,7 +73,7 @@ block css
     #feed-container {
       display: none;
       position: relative;
-      margin: 20px 20px 30px 20px;
+      margin: 20px 0 0 0;
     }
     #feed-expand {
       display: none;
@@ -81,21 +91,45 @@ block css
       line-height: 30px;
     }
     #promote-container {
-      position: absolute;
-      right: 0;
-      padding: 2px;
+      clear: both;
       display: none;
-      border: 1px solid #d2cfcf;
+      background-color: #eff5f7;
+      padding: 20px 0 20px 84px;
+    }
+    #promote-container .user-image {
+      width: 40px;
+      height: 40px;
+      background-size: 40px 40px;
+    }
+    #promote-container form.tip-form {
+      float: left;
+    }
+    #promote-container .tip-container {
+      border: 0px none transparent;
+    }
+    #promote-container .tip-send {
+      padding: 0;
+    }
+    #promote-container #promote-text {
+      float: left;
+      margin: 0 0 0 10px;
+    }
+    #feed-title {
+      margin: 0 20px 5px 20px;
+    }
+    #feed-title + .feed-item {
+      border-top: 0 none transparent;
+    }
+    #feed-title + .feed-item .item-body, #feed-title + .feed-item .item-name {
+      font-size: 16px;
+      line-height: 19px;
     }
     .feed-item {
-      border-bottom: 1px solid #d2cfcf;
-      padding: 15px 0;
-    }
-    .feed-item:last-child {
-      border-bottom: 0 none transparent;
+      padding: 15px 20px;
+      border-top: 1px solid #d2cfcf;
     }
     .feed-item.initial {
-      background-color: #FFEAAB;
+      background-color: #fffde3;
     }
     .item-image {
       float: left;
@@ -125,13 +159,21 @@ block css
       background-color: #ddd;
       margin: 20px 0 0 0;
     }
+    .item-like {
+      float: left;
+      width: 85px;
+      height: 20px;
+    }
     .item-total {
-      
+      float: left;
+      margin-right: 10px;
     }
     .item-promote-container {
-      height: 19px;
-      width: 20px;
+      float: left;
+      height: 15px;
+      width: 15px;
       background-color: #9aaeb4;
+      padding: 4px 0 0 5px;
       color: white;
       cursor: pointer;
       font-size: 20px;
@@ -142,10 +184,6 @@ block css
     }
     .item-promote-container:hover {
       background-color: #62828c;
-      transition: background-color 0.25s;
-      -moz-transition: background-color 0.25s;
-      -webkit-transition: background-color 0.25s;
-      -o-transition: background-color 0.25s;
     }
     .item-promote {
       height: 11px;
@@ -155,29 +193,49 @@ block css
     }
 
 block content
-  #outer-container
-    #input-container
-      h1
-        span.bold 
-          | Top fan of
-          span#site-name  this site
-          |? 
-        |You have
-        span#balance-amount.bold 12 points
-        |  to give and share your thoughts.
-        //- TODO: Update buy more points URL
-        a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
-      #user-image
+  #fb-root
+  script
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=180097582134534";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    
+  #input-container
+    h1
+      span.bold 
+        | Top fan of
+        span#site-name  this site
+        |? 
+      |You have
+      span.balance-amount.bold  0 points
+      |  to give and share your thoughts.
+      //- TODO: Update buy more points URL
+      a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
+    #top-logo
+    .clear
+    .user-image
+    form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
+      include partials/_button_standard.jade
+      textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
+    .clear
+  #feed-container
+    #info-container
+    #promote-container
+      .user-image
       form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
+        input#comment-uuid(name="comment_uuid", type="hidden")
         include partials/_button_standard.jade
-        textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
+      #promote-text
+        h1 
+          .bold Add your points behind this top fan's!        
+          | You have
+          span.balance-amount.bold  0 points
+          |  to give.
+          a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
       .clear
-    #feed-container
-      #info-container
-      #promote-container
-        form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
-          input#comment-uuid(name="comment_uuid", type="hidden")
-          include partials/_button_small.jade
-      h2 What some of our top fans are thinking:
-    #feed-expand
-      h3 Show All Notes
+    h2#feed-title What some of our top fans are thinking:
+  #feed-expand
+    h3 Show All Notes

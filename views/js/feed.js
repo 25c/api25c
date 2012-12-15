@@ -3,10 +3,8 @@ $(function() {
   // SETTINGS
   var DEFAULT_SHOW = 5;
   
-  // TIMERS
-  var promoteHoverTimer = null;
-
   // STATE VARIABLES
+  var promoteVisible = false;
   var isExpanded = false;
   var user = {};
   var comments = [];
@@ -15,6 +13,9 @@ $(function() {
   // JQUERY OBJECTS
   var $commentInput = $('textarea#comment-input');
   var $feedExpand = $('#feed-expand');
+  var $promoteContainer = $('#promote-container');
+  var $feedContainer = $('#feed-container');
+  var $infoContainer = $('info-container');
   
   // TEXT
   var DEFAULT_COMMENT = $commentInput.val();
@@ -162,6 +163,7 @@ $(function() {
   }
   
   function updatePromoter(comment, promoter) {
+    
     var originalCommentAmount = -1;
     var originalPromoteAmount = -1;
     
@@ -215,7 +217,7 @@ $(function() {
     }
       
     if (user) {
-      $('#user-image').css({
+      $('.user-image').css({
         'background-image': DEBUG_MODE ? 'url("' + user.pictureUrl + ')' :
         'url("' + window.usersUrlBase + '/users/pictures/' + user.uuid + '/thumb.jpg")'
       }).show();
@@ -232,11 +234,11 @@ $(function() {
         $feedItem.addClass('last-default-shown');
       }
       
-      $('#feed-container').append($feedItem);
+      $feedContainer.append($feedItem);
     }
     
     if (comments.length) {
-      $('#feed-container').show();
+      $feedContainer.show();
     }
   }
 
@@ -254,7 +256,6 @@ $(function() {
     $('#' + newComment.uuid).remove();
         
     $feedItem = createFeedItem(newComment);
-    $feedItem.find('.item-controls .item-total').show();
           
     if (nextCommentUuid) {
       var $nextComment = $('#' + nextCommentUuid);
@@ -263,13 +264,18 @@ $(function() {
         $feedItem.addClass('last-default-shown');
       }
       $nextComment.before($feedItem);
-    } else {
+    } else if (comments.length > 1) {
       $('.feed-item:last').after($feedItem);
+    } else {
+      $feedContainer.append($feedItem);
     }
     
-    $feedItem.addClass('initial').animate({backgroundColor: 'transparent'}, '2000');
-    toggleIframeHeight(isExpanded);
+    if (promoteVisible) {
+      $feedItem.after($promoteContainer);
+    }
     
+    $feedItem.addClass('initial').delay(3000).animate({ backgroundColor: "transparent" }, "slow");
+    toggleIframeHeight(isExpanded);
   }
   
   function createFeedItem(comment) {
@@ -293,25 +299,38 @@ $(function() {
       class: 'item-body'
     }).text(comment.content);
     
+    var $itemLike = $('<div />', {
+      class: 'item-like'
+    }).append($('<div />', {
+      class: 'fb-like',
+      // TODO: Replace with URL for FB scraper that refers to the comment uuid
+      'data-href': 'http://localhost:5000/feed/4f4243c020860130a45048bcc89ac444/' + comment.uuid,
+      'data-send': 'false',
+      'data-layout': 'button_count',
+      'data-width': '450',
+      'data-show-faces': 'false'
+    }));
+
+    var totalText = comment.amount + ' point';
+    totalText += comment.amount == 1 ? '' : 's';
+    
+    var $itemTotal = $('<div />', {
+      class: 'item-total'
+    }).text(totalText);
+    
+    var $itemPromote = $('<div />', {
+      class: 'item-promote-container'
+    }).append($('<div />', {
+      class: 'item-promote'
+    }));
+    
+    var $itemFooter = $('<div />', {
+      class: 'item-footer'
+    }).append($itemLike, $itemTotal, $itemPromote);
+    
     var $itemText = $('<div />', {
       class: 'item-text'
-    }).append($itemBody, $itemName, $('<div />', {
-        class: 'item-footer'
-      }).append($('<span />', {
-          class: 'item-share'
-        }), 
-        $('<div />', {
-          class: 'item-total'
-        }).text(comment.amount),
-        $('<div />', {
-          class: 'item-promote-container'
-        }).append($('<div />', {
-            class: 'item-promote'
-          })
-        )
-      )
-    );
-    
+    }).append($itemBody, $itemName, $itemFooter);    
     
     var $feedItem = $('<div />', {
       id: comment.uuid,
@@ -321,7 +340,7 @@ $(function() {
       $itemText,
       $('<div class="clear"></div>')
     );
-    
+
     if (comment.promoters && comment.promoters.length) {  
       $feedItem.append(createItemPromoters(comment.promoters));
     }
@@ -355,6 +374,7 @@ $(function() {
   
   function toggleIframeHeight(expandIframe) {
     if (comments.length > DEFAULT_SHOW) {
+      $feedContainer.css('margin-bottom', 30);
       if (expandIframe) {
         isExpanded = true;
         var newHeight = $('#outer-container').height() + 30;
@@ -386,88 +406,58 @@ $(function() {
         parentUrl
       );
     } else {
+      $feedContainer.css('margin-bottom', '');
       $feedExpand.hide();
     }
   }
   
   // HANDLERS
 
-  $('#feed-container').on({
+  $feedContainer.on({
     mouseenter: function() {
       var $this = $(this);
-      $('#info-container').css({
+      $infoContainer.css({
         display: 'block',
         top: $this.position().top + $this.height() + 2,
         left: $this.position().left
       }).html($this.attr('data-given'));
     },
     mouseleave: function() {
-      $('#info-container').hide();
+      $infoContainer.hide();
     }
   }, '.promoter-image, .item-image').on({
-    mouseenter: function() {
-      clearTimeout(promoteHoverTimer);
-      var $this = $(this);
-      var $promoteContainer = $('#promote-container');
-      var uuid = $this.parent().attr('id');
-      var existingTip = promoteTips[uuid];
-      var showTip = 1;
-      if (existingTip && existingTip.sessionPromoteAmount > 0) {
-        showTip = existingTip.sessionPromoteAmount;
-        $promoteContainer.find('.tip-confirm').show();
-        $promoteContainer.find('.tip-send').hide();
+    click: function() {
+      promoteVisible = !promoteVisible;
+      if (promoteVisible) {
+        var $item = $(this).parents('.feed-item');
+        var uuid = $item.attr('id');
+        var existingTip = promoteTips[uuid];
+        var showTip = 1;
+        if (existingTip && existingTip.sessionPromoteAmount > 0) {
+          showTip = existingTip.sessionPromoteAmount;
+          $promoteContainer.find('.tip-confirm').show();
+          $promoteContainer.find('.tip-send').hide();
+        } else {
+          $promoteContainer.find('.tip-confirm').hide();
+          $promoteContainer.find('.tip-send').show();
+        }
+        $promoteContainer.find('.tip-amount').text(showTip);
+        $promoteContainer.find('input.tip-input').val(showTip);
+        $promoteContainer.insertAfter($item).css({
+          display: 'block',
+        }).find('#comment-uuid').val(uuid);
       } else {
-        $promoteContainer.find('.tip-confirm').hide();
-        $promoteContainer.find('.tip-send').show();
+        $promoteContainer.hide();
       }
-      $promoteContainer.find('.tip-amount').text(showTip);
-      $promoteContainer.find('input.tip-input').val(showTip);
-      $promoteContainer.css({
-        display: 'block',
-        top: $this.position().top + $this.height() + 2
-      }).find('#comment-uuid').val(uuid);
-      var $itemPromote = $this.find('.item-promote');
-      $itemPromote.show();
-      $('.item-total').show();
-    },
-    mouseleave: function() {
-      promoteHoverTimer = setTimeout(function() {
-        $('#promote-container').hide();
-        $('.item-total').hide();
-      }, 1000);
-    }, 
-  }, '.item-controls');
+    }
+  }, '.item-promote-container');
   
   $('#promote-container').hover(function() {
-      clearTimeout(promoteHoverTimer);
     }, function() {
-      promoteHoverTimer = setTimeout(function() {
-        $('#promote-container').hide();
-        $('.item-total').hide();
-      }, 1000);
+
   });
   
-  $('#input-container .tip-container').hover(function() {
-      $('#promote-container').hide();
-      $('.item-total').show();
-      clearTimeout(promoteHoverTimer);
-    }, function() {
-      promoteHoverTimer = setTimeout(function() {
-        $('.item-total').hide();
-      }, 1000);
-  });
-  
-  var inputDefaultText = $("#input-text").val();
-  
-  $('#example-text').click(function() {
-    $("textarea#input-text").focus();
-  });
-  
-  $("textarea#input-text").focusin(function() {
-    $('#example-text').hide();
-  }).focusout(function() {
-    if (!/[^\s]/.test($(this).val())) $('#example-text').show();
-  });
+  var inputDefaultText = $commentInput.val();
   
   $feedExpand.click(function() {
     toggleIframeHeight(!isExpanded);

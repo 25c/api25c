@@ -31,8 +31,8 @@ $(function() {
         if (data.user) {
           maxTip = data.user.balance;
           var pointText = ' ' + maxTip + ' point';
-          pointText += maxTip > 1 ? 's' : '';
-          $('#balance-amount').text(pointText);
+          pointText += maxTip == 1 ? '' : 's';
+          $('.balance-amount').text(pointText);
         }
         callback(data);
       },
@@ -147,7 +147,7 @@ $(function() {
     var $tipInput = $form.find('input.tip-input');
     var amount = parseInt($tipInput.val());
     var pointText = amount + ' point';
-    pointText += amount > 1 ? 's' : '';
+    pointText += amount == 1 ? '' : 's';
 
     if (!window.validateTipForm($form)) {
       return false;
