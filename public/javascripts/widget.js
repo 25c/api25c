@@ -31,16 +31,13 @@ _tip25c_feed_jquery(document).ready(function($) {
       var widgetHeight = 100;
     } else if ($this.hasClass('tip-25c-feed')) {
       var widgetType = 'feed';
-      var widgetWidth = 670;
-      var widgetHeight = 400;
+      var widgetWidth = 652;
+      var widgetHeight = 128;
     }
     
     var uuid = $this.attr("data-id");
     var url = $this.attr("data-url");
-    
-    // DEBUG
-    url = 'http://www.test.com';
-    
+      
     var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/' + widgetType 
     + '/' + uuid + "?url=" + encodeURIComponent(url);
     

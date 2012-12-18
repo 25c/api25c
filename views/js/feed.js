@@ -94,7 +94,6 @@ $(function() {
   // FUNCTIONS
   
   // VALIDATE FORM (evaluated before sending form data)
-  
   window.validateTipForm = function($form) {
     if ($form.find('textarea#comment-input').length) {
       var comment = $commentInput.val();
@@ -108,17 +107,15 @@ $(function() {
   }
   
   // SUCCESS CALLBACK (called after tip successfully sent to server)
-  
   window.submitSuccessCallback = function(form, response) {
-    
-    // DEBUG
-    // response = {uuid: '999'};
     
     var uuid = form.comment_uuid || response.comment_uuid;
     
     var newComment = {};
     var existingComment = findCommentByUuid(uuid);
     var amount = parseInt(form.amount);
+    
+    console.log(uuid);
         
     if (form.comment_text) {
       if (existingComment) {
@@ -131,6 +128,7 @@ $(function() {
       } else {
         newComment.uuid = uuid;
         newComment.owner = user;
+        $('#input-container input.comment-uuid').val(uuid);
       }
       newComment.content = form.comment_text;
       newComment.owner.amount = amount;
@@ -215,7 +213,7 @@ $(function() {
       user = data.user;
       comments = data.widget || [];
     }
-      
+        
     if (user) {
       $('.user-image').css({
         'background-image': DEBUG_MODE ? 'url("' + user.pictureUrl + ')' :
@@ -245,10 +243,12 @@ $(function() {
   function updateComments(newComment) {
         
     var nextCommentUuid = '';
+    var position = 0;
 
     for (i in comments) {
       if (newComment.amount > comments[i].amount && comments[i].uuid != newComment.uuid) {
         nextCommentUuid = comments[i].uuid;
+        position = i;
         break;
       }
     }
@@ -267,15 +267,21 @@ $(function() {
     } else if (comments.length > 1) {
       $('.feed-item:last').after($feedItem);
     } else {
+      $feedItem.addClass('last-default-shown');
       $feedContainer.append($feedItem);
     }
-    
+        
     if (promoteVisible) {
       $feedItem.after($promoteContainer);
     }
     
     $feedItem.addClass('initial').delay(3000).animate({ backgroundColor: "transparent" }, "slow");
-    toggleIframeHeight(isExpanded);
+        
+    if (position > DEFAULT_SHOW) {
+      isExpanded = true;
+    }
+    
+    updateIframeHeight(isExpanded);
   }
   
   function createFeedItem(comment) {
@@ -372,31 +378,39 @@ $(function() {
     return $itemPromoters;
   }
   
-  function toggleIframeHeight(expandIframe) {
-    if (comments.length > DEFAULT_SHOW) {
-      $feedContainer.css('margin-bottom', 30);
-      if (expandIframe) {
-        isExpanded = true;
-        var newHeight = $('#outer-container').height() + 30;
-        $feedExpand.css({
-          'top': '',
-          'bottom': ''
-        }).html('<h3>Show Fewer Notes</h3>');
-      } else {
-        isExpanded = false;
-        var $lastDefaultShown = $('.last-default-shown');
-        if ($lastDefaultShown.length) {
-          var newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 60;
-          $feedExpand.show();
-        } else {
-          var newHeight = $('#outer-container').height() + 30;
-        }
-        $feedExpand.css({
-          'top': newHeight - 56,
-          'bottom': 'auto'
-        }).html('<h3>Show All Notes</h3>');
-      }
+  function updateIframeHeight(expandIframe) {
         
+    if (comments.length) {
+      if (comments.length > DEFAULT_SHOW) {
+        $feedContainer.css('margin-bottom', 30);
+        if (expandIframe) {
+          isExpanded = true;
+          var newHeight = $('body').height() + 30;
+          $feedExpand.css({
+            'top': '',
+            'bottom': ''
+          }).html('<h3>Show Fewer Notes</h3>');
+        } else {
+          isExpanded = false;
+          var $lastDefaultShown = $('.last-default-shown');
+          if ($lastDefaultShown.length) {
+            var newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 60;
+            $feedExpand.show();
+          } else {
+            var newHeight = $('body').height() + 30;
+          }
+          $feedExpand.css({
+            'top': newHeight - 56,
+            'bottom': 'auto'
+          }).html('<h3>Show All Notes</h3>');
+        }
+      } else {
+        $feedContainer.show();
+        $feedExpand.hide();
+        var newHeight = $feedContainer.height() + 148;
+        $feedContainer.css('margin-bottom', '');
+      }
+            
       $.postMessage(
         JSON.stringify({
           uuid: buttonUuid,
@@ -405,14 +419,11 @@ $(function() {
         }),
         parentUrl
       );
-    } else {
-      $feedContainer.css('margin-bottom', '');
-      $feedExpand.hide();
     }
   }
   
   // HANDLERS
-
+  
   $feedContainer.on({
     mouseenter: function() {
       var $this = $(this);
@@ -445,10 +456,11 @@ $(function() {
         $promoteContainer.find('input.tip-input').val(showTip);
         $promoteContainer.insertAfter($item).css({
           display: 'block',
-        }).find('#comment-uuid').val(uuid);
+        }).find('.comment-uuid').val(uuid);
       } else {
         $promoteContainer.hide();
       }
+      updateIframeHeight(isExpanded);
     }
   }, '.item-promote-container');
   
@@ -460,7 +472,7 @@ $(function() {
   var inputDefaultText = $commentInput.val();
   
   $feedExpand.click(function() {
-    toggleIframeHeight(!isExpanded);
+    updateIframeHeight(!isExpanded);
   });
   
   $commentInput.focus(function() {
@@ -473,6 +485,6 @@ $(function() {
     
   // INITIALIZATION
   getWidgetCache(initializeComments);
-  toggleIframeHeight(false);
+  updateIframeHeight(false);
   
 });

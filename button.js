@@ -232,6 +232,7 @@ app.post('/tip/:button_uuid', function(req, res) {
 app.get('/belt/:button_uuid', function(req, res) {  
 	referrer = req.header('referrer');
   req.session.clickUuids = {};
+  req.session.commentUuids = {};
 	res.render("belt.jade", {
 	  req: req,
 	  referrer: referrer,

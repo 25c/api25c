@@ -4,7 +4,7 @@ $(function() {
   var START_INTERVAL = 400;
   
   // STATE VARIABLES
-  var maxTip = 10;
+  var maxTip = 1;
   var minTip = 1;
   var countState = 0;
   var timer = null;
@@ -29,10 +29,14 @@ $(function() {
       data: {referrer: parentUrl, _csrf: sessionCsrf},
       success: function(data) {
         if (data.user) {
-          maxTip = data.user.balance;
+          maxTip = data.user.balance;          
           var pointText = ' ' + maxTip + ' point';
           pointText += maxTip == 1 ? '' : 's';
           $('.balance-amount').text(pointText);
+          if (maxTip <= 0) {
+            $('.tip-submit, input.tip-input, .tip-increase, .tip-decrease').addClass('disabled');
+            $('input.tip-input').val(0);
+          }
         }
         callback(data);
       },
@@ -45,7 +49,9 @@ $(function() {
     var $tipInput = $form.find('input.tip-input');
     var newTip = parseInt($tipInput.val());
     newTip = newTip + countState;
-    if (newTip > maxTip) {
+    if (maxTip <= 0) {
+      newTip = 0;
+    } else if (newTip > maxTip) {
       newTip = maxTip;
     } else if (newTip < minTip) {
       newTip = minTip;
@@ -79,7 +85,6 @@ $(function() {
   }
   
   // EVENT HANDLERS
-  
   $('input.tip-input').change(function() {
     var $this = $(this);
     var newTip = parseInt($this.val());

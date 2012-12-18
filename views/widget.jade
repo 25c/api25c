@@ -90,6 +90,11 @@ html(lang="en")
         -webkit-box-shadow: inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
         box-shadow:         inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
       }
+      input.tip-input.disabled {
+        color: #aaa;
+        background-color: #f9f9f9;
+        cursor: default;
+      }
       .tip-controls {
         float: left;
       }
@@ -110,6 +115,11 @@ html(lang="en")
       }
       .tip-increase.active, .tip-decrease.active {
         background-color: #696969;
+      }
+      .tip-increase.disabled, .tip-decrease.disabled {
+        color: #999;
+        background-color: #ddd;
+        cursor: default;
       }
       .tip-decrease {
         margin-top: 1px;
@@ -151,15 +161,20 @@ html(lang="en")
         -webkit-box-shadow: inset 0 3px 4px #284249;
         box-shadow:         inset 0 3px 4px #284249;
       }
+      .tip-submit.disabled {
+        color: #999;
+        background-color: #ddd;
+        cursor: default;
+      }
       .tip-confirm {
         font: normal normal normal 13px Raleway, helvetica, arial, sans-serif;
         display: none;
-        height: 34px;
+        height: 49px;
+        width: 146px;
         background-color: #eff5f7;
       }
       .tip-confirm > div {
-        width: 136px;
-        margin: 5px 0 2px 0; 
+        padding: 8px 0 2px 0; 
       }
       .tip-update {
       }

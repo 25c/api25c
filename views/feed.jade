@@ -218,6 +218,7 @@ block content
     .clear
     .user-image
     form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
+      input.comment-uuid(name="comment_uuid", type="hidden")
       include partials/_button_standard.jade
       textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
     .clear
@@ -226,7 +227,7 @@ block content
     #promote-container
       .user-image
       form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
-        input#comment-uuid(name="comment_uuid", type="hidden")
+        input.comment-uuid(name="comment_uuid", type="hidden")
         include partials/_button_standard.jade
       #promote-text
         h1 
