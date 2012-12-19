@@ -304,11 +304,6 @@ app.post('/widget/:button_uuid', function(req, res) {
   
   function fetchWidgetCache() {
     
-    // DEBUG
-    console.log("FETCHING CACHE...");
-    console.log("KEY:");
-    console.log(button_uuid + ":" + button_url);
-    
     redisDataClient.get(button_uuid + ':' + button_url, function(err, widget_data) {
       if (err != null) {
         console.log("POST error fetching widget cache: " + err);
@@ -316,12 +311,6 @@ app.post('/widget/:button_uuid', function(req, res) {
         res.json({ error: true });
       } else {
         var cache = JSON.parse(widget_data);
-        
-        // DEBUG
-        console.log("CACHE:");
-        console.log(cache);
-
-        
         res.json({ widget: cache, user: current_user });
       }
     });
