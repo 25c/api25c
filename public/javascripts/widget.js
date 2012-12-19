@@ -32,7 +32,7 @@ _tip25c_feed_jquery(document).ready(function($) {
     } else if ($this.hasClass('tip-25c-feed')) {
       var widgetType = 'feed';
       var widgetWidth = 652;
-      var widgetHeight = 128;
+      var widgetHeight = 157;
     }
     
     var uuid = $this.attr("data-id");

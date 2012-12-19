@@ -168,7 +168,7 @@ $(function() {
       user = data.user;
       comments = data.widget || [];
     }
-          
+              
     if (user) {
       $('.user-image').css({
         'background-image': getUserPictureUrl(user)
@@ -317,7 +317,7 @@ $(function() {
         
     if (comments.length) {
       
-      var newHeight = $feedContainer.height() + 148;
+      var newHeight = $feedContainer.height() + 177;
       
       if (comments.length > DEFAULT_SHOW) {
         $feedContainer.css('margin-bottom', 30);
