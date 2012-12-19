@@ -303,13 +303,23 @@ app.post('/widget/:button_uuid', function(req, res) {
   }
   
   function fetchWidgetCache() {
+    
+    // DEBUG
+    console.log("FETCHING CACHE...");
+    
     redisWebClient.get(button_uuid + ':' + button_url, function(err, widget_data) {
       if (err != null) {
         console.log("POST error fetching widget cache: " + err);
         airbrake.notify(err);
         res.json({ error: true });
       } else {
-        var cache = JSON.parse(widget_data);        
+        var cache = JSON.parse(widget_data);
+        
+        // DEBUG
+        console.log("CACHE:");
+        console.log(cache);
+
+        
         res.json({ widget: cache, user: current_user });
       }
     });
