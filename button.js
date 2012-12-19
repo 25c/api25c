@@ -306,6 +306,8 @@ app.post('/widget/:button_uuid', function(req, res) {
     
     // DEBUG
     console.log("FETCHING CACHE...");
+    console.log("KEY:");
+    console.log(button_uuid + ":" + button_url);
     
     redisWebClient.get(button_uuid + ':' + button_url, function(err, widget_data) {
       if (err != null) {
