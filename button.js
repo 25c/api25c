@@ -309,7 +309,7 @@ app.post('/widget/:button_uuid', function(req, res) {
     console.log("KEY:");
     console.log(button_uuid + ":" + button_url);
     
-    redisWebClient.get(button_uuid + ':' + button_url, function(err, widget_data) {
+    redisDataClient.get(button_uuid + ':' + button_url, function(err, widget_data) {
       if (err != null) {
         console.log("POST error fetching widget cache: " + err);
         airbrake.notify(err);
