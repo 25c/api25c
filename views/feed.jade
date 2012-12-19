@@ -42,6 +42,9 @@ block css
       width: 50px;
       margin: 0 10px 0 0;
     }
+    form.tip-form {
+      float: left;
+    }
     textarea#comment-input {
       font: inherit;
       float: left;
@@ -53,19 +56,35 @@ block css
       line-height: 14px;
       resize: none;
     }
-    textarea#comment-input.default {
+    textarea#comment-input.default, #pseudonym-container input.default {
       font-style: italic;
       color: #4c4c4c;
     }
     textarea#comment-input.error {
       color: #bf3a3a;
     }
-    textarea#comment-input:focus {
+    textarea#comment-input:focus, #pseudonym-container input:focus {
       outline: none;
       border: 1px solid #BAD7DF;
       -moz-box-shadow:    inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
       -webkit-box-shadow: inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
       box-shadow:         inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
+    }
+    #pseudonym-container {
+      clear: both;
+      padding: 5px 0 0 0;
+    }
+    #pseudonym-container label {
+      float: left;
+      padding: 5px 5px 0 0;
+      font: normal normal normal 11px helvetica, arial, sans-serif;
+    }
+    #pseudonym-container input {
+      float: left;
+      padding: 0 0 1px 5px;
+      font: inherit;
+      font-size: 13px;
+      border: 1px solid #d2cfcf;
     }
     #input-container .tip-container {
       float: left;
@@ -100,9 +119,6 @@ block css
       width: 40px;
       height: 40px;
       background-size: 40px 40px;
-    }
-    #promote-container form.tip-form {
-      float: left;
     }
     #promote-container .tip-container {
       border: 0px none transparent;
@@ -153,7 +169,7 @@ block css
       height: 20px;
       cursor: pointer;
       color: white;
-      font: normal normal 600 12px helvetica, arial, sans-serif;
+      font: normal normal bold 12px helvetica, arial, sans-serif;
     }
     .item-footer {
       background-color: #ddd;
@@ -199,7 +215,7 @@ block content
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=180097582134534";
+      js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=#{ FB_APP_ID }";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
     
@@ -221,6 +237,11 @@ block content
       input.comment-uuid(name="comment_uuid", type="hidden")
       include partials/_button_standard.jade
       textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
+      #pseudonym-container
+        label Give anonymously:
+        input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
+        .clear
+      .clear
     .clear
   #feed-container
     #info-container

@@ -81,6 +81,7 @@ if (process.env.NODE_ENV == "production") {
 	var USERS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
 	var DATA25C_URL = "data.25c.com";
 	var DATA25C_PORT = "443";
+	var FB_APP_ID = "403609836335934";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
   var TIP_URL_BASE = "https://tip.plus25c.com";
@@ -88,6 +89,7 @@ if (process.env.NODE_ENV == "production") {
   var USERS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var DATA25C_URL = "data.plus25c.com";
   var DATA25C_PORT = "443";
+  var FB_APP_ID = "303875413052772";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
   var TIP_URL_BASE = "http://localhost:3000";
@@ -95,6 +97,7 @@ if (process.env.NODE_ENV == "production") {
   var USERS_URL_BASE = "http://localhost:3000/s3";
   var DATA25C_URL = "localhost";
   var DATA25C_PORT = "5400";
+  var FB_APP_ID = "180097582134534";
 }
 
 var express = require('express');
@@ -125,6 +128,7 @@ app.post('/tip/:button_uuid', function(req, res) {
   var amount = parseInt(req.param('amount')) || 1;
   var comment_text = req.param('comment_text') || '';
   var comment_uuid = req.param('comment_uuid') || '';
+  var comment_pseudonym = req.param('comment_pseudonym') || '';
     
   var referrer = req.param('_referrer');
   
@@ -162,14 +166,14 @@ app.post('/tip/:button_uuid', function(req, res) {
                     ipAddress = req.connection.remoteAddress;
                   }
 
-                  if (comment_uuid && req.session.clickUuids[comment_uuid]) {
-                    var click_uuid = req.session.clickUuids[comment_uuid];
+                  if (comment_uuid && req.session.commentUuids[comment_uuid]) {
+                    var click_uuid = req.session.commentUuids[comment_uuid];
                   } else if (req.session.clickUuids[req.params.button_uuid]) {
                     var click_uuid = req.session.clickUuids[req.params.button_uuid];
                   } else {
-                    var click_uuid = uuid.v1();
+                    var click_uuid = uuid.v1().replace('-', '');
                     if (!comment_uuid && comment_text) {
-                      comment_uuid = uuid.v1();
+                      comment_uuid = uuid.v1().replace('-', '');
                     }
                   }
 
@@ -187,13 +191,18 @@ app.post('/tip/:button_uuid', function(req, res) {
                   }
 
                   if (comment_uuid) {
-                    click.comment_text = comment_text;
               		  click.comment_uuid = comment_uuid;
-              		  req.session.clickUuids[comment_uuid] = click.uuid;
+              		  req.session.commentUuids[comment_uuid] = comment_uuid;
+              		  if (comment_text) {
+              		    click.comment_text = comment_text;
+            		    }
+            		    if (comment_pseudonym) {
+            		      click.comment_pseudonym = comment_pseudonym;
+          		      }
               		} else {
-                    req.session.clickUuids[req.params.button_uuid] = click.uuid;
+                    req.session.clickUuids[req.params.button_uuid] = click_uuid;
                   }
-
+                                    
                   //// check for a button referrer
                   if (req.cookies['_25c_referrer']) {
                     redisWebClient.get(req.cookies['_25c_referrer'], function(err, button_referrer_data) {
@@ -231,7 +240,7 @@ app.post('/tip/:button_uuid', function(req, res) {
 
 app.get('/belt/:button_uuid', function(req, res) {  
 	referrer = req.header('referrer');
-  req.session.clickUuids = {};
+	req.session.clickUuids = {};
   req.session.commentUuids = {};
 	res.render("belt.jade", {
 	  req: req,
@@ -309,13 +318,15 @@ app.post('/widget/:button_uuid', function(req, res) {
 
 app.get('/feed/:button_uuid', function(req, res) {
 	referrer = req.header('referrer');
-  req.session.clickUuids = {};
+	req.session.clickUuids = {};
+  req.session.commentUuids = {};
 	res.render("feed.jade", {
 	  req: req,
 	  referrer: referrer,
 	  WEB_URL_BASE: WEB_URL_BASE,
 	  ASSETS_URL_BASE: ASSETS_URL_BASE,
-	  USERS_URL_BASE: USERS_URL_BASE
+	  USERS_URL_BASE: USERS_URL_BASE,
+	  FB_APP_ID: FB_APP_ID
 	});
 });
 

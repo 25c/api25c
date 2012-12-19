@@ -12,15 +12,22 @@ $(function() {
   
   // JQUERY OBJECTS
   var $commentInput = $('textarea#comment-input');
+  var $pseudonymInput = $('#pseudonym-container input');
   var $feedExpand = $('#feed-expand');
   var $promoteContainer = $('#promote-container');
   var $feedContainer = $('#feed-container');
   var $infoContainer = $('info-container');
   
   // TEXT
-  var DEFAULT_COMMENT = $commentInput.val();
-  var ERROR_COMMENT = "Please enter a comment.";
-  
+  var DEFAULT = {
+    comment: $commentInput.val(),
+    pseudonym: $pseudonymInput.val()
+  }
+  var ERROR = {
+    comment: "Please enter a comment.",
+    pseudonym: "Invalid pseudonym."
+  }
+    
   // DEBUG
   var DEBUG_MODE = false;
   
@@ -36,58 +43,36 @@ $(function() {
       amount: 25,
       text: "This is my awesome comment.",
       owner: {uuid: 100, amount: 25, name: "Al", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/12548470f9f3012ff5c71231381369e0/thumb.jpg"},
-      promoters: [
-        {uuid: 106, amount: 25, name: "Alice", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/e4788250f48e012f6e12123139081365/thumb.jpg"},
-        {uuid: 107, amount: 25, name: "Ann", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/22cf6310d918012ff891123138152cb3/thumb.jpg"}
-      ]
     },
     {
       uuid: 1001,
       amount: 55,
       text: "Thanks so much for the great article!",
       owner: {uuid: 101, amount: 50, name: "Bob", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/31a365c0b25e012f50491231381d2446/thumb.jpg"},
-      promoters: [
-        {uuid: 108, amount: 5, name: "Barbara", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/41c86070aebd012f4c7222000a8c4def/thumb.jpg"}
-      ]
     },
     {
       uuid: 1002,
       amount: 40,
       text: "Excellent job getting this info.",
       owner: {uuid: 102, amount: 25, name: "Carl", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/4fe81770f48b012f49af1231381554d7/thumb.jpg"},
-      promoters: [
-        {uuid: 109, amount: 25, name: "Charlotte", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"},
-        {uuid: 110, amount: 2, name: "Cameron", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/57853590de7f012fca7512313d13fc17/thumb.jpg"},
-        {uuid: 111, amount: 25, name: "Carol", pictureUrl: ""},
-        {uuid: 112, amount: 25, name: "Cher", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/988e1d90de80012fca7b12313d13fc17/thumb.jpg"},
-        {uuid: 113, amount: 25, name: "Cesaria", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/a89f3870b439012f99ca12313809465c/thumb.jpg"},
-        {uuid: 114, amount: 25, name: "Claire", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
-        {uuid: 115, amount: 25, name: "Chloe", pictureUrl: ""},
-        {uuid: 116, amount: 25, name: "Christine", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"}
-      ]
     },
     {
       uuid: 1003,
       amount: 40,
       text: "Wow! I didn't realize that this was such an interesting topic.",
       owner: {uuid: 103, amount: 40, name: "Dave", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"},
-      promoters: []
     },
     {
       uuid: 1004,
       amount: 100,
       text: "Check out my great response to this article on my personal blog: http://www.something.com/",
       owner: {uuid: 104, amount: 25, name: "Eric", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
-      promoters: []
     },
     {
       uuid: 1005,
       amount: 60,
       text: "Great job!",
       owner: {uuid: 105, amount: 25, name: "Frank", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/79ca5a80d8f7012f6c8012313d04f26e/thumb.jpg"},
-      promoters: [
-        {uuid: 117, amount: 25, name: "Flore", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/7b6fd560aed4012fd5e0123139180e6a/thumb.jpg"}
-      ]
     }
   ];
 
@@ -97,12 +82,20 @@ $(function() {
   window.validateTipForm = function($form) {
     if ($form.find('textarea#comment-input').length) {
       var comment = $commentInput.val();
-      if (comment == DEFAULT_COMMENT || comment == ERROR_COMMENT || comment == '') {
+      if (comment == DEFAULT.comment || comment == ERROR.comment || comment == '') {
         $commentInput.addClass('error').val(ERROR_COMMENT);
         return false;
       }
     }
-    
+    if ($form.find('#pseudonym-container').length) {
+      var pseudonym = $pseudonymInput.val();
+      if (!pseudonym || pseudonym == DEFAULT.pseudonym) {
+        $pseudonymInput.val('');
+      } else if (/^\s*$/.test(pseudonym) || pseudonym == ERROR.pseudonym) {
+        $pseudonymInput.addClass('error').val(ERROR.pseudonym);
+        return false;
+      }
+    }
     return true;
   }
   
@@ -114,9 +107,7 @@ $(function() {
     var newComment = {};
     var existingComment = findCommentByUuid(uuid);
     var amount = parseInt(form.amount);
-    
-    console.log(uuid);
-        
+            
     if (form.comment_text) {
       if (existingComment) {
         newComment = existingComment;
@@ -133,6 +124,10 @@ $(function() {
       newComment.content = form.comment_text;
       newComment.owner.amount = amount;
       newComment.amount = amount;
+      
+      if ($pseudonymInput.val() == '') {
+        $pseudonymInput.val(DEFAULT.pseudonym);
+      }
     } else {
       newComment = existingComment;
       var newPromoter = user;
@@ -159,47 +154,7 @@ $(function() {
     }
     return false;
   }
-  
-  function updatePromoter(comment, promoter) {
     
-    var originalCommentAmount = -1;
-    var originalPromoteAmount = -1;
-    
-    if (promoteTips[comment.uuid]) {
-      originalCommentAmount = promoteTips[comment.uuid].originalCommentAmount;
-      originalPromoteAmount = promoteTips[comment.uuid].originalPromoteAmount;
-    } else {
-      originalCommentAmount = comment.amount;
-    }
-        
-    comment.amount = originalCommentAmount + promoter.amount;
-      
-    if (comment.owner.uuid != promoter.uuid) {
-      var isAlreadyPromoter = false;
-      for (i in comment.promoters) {
-        if (comment.promoters[i].uuid == promoter.uuid) {
-          if (originalCommentAmount < 0) {
-            originalCommentAmount = comment.promoters[i].amount;
-          }
-          comment.promoters[i].amount = originalPromoteAmount + promoter.amount;
-          isAlreadyPromoter = true;
-          break;
-        }
-      }
-      if (!isAlreadyPromoter) {
-        originalPromoteAmount = 0;
-        comment.promoters.push(promoter);
-      }
-      comment.promoters.sort(sortFunction);
-    }        
-    promoteTips[comment.uuid] = {
-      originalCommentAmount: originalCommentAmount, 
-      originalPromoteAmount: originalPromoteAmount,
-      sessionPromoteAmount: promoter.amount
-    }
-    return comment;
-  }
-  
   function sortFunction(a, b) {
     return(b.amount - a.amount);
   }
@@ -213,11 +168,10 @@ $(function() {
       user = data.user;
       comments = data.widget || [];
     }
-        
+          
     if (user) {
       $('.user-image').css({
-        'background-image': DEBUG_MODE ? 'url("' + user.pictureUrl + ')' :
-        'url("' + window.usersUrlBase + '/users/pictures/' + user.uuid + '/thumb.jpg")'
+        'background-image': getUserPictureUrl(user)
       }).show();
       $commentInput.width(391);
     }
@@ -276,24 +230,33 @@ $(function() {
     }
     
     $feedItem.addClass('initial').delay(3000).animate({ backgroundColor: "transparent" }, "slow");
-        
+    FB.XFBML.parse($feedItem.get(0));
     if (position > DEFAULT_SHOW) {
       isExpanded = true;
     }
-    
     updateIframeHeight(isExpanded);
+  }
+  
+  function getUserPictureUrl(user) {
+    if (DEBUG_MODE) {
+      return 'url("' + comment.owner.pictureUrl + ')';
+    } else if (user.uuid) {
+      return 'url("' + window.usersUrlBase + '/users/pictures/' + user.uuid + '/thumb.jpg")';
+    } else {
+      return 'url("' + window.assetsUrlBase + '/users/pictures/no_pic.png")';
+    }
   }
   
   function createFeedItem(comment) {
     // TODO: make sure to show original tip amount, not total comment amount, in givenText
     var givenText = comment.owner.name + ' gave <span class="tip-amount">' + comment.amount;
     givenText += parseInt(comment.amount) > 1 ? ' points</span>' : ' point</span>';
+    
     var $itemImage = $('<div />', {
       'data-given': givenText,
       class: 'item-image',
       css: {
-        'background-image': DEBUG_MODE ? 'url("' + comment.owner.pictureUrl + ')' :
-          'url("' + window.usersUrlBase + '/users/pictures/' + comment.owner.uuid + '/thumb.jpg")'
+        'background-image': getUserPictureUrl(comment.owner)
       }
     });
     
@@ -310,7 +273,7 @@ $(function() {
     }).append($('<div />', {
       class: 'fb-like',
       // TODO: Replace with URL for FB scraper that refers to the comment uuid
-      'data-href': 'http://localhost:5000/feed/4f4243c020860130a45048bcc89ac444/' + comment.uuid,
+      'data-href': window.webUrlBase + '/notes/' + comment.uuid,
       'data-send': 'false',
       'data-layout': 'button_count',
       'data-width': '450',
@@ -346,46 +309,21 @@ $(function() {
       $itemText,
       $('<div class="clear"></div>')
     );
-
-    if (comment.promoters && comment.promoters.length) {  
-      $feedItem.append(createItemPromoters(comment.promoters));
-    }
-    
+        
     return $feedItem;
   }
-  
-  function createItemPromoters(promoters) {
-    var $itemPromotedTitle = $('<div />', {
-      class: 'item-promoted-title'
-    }).text("Promoted by");
     
-    var $itemPromoters = $('<div />', {
-      class: 'item-promoters'
-    }).append($itemPromotedTitle);
-  
-    for (j in promoters) {
-      var promoter = promoters[j];
-      var givenText = promoter.name + ' gave <span class="tip-amount">' + promoter.amount;
-      givenText += parseInt(promoter.amount) > 1 ? ' points</span>' : ' point</span>';
-      $itemPromoters.append($('<div />', {
-        'data-given': givenText,
-        class: 'promoter-image',
-        css: DEBUG_MODE ? {'background-image': 'url("' + comment.owner.pictureUrl + ')'} :
-          {'background-image': 'url("' + window.usersUrlBase + '/users/pictures/' + comment.owner.uuid + '/thumb.jpg")'}
-      }));
-    }
-    $itemPromoters.append($('<div class="clear"></div>'));
-    return $itemPromoters;
-  }
-  
   function updateIframeHeight(expandIframe) {
         
     if (comments.length) {
+      
+      var newHeight = $feedContainer.height() + 148;
+      
       if (comments.length > DEFAULT_SHOW) {
         $feedContainer.css('margin-bottom', 30);
+        newHeight += 30;
         if (expandIframe) {
           isExpanded = true;
-          var newHeight = $('body').height() + 30;
           $feedExpand.css({
             'top': '',
             'bottom': ''
@@ -394,20 +332,17 @@ $(function() {
           isExpanded = false;
           var $lastDefaultShown = $('.last-default-shown');
           if ($lastDefaultShown.length) {
-            var newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 60;
+            newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 63;
             $feedExpand.show();
-          } else {
-            var newHeight = $('body').height() + 30;
           }
           $feedExpand.css({
-            'top': newHeight - 56,
+            'top': newHeight - 32,
             'bottom': 'auto'
           }).html('<h3>Show All Notes</h3>');
         }
       } else {
         $feedContainer.show();
         $feedExpand.hide();
-        var newHeight = $feedContainer.height() + 148;
         $feedContainer.css('margin-bottom', '');
       }
             
@@ -464,25 +399,28 @@ $(function() {
     }
   }, '.item-promote-container');
   
-  $('#promote-container').hover(function() {
-    }, function() {
-
-  });
-  
   var inputDefaultText = $commentInput.val();
   
   $feedExpand.click(function() {
     updateIframeHeight(!isExpanded);
   });
   
-  $commentInput.focus(function() {
-    var comment = $commentInput.val();
-    if (comment == DEFAULT_COMMENT || comment == ERROR_COMMENT) {
-      $commentInput.val('');
-      $commentInput.removeClass('error default');
+  $commentInput.add($pseudonymInput).focus(function() {
+    var $this = $(this);
+    var type = $this.attr('id') == 'comment-input' ? 'comment' : 'pseudonym';
+    var content = $this.val();
+    if (content == DEFAULT[type] || content == ERROR[type]) {
+      $this.val('');
+      $this.removeClass('error default');
+    }
+  }).blur(function() {
+    var $this = $(this);
+    var type = $this.attr('id') == 'comment-input' ? 'comment' : 'pseudonym';
+    if ($this.val() == '') {
+      $this.val(DEFAULT[type]).addClass('default');
     }
   });
-    
+      
   // INITIALIZATION
   getWidgetCache(initializeComments);
   updateIframeHeight(false);
