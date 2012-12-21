@@ -9,7 +9,7 @@ html(lang="en")
     | </script>
 
     script
-      window.DEBUG_MODE = true;
+      window.DEBUG_MODE = false;
       window.buttonUuid = "#{req.params.button_uuid}" || '999';
       window.buttonUrl = "#{req.query.url}" || '';
       window.sessionCsrf = "#{req.session._csrf}";
