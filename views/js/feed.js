@@ -19,59 +19,58 @@ $(function() {
   var $infoContainer = $('info-container');
   
   // TEXT
-  var DEFAULT = {
+  var DEFAULT_TEXT = {
     comment: $commentInput.val(),
     pseudonym: $pseudonymInput.val()
   }
-  var ERROR = {
+  var ERROR_TEXT = {
     comment: "Please enter a comment.",
     pseudonym: "Invalid pseudonym."
   }
     
-  // DEBUG
-  var DEBUG_MODE = false;
-  
   var fakeUser = {
     uuid: 99,
-    name: 'Lionel',
-    pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/0d6174d0ec9a012fc7f71231381d4d5a/thumb.jpg"
+    name: 'Zed',
+    pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/0d6174d0ec9a012fc7f71231381d4d5a/thumb.jpg",
+    isTipper: true,
+    isWidgetOwner: false
   };
   
   fakeComments = [
     {
       uuid: 1000,
       amount: 25,
-      text: "This is my awesome comment.",
+      content: "This is my awesome comment.",
       owner: {uuid: 100, amount: 25, name: "Al", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/12548470f9f3012ff5c71231381369e0/thumb.jpg"},
     },
     {
       uuid: 1001,
       amount: 55,
-      text: "Thanks so much for the great article!",
+      content: "Thanks so much for the great article!",
       owner: {uuid: 101, amount: 50, name: "Bob", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/31a365c0b25e012f50491231381d2446/thumb.jpg"},
     },
     {
       uuid: 1002,
       amount: 40,
-      text: "Excellent job getting this info.",
+      content: "Excellent job getting this info.",
       owner: {uuid: 102, amount: 25, name: "Carl", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/4fe81770f48b012f49af1231381554d7/thumb.jpg"},
     },
     {
       uuid: 1003,
       amount: 40,
-      text: "Wow! I didn't realize that this was such an interesting topic.",
+      content: "Wow! I didn't realize that this was such an interesting topic.",
       owner: {uuid: 103, amount: 40, name: "Dave", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/50bce640ec9a012fc7fa1231381d4d5a/thumb.jpg"},
     },
     {
       uuid: 1004,
       amount: 100,
-      text: "Check out my great response to this article on my personal blog: http://www.something.com/",
+      content: "Check out my great response to this article on my personal blog: http://www.something.com/",
       owner: {uuid: 104, amount: 25, name: "Eric", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
     },
     {
       uuid: 1005,
       amount: 60,
-      text: "Great job!",
+      content: "Great job!",
       owner: {uuid: 105, amount: 25, name: "Frank", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/79ca5a80d8f7012f6c8012313d04f26e/thumb.jpg"},
     }
   ];
@@ -82,17 +81,17 @@ $(function() {
   window.validateTipForm = function($form) {
     if ($form.find('textarea#comment-input').length) {
       var comment = $commentInput.val();
-      if (comment == DEFAULT.comment || comment == ERROR.comment || comment == '') {
-        $commentInput.addClass('error').val(ERROR_COMMENT);
+      if (comment == DEFAULT_TEXT.comment || comment == ERROR_TEXT.comment || comment == '') {
+        $commentInput.addClass('error').val(ERROR_TEXT.comment);
         return false;
       }
     }
     if ($form.find('#pseudonym-container').length) {
       var pseudonym = $pseudonymInput.val();
-      if (!pseudonym || pseudonym == DEFAULT.pseudonym) {
+      if (!pseudonym || pseudonym == DEFAULT_TEXT.pseudonym) {
         $pseudonymInput.val('');
-      } else if (/^\s*$/.test(pseudonym) || pseudonym == ERROR.pseudonym) {
-        $pseudonymInput.addClass('error').val(ERROR.pseudonym);
+      } else if (/^\s*$/.test(pseudonym) || pseudonym == ERROR_TEXT.pseudonym) {
+        $pseudonymInput.addClass('error').val(ERROR_TEXT.pseudonym);
         return false;
       }
     }
@@ -105,10 +104,11 @@ $(function() {
     var uuid = form.comment_uuid || response.comment_uuid;
     
     var newComment = {};
-    var existingComment = findCommentByUuid(uuid);
+    var existingComment = comments[findCommentIndexByUuid(uuid)];
     var amount = parseInt(form.amount);
             
     if (form.comment_text) {
+      
       if (existingComment) {
         newComment = existingComment;
         promoteTips[uuid] = {
@@ -126,8 +126,12 @@ $(function() {
       newComment.amount = amount;
       
       if ($pseudonymInput.val() == '') {
-        $pseudonymInput.val(DEFAULT.pseudonym);
+        $pseudonymInput.val(DEFAULT_TEXT.pseudonym);
+      } else {
+        newComment.owner.name = $pseudonymInput.val();
+        newComment.owner.pictureUrl = '';
       }
+      
     } else {
       newComment = existingComment;
       var newPromoter = user;
@@ -143,49 +147,51 @@ $(function() {
     updateComments(newComment);
   }
   
-  function findCommentByUuid(uuid, comment) {
+  function findCommentIndexByUuid(uuid, comment) {
     for (i in comments) {
       if (comments[i].uuid == uuid) {
         if (comment) {
           comments[i] = comment;
         }
-        return comments[i];
+        return i;
       }
     }
     return false;
   }
-    
+  
   function sortFunction(a, b) {
     return(b.amount - a.amount);
   }
 
   function initializeComments(data) {
 
-    if (DEBUG_MODE) {
+    if (window.DEBUG_MODE) {
       user = fakeUser;
       comments = fakeComments;
     } else {
       user = data.user;
       comments = data.widget || [];
     }
-              
-    if (user) {
+    
+    // DEBUG DEBUG
+    // comments = [];
+                      
+    if (user && user.isTipper) {
       $('.user-image').css({
         'background-image': getUserPictureUrl(user)
       }).show();
-      $commentInput.width(391);
+      $('#comment-container').css('margin-left', 222);
+      $('#form-container .tip-container, #pseudonym-container').css('left', 65);
+      $('#promote-container .tip-container').css('left', 135);
+      $('#promote-container #promote-text').css('margin-left', 200);
+    } else {
+      // NOT LOGGED IN AS TIPPER
     }
         
     comments.sort(sortFunction);
   
     for (i in comments) {
-
       var $feedItem = createFeedItem(comments[i]);
-      
-      if (i == DEFAULT_SHOW - 1 || (i == comments.length - 1) && (comments.length < DEFAULT_SHOW)) {
-        $feedItem.addClass('last-default-shown');
-      }
-      
       $feedContainer.append($feedItem);
     }
     
@@ -213,15 +219,10 @@ $(function() {
           
     if (nextCommentUuid) {
       var $nextComment = $('#' + nextCommentUuid);
-      if ($nextComment.hasClass('last-default-shown')) {
-        $nextComment.removeClass('last-default-shown');
-        $feedItem.addClass('last-default-shown');
-      }
       $nextComment.before($feedItem);
     } else if (comments.length > 1) {
       $('.feed-item:last').after($feedItem);
     } else {
-      $feedItem.addClass('last-default-shown');
       $feedContainer.append($feedItem);
     }
         
@@ -238,22 +239,19 @@ $(function() {
   }
   
   function getUserPictureUrl(user) {
-    if (DEBUG_MODE) {
-      return 'url("' + comment.owner.pictureUrl + ')';
+    var pictureUrl = 'url("';
+    if (window.DEBUG_MODE) {
+      pictureUrl += user.pictureUrl ? user.pictureUrl : window.assetsUrlBase + '/users/pictures/no_pic.png';
     } else if (user.uuid) {
-      return 'url("' + window.usersUrlBase + '/users/pictures/' + user.uuid + '/thumb.jpg")';
+      pictureUrl += window.usersUrlBase + '/users/pictures/' + user.uuid + '/thumb.jpg';
     } else {
-      return 'url("' + window.assetsUrlBase + '/users/pictures/no_pic.png")';
+      pictureUrl += window.assetsUrlBase + '/users/pictures/no_pic.png';
     }
+    return pictureUrl + '")';
   }
   
-  function createFeedItem(comment) {
-    // TODO: make sure to show original tip amount, not total comment amount, in givenText
-    var givenText = comment.owner.name + ' gave <span class="tip-amount">' + comment.amount;
-    givenText += parseInt(comment.amount) > 1 ? ' points</span>' : ' point</span>';
-    
+  function createFeedItem(comment) {    
     var $itemImage = $('<div />', {
-      'data-given': givenText,
       class: 'item-image',
       css: {
         'background-image': getUserPictureUrl(comment.owner)
@@ -266,7 +264,7 @@ $(function() {
     
     var $itemBody = $('<div />', {
       class: 'item-body'
-    }).text(comment.content);
+    }).html(formatCommentText(comment.content));
     
     var $itemLike = $('<div />', {
       class: 'item-like'
@@ -299,7 +297,13 @@ $(function() {
     
     var $itemText = $('<div />', {
       class: 'item-text'
-    }).append($itemBody, $itemName, $itemFooter);    
+    }).append($itemBody, $itemName, $itemFooter);
+    
+    if (user.isWidgetOwner) {
+      $itemText.append($('<a />', {
+        class: 'item-hide'
+      }).text('Remove'));
+    }
     
     var $feedItem = $('<div />', {
       id: comment.uuid,
@@ -314,14 +318,12 @@ $(function() {
   }
     
   function updateIframeHeight(expandIframe) {
-        
+  
     if (comments.length) {
-      
-      var newHeight = $feedContainer.height() + 177;
-      
+                  
       if (comments.length > DEFAULT_SHOW) {
         $feedContainer.css('margin-bottom', 30);
-        newHeight += 30;
+        var newHeight = $feedContainer.outerHeight(true) + $('#input-container').outerHeight(true) + 2;
         if (expandIframe) {
           isExpanded = true;
           $feedExpand.css({
@@ -330,7 +332,7 @@ $(function() {
           }).html('<h3>Show Fewer Notes</h3>');
         } else {
           isExpanded = false;
-          var $lastDefaultShown = $('.last-default-shown');
+          var $lastDefaultShown = $('.feed-item:eq(4)');
           if ($lastDefaultShown.length) {
             newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 63;
             $feedExpand.show();
@@ -341,42 +343,64 @@ $(function() {
           }).html('<h3>Show All Notes</h3>');
         }
       } else {
+        var newHeight = $feedContainer.outerHeight(true) + $('#input-container').outerHeight(true) + 2;
         $feedContainer.show();
         $feedExpand.hide();
         $feedContainer.css('margin-bottom', '');
-      }
-            
-      $.postMessage(
-        JSON.stringify({
-          uuid: buttonUuid,
-          command: 'set-height', 
-          height: newHeight
-        }),
-        parentUrl
-      );
+      }            
+    } else {
+      $feedContainer.hide();
+      var newHeight = $('#input-container').outerHeight(true) + 2;
     }
+        
+    $.postMessage(
+      JSON.stringify({
+        uuid: buttonUuid,
+        command: 'set-height', 
+        height: newHeight
+      }),
+      parentUrl
+    );
+  }
+  
+  function formatCommentText(text) {
+    text = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return text.replace(exp,"<a target='_blank' href='$1'>$1</a>");
   }
   
   // HANDLERS
   
-  $feedContainer.on({
-    mouseenter: function() {
-      var $this = $(this);
-      $infoContainer.css({
-        display: 'block',
-        top: $this.position().top + $this.height() + 2,
-        left: $this.position().left
-      }).html($this.attr('data-given'));
-    },
-    mouseleave: function() {
-      $infoContainer.hide();
+  $feedContainer.on({ 
+    click: function() {
+      if (window.confirm('Are you sure you want to remove this comment? You must abide by the guidelines of the 25c Terms of Service.')) {
+        var commentUuid = $(this).parents('.feed-item').attr('id');
+        $.ajax({
+          type: 'POST',
+          url: '/hide/' + buttonUuid + '/' + commentUuid,
+          data: {referrer: parentUrl, _csrf: sessionCsrf},
+          success: function(data) {
+            if (data.error) {
+              // comment not removed
+            } else {
+              comments.splice(findCommentIndexByUuid, 1);
+              $('#' + commentUuid).hide('fast', function() {
+                $(this).remove();
+                updateIframeHeight(isExpanded);
+              });
+            }
+          },
+          dataType: "json",
+          async: false
+        });
+      }
     }
-  }, '.promoter-image, .item-image').on({
+  }, '.item-hide').on({
     click: function() {
       promoteVisible = !promoteVisible;
       if (promoteVisible) {
         var $item = $(this).parents('.feed-item');
-        var uuid = $item.attr('id');
+        var uuid = $item.attr('id');        
         var existingTip = promoteTips[uuid];
         var showTip = 1;
         if (existingTip && existingTip.sessionPromoteAmount > 0) {
@@ -397,10 +421,8 @@ $(function() {
       }
       updateIframeHeight(isExpanded);
     }
-  }, '.item-promote-container');
-  
-  var inputDefaultText = $commentInput.val();
-  
+  }, '.item-promote-container');  
+    
   $feedExpand.click(function() {
     updateIframeHeight(!isExpanded);
   });
@@ -409,7 +431,7 @@ $(function() {
     var $this = $(this);
     var type = $this.attr('id') == 'comment-input' ? 'comment' : 'pseudonym';
     var content = $this.val();
-    if (content == DEFAULT[type] || content == ERROR[type]) {
+    if (content == DEFAULT_TEXT[type] || content == ERROR_TEXT[type]) {
       $this.val('');
       $this.removeClass('error default');
     }
@@ -417,12 +439,13 @@ $(function() {
     var $this = $(this);
     var type = $this.attr('id') == 'comment-input' ? 'comment' : 'pseudonym';
     if ($this.val() == '') {
-      $this.val(DEFAULT[type]).addClass('default');
+      $this.val(DEFAULT_TEXT[type]).addClass('default');
     }
   });
       
   // INITIALIZATION
   getWidgetCache(initializeComments);
   updateIframeHeight(false);
-  
 });
+
+

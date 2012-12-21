@@ -28,14 +28,14 @@ $(function() {
       url: "/widget/" + buttonUuid + '?url=' + encodeURIComponent(buttonUrl),
       data: {referrer: parentUrl, _csrf: sessionCsrf},
       success: function(data) {
-        if (data.user) {
+        if (data.user && data.user.isTipper) {
           maxTip = data.user.balance;          
-          var pointText = ' ' + maxTip + ' point';
-          pointText += maxTip == 1 ? '' : 's';
-          $('.balance-amount').text(pointText);
+          $('.balance-amount').text(pointString(maxTip));
           if (maxTip <= 0) {
             $('.tip-submit, input.tip-input, .tip-increase, .tip-decrease').addClass('disabled');
             $('input.tip-input').val(0);
+          } else {
+            // NOT LOGGED IN AS TIPPER
           }
         }
         callback(data);
@@ -82,6 +82,18 @@ $(function() {
       formData[formArray[i].name] = formArray[i].value;
     }
     return formData;
+  }
+  
+  function pointString(amount) {
+    amount = parseInt(amount);
+    var pointText = amount + ' point';
+    pointText += amount == 1 ? '' : 's';
+    return pointText;
+  }
+  
+  function disableTip() {
+    $('.tip-submit, input.tip-input, .tip-increase, .tip-decrease').addClass('disabled');
+    $('input.tip-input').val(0);
   }
   
   // EVENT HANDLERS
@@ -149,46 +161,53 @@ $(function() {
   $('form.tip-form').submit(function() {
     
     var $form = $(this);
-    var $tipInput = $form.find('input.tip-input');
-    var amount = parseInt($tipInput.val());
-    var pointText = amount + ' point';
-    pointText += amount == 1 ? '' : 's';
-
+    
     if (!window.validateTipForm($form)) {
       return false;
     }
     
-    if (testButton) {
-      console.log($form.serialize());
-      $form.find('.tip-amount').text(pointText);
-      $form.find('.tip-confirm').show();
-      $form.find('.tip-send').hide();
-      window.submitSuccessCallback(processFormData($form));
-      return false;
-    }
-        
+    var $tipInput = $form.find('input.tip-input');
+    var amount = parseInt($tipInput.val());
     var data = $form.serialize();
-        
-    $.ajax({
-      type: 'POST',
-      url: $form.attr('action'),
-      data: data,
-      success: function(data) {
+    
+    var tipSuccess = function(data) {
+      if (data.error) {
+        // something went wrong
+      } else {
         if (data.redirect) {
           var url = webUrlBase + '/tip/' + buttonUuid + '?referrer=' + encodeURIComponent(parentUrl);
           var width = 480;
           var height = 358;
           var left = (screen.width / 2) - (width / 2);
           var top = (screen.height / 2) - (height / 2);
-          window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' + width + ',height=' + height + ',top=' + top + ',left=' + left);
+          window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' 
+            + width + ',height=' + height + ',top=' + top + ',left=' + left);
         } else {
           window.submitSuccessCallback(processFormData($form), data);
           $form.find('.tip-confirm').show();
           $form.find('.tip-send').hide();
         }
-        $form.find('.tip-amount').text(pointText);
+        $form.find('.tip-amount').text(pointString(amount));
+        maxTip = maxTip - amount;
+        if (maxTip <= 0) {
+          disableTip();
+        }
+        $('.balance-amount').text(pointString(data.balance));
         $form.find('input.tip-input').val(amount);
-      },
+      }
+    }
+    
+    if (window.DEBUG_MODE) {
+      console.log($form.serialize());
+      tipSuccess({comment_uuid: 999, balance: maxTip - amount});
+      return false;
+    }
+            
+    $.ajax({
+      type: 'POST',
+      url: $form.attr('action'),
+      data: data,
+      success: tipSuccess,
       dataType: 'json',
       async: false
     });

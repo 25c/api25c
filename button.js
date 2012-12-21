@@ -16,8 +16,6 @@ var RAILS_COOKIE_SECRET = 'b802e05c5c52308aef8554ae04b329dfe513a8018fc82f8d11e24
 var NODE_COOKIE_SECRET = '9bcc9f49beb2dcb03cb20c01117431fd33cb4f0c64825ad78dd841948072642023e1869392988c77a4d62c20dd43229649e2d045b06f67b04d2cde3f058ac33e';
 var NODE_COOKIE_SESSION_KEY = '_api25c_session'
 
-var http = require('http');
-var https = require('https');
 var redis = require('redis');
 var rails = require('./rails');
 var url = require('url');
@@ -25,6 +23,7 @@ var uuid = require('node-uuid');
 var pg = require('pg').native;
 var express = require('express');
 var querystring = require('querystring');
+var request = require('request');
 
 var airbrake = require('airbrake').createClient('25f60a0bcd9cc454806be6824028a900');
 airbrake.developmentEnvironments = ['development'];
@@ -76,27 +75,21 @@ if (pgDataUrl == undefined) {
 
 if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
-  var TIP_URL_BASE = "https://tip.25c.com";
 	var ASSETS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
 	var USERS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
-	var DATA25C_URL = "data.25c.com";
-	var DATA25C_PORT = "443";
+	var DATA25C_URL_BASE = "https://data.25c.com";
 	var FB_APP_ID = "403609836335934";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
-  var TIP_URL_BASE = "https://tip.plus25c.com";
   var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var USERS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
-  var DATA25C_URL = "data.plus25c.com";
-  var DATA25C_PORT = "443";
+  var DATA25C_URL_BASE = "data.plus25c.com";
   var FB_APP_ID = "303875413052772";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
-  var TIP_URL_BASE = "http://localhost:3000";
   var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
   var USERS_URL_BASE = "http://localhost:3000/s3";
-  var DATA25C_URL = "localhost";
-  var DATA25C_PORT = "5400";
+  var DATA25C_URL_BASE = "http://localhost:5300";
   var FB_APP_ID = "180097582134534";
 }
 
@@ -152,8 +145,8 @@ app.post('/tip/:button_uuid', function(req, res) {
                 res.json({ error: true });
               } else if (result.rows.length) {
                 var user = result.rows[0];
-                                
-                if (user.balance_paid + user.balance_free >= amount) {    
+                var balance = user.balance_paid + user.balance_free - amount;
+                if (balance >= 0) {
                   var ipAddress;
                   //// first check for proxy forwarded ip
                   var forwardedIpsStr = req.header('x-forwarded-for'); 
@@ -212,10 +205,10 @@ app.post('/tip/:button_uuid', function(req, res) {
                       if (includeReferrer) {
                         click.referrer_user_uuid = button_referrer['referrer_user_uuid'];
                       }  
-                      enqueueClick(click, res);
+                      enqueueClick(click, balance, res);
                     });
                   } else {
-                    enqueueClick(click, res);
+                    enqueueClick(click, balance, res);
                   }
 
                 } else {
@@ -251,6 +244,20 @@ app.get('/belt/:button_uuid', function(req, res) {
 	});
 });
 
+app.get('/feed/:button_uuid', function(req, res) {
+	referrer = req.header('referrer');
+	req.session.clickUuids = {};
+  req.session.commentUuids = {};
+	res.render("feed.jade", {
+	  req: req,
+	  referrer: referrer,
+	  WEB_URL_BASE: WEB_URL_BASE,
+	  ASSETS_URL_BASE: ASSETS_URL_BASE,
+	  USERS_URL_BASE: USERS_URL_BASE,
+	  FB_APP_ID: FB_APP_ID
+	});
+});
+
 app.post('/widget/:button_uuid', function(req, res) {
     
   var button_uuid = req.params.button_uuid;
@@ -270,8 +277,12 @@ app.post('/widget/:button_uuid', function(req, res) {
 					  airbrake.notify(err);
 					  res.json({ error: true });
 					} else {
-            var queryString = "SELECT first_name, last_name, nickname, email, balance_free, balance_paid, role" 
-            + " FROM users WHERE uuid=LOWER('" + user_uuid + "')";
+					  
+            var queryString = "SELECT users.first_name, users.last_name, users.nickname, " + 
+            "users.email, users.balance_free, users.balance_paid, users.role, buttons.id " +
+            "FROM users LEFT JOIN buttons ON (buttons.user_id = users.id AND buttons.uuid = " + 
+            "LOWER('" + button_uuid + "')) WHERE users.uuid = LOWER('" + user_uuid + "')";
+                        
             pgWebClient.query(queryString, function(err, result) {             
               if (err != null) {
                 console.log("Getting session user info error: " + err);
@@ -288,7 +299,9 @@ app.post('/widget/:button_uuid', function(req, res) {
                   current_user = {
                     uuid: user_uuid,
                     name: name,
-                    balance: data.balance_free + data.balance_paid
+                    balance: data.balance_free + data.balance_paid,
+                    isTipper: data.role == 'tipper',
+                    isWidgetOwner: Boolean(data.id)
                   }
                 }
                 fetchWidgetCache();
@@ -303,7 +316,6 @@ app.post('/widget/:button_uuid', function(req, res) {
   }
   
   function fetchWidgetCache() {
-    
     redisDataClient.get(button_uuid + ':' + button_url, function(err, widget_data) {
       if (err != null) {
         console.log("POST error fetching widget cache: " + err);
@@ -317,27 +329,64 @@ app.post('/widget/:button_uuid', function(req, res) {
   }
 });
 
-app.get('/feed/:button_uuid', function(req, res) {
-	referrer = req.header('referrer');
-	req.session.clickUuids = {};
-  req.session.commentUuids = {};
-	res.render("feed.jade", {
-	  req: req,
-	  referrer: referrer,
-	  WEB_URL_BASE: WEB_URL_BASE,
-	  ASSETS_URL_BASE: ASSETS_URL_BASE,
-	  USERS_URL_BASE: USERS_URL_BASE,
-	  FB_APP_ID: FB_APP_ID
-	});
+app.post('/hide/:button_uuid/:comment_uuid', function(req, res) {
+    
+  var button_uuid = req.params.button_uuid;
+  var comment_uuid = req.params.comment_uuid;
+    
+  if (req.signedRailsCookies['_25c_session']) {
+    redisWebClient.get(req.signedRailsCookies['_25c_session'], function(err, user_uuid) {
+      if (err != null) {
+        console.log("POST error fetching session user uuid: " + err);
+        airbrake.notify(err);
+        res.json({ error: true });
+      } else {
+        pg.connect(pgWebUrl, function(err, pgWebClient) {
+					if (err != null) {
+					  console.log("failed to connect to postgres database: " + err);
+					  airbrake.notify(err);
+					  res.json({ error: true });
+					} else {
+					  var queryString = "SELECT COUNT(*) FROM users, buttons WHERE users.uuid = LOWER('" + user_uuid 
+					    + "') AND users.id = buttons.user_id AND buttons.uuid = LOWER('" + button_uuid + "')";
+            pgWebClient.query(queryString, function(err, result) {             
+              if (err != null) {
+                console.log("Getting session user info error: " + err);
+                airbrake.notify(err);
+                res.json({ error: true });
+              } else {                                
+                // if (result.rows[0].count >= 1) {
+                if (true) {
+                  request.post(DATA25C_URL_BASE + '/api/comments/block', {
+                    form: {'uuids[]': comment_uuid}
+                  }, function(err) {
+                    if (err != null) {
+                      console.log("Setting comment to hidden error: " + err);
+                      airbrake.notify(err);
+                      res.json({ error: true });
+                    } else {
+                      res.json({});
+                    }
+                  });
+                } else {
+                  res.json({ error: true });
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+  }
 });
 
-function enqueueClick(click, res) {
+function enqueueClick(click, balance, res) {
   redisDataClient.lpush(QUEUE_KEY, JSON.stringify(click), function(err) {
     if (err == null) {
       if (click.comment_uuid) {
-        res.json({comment_uuid: click.comment_uuid});
+        res.json({comment_uuid: click.comment_uuid, balance: balance});
       } else {
-			  res.json({});
+			  res.json({balance: balance});
 		  }
 		} else {
 			airbrake.notify(err);

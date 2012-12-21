@@ -6,16 +6,21 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 var _tip25c_feed_jquery = $.noConflict(true);
 _tip25c_feed_jquery(document).ready(function($) {
   
-  var $iframe = $();
+  var $window = $(window);
   var src = $("script#tip-25c-widget-js").attr("src");
   src = src.substr(0, src.indexOf("/public"));
   
   $.receiveMessage(function(e) {
     var data = JSON.parse(e.data);
-    if (data.uuid == $iframe.attr('data-uuid')) {
+    var $iframe = $('iframe#' + data.uuid);
+    if ($iframe.length) {
       switch (data.command) {
         case "set-height":
-          $iframe.height(data.height);
+          if (data.height) {
+            $iframe.height(data.height);
+          } else {
+            $iframe.height('');
+          }
           break;
       }
     }
@@ -24,25 +29,41 @@ _tip25c_feed_jquery(document).ready(function($) {
   $("div.tip-25c-belt, div.tip-25c-feed").each(function() {
     
     var $this = $(this);
-        
-    if ($this.hasClass('tip-25c-belt')) {
-      var widgetType = 'belt';
-      var widgetWidth = 457;
-      var widgetHeight = 100;
-    } else if ($this.hasClass('tip-25c-feed')) {
-      var widgetType = 'feed';
-      var widgetWidth = 652;
-      var widgetHeight = 157;
-    }
     
     var uuid = $this.attr("data-id");
     var url = $this.attr("data-url");
-      
-    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/' + widgetType 
-    + '/' + uuid + "?url=" + encodeURIComponent(url);
+    var widgetWidth = parseInt($this.attr("width")) || 600;
     
-    $iframe = $('<iframe />', {
-      'data-uuid': uuid,
+    $this.css({
+      'min-height': 150,
+      width: widgetWidth,
+      background: '#fff url("https://d12af7yp6qjhyn.cloudfront.net/style/loader.gif") no-repeat center center',
+      border: '1px solid #d2cfcf'
+    });
+    
+    if ($this.hasClass('tip-25c-belt')) {
+      var widgetType = 'belt';
+      var widgetHeight = 100;
+      if (widgetWidth < 457) {
+        widgetWidth = 457;
+      } else if (widgetWidth > 457) {
+        widgetWidget = 457;
+      }
+    } else if ($this.hasClass('tip-25c-feed')) {
+      var widgetType = 'feed';
+      var widgetHeight = 151;
+      if (widgetWidth < 400) {
+        widgetWidth = 400;
+      } else if (widgetWidth > 1000) {
+        widgetWidth = 1000;
+      }
+    }
+    
+    var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/' + widgetType 
+    + '/' + uuid + "?url=" + encodeURIComponent(url) + '&width=' + widgetWidth;
+    
+    var $iframe = $('<iframe />', {
+      id: uuid,
       src: src_url,
       allowtransparency: true,
       frameborder: 0,
@@ -53,8 +74,24 @@ _tip25c_feed_jquery(document).ready(function($) {
         height: widgetHeight
       }
     });
+        
+    var iframeInserter = function() {
+      if ($window.scrollTop() + $window.height() >= $this.offset().top) {
+        $this.append($iframe).css({
+          'min-height': 150,
+          width: widgetWidth,
+          'background-image': 'none',
+          border: '0 none transparent'
+        });
+        $window.unbind('scroll', iframeInserter);
+        return true;
+      } else {
+        return false;
+      }
+    }
     
-    $this.append($iframe);
+    if (!iframeInserter()) {
+      $window.bind('scroll', iframeInserter);
+    }
   });
-  
 });

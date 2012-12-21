@@ -16,42 +16,55 @@ block css
     body {
       position: relative;
       border: 1px solid #d2cfcf;
-      width: 650px;
     }
     #input-container {
-      padding: 20px;
+      padding: 20px 20px 10px 20px;
       border-bottom: 1px solid #d2cfcf;
       margin: 0 0 -1px 0;
-      //- background-color: #eff5f7;
     }
     #input-container > h1 {
-      float: left;
+      margin: 0 48px 20px 0;
     }
     #top-logo {
-      margin: -8px 0 0 0;
+      position: absolute;
+      right: 20px;
+      top: 12px;
       width: 43px;
       height: 30px;
-      float: right;
       background-repeat: no-repeat;
       background-image: url('#{ ASSETS_URL_BASE }/style/top-nav-logo.png');
     }
+    #form-container {
+      position: relative;
+    }
     .user-image {
       display: none;
-      float: left;
+      left: 0px;
+      top: 0px;
+    }
+    .user-image, .item-image {
+      position: absolute;
       height: 50px;
       width: 50px;
-      margin: 0 10px 0 0;
+      background-repeat: no-repeat;
+      background-size: 50px 50px;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.1em;
+      color: white;
     }
     form.tip-form {
-      float: left;
+      width: 100%;
+    }
+    #comment-container {
+      margin: 0 0 0 157px;
     }
     textarea#comment-input {
       font: inherit;
-      float: left;
       height: 39px;
-      width: 451px;
+      width: 100%;
+      margin: 0 0 0 -10px;
       border: 1px solid #d2cfcf;
-      margin: 0 0 0 -1px;
       padding: 5px;
       line-height: 14px;
       resize: none;
@@ -71,6 +84,7 @@ block css
       box-shadow:         inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
     }
     #pseudonym-container {
+      position: relative;
       clear: both;
       padding: 5px 0 0 0;
     }
@@ -87,7 +101,9 @@ block css
       border: 1px solid #d2cfcf;
     }
     #input-container .tip-container {
-      float: left;
+      position: absolute;
+      top: 0;
+      left: 0px;
     }
     #feed-container {
       display: none;
@@ -110,25 +126,30 @@ block css
       line-height: 30px;
     }
     #promote-container {
+      position: relative;
       clear: both;
       display: none;
       background-color: #eff5f7;
       padding: 20px 0 20px 84px;
     }
     #promote-container .user-image {
+      top: 20px;
+      left: 85px;
       width: 40px;
       height: 40px;
       background-size: 40px 40px;
     }
     #promote-container .tip-container {
+      position: absolute;
+      top: 20px;
+      left: 85px;
       border: 0px none transparent;
     }
     #promote-container .tip-send {
       padding: 0;
     }
     #promote-container #promote-text {
-      float: left;
-      margin: 0 0 0 10px;
+      margin: 0 20px 0 150px;
     }
     #feed-title {
       margin: 0 20px 5px 20px;
@@ -141,6 +162,7 @@ block css
       line-height: 19px;
     }
     .feed-item {
+      position: relative;
       padding: 15px 20px;
       border-top: 1px solid #d2cfcf;
     }
@@ -148,20 +170,17 @@ block css
       background-color: #fffde3;
     }
     .item-image {
-      float: left;
-      height: 50px;
-      width: 50px;
-      background-repeat: no-repeat;
-      background-size: 50px 50px;
-      text-align: center;
-      font-size: 11px;
-      line-height: 1.1em;
-      color: white;
+      left: 20px;
+      top: 15px;
     }
     .item-text {
-      float: left;
-      width: 470px;
-      margin: 1px 0 0 15px;
+      padding: 1px 0 0 65px;
+    }
+    .item-hide {
+      color: #bf3a3a;
+      position: absolute;
+      top: 0;
+      right: 0;
     }
     .item-controls {
       float: right;
@@ -211,38 +230,56 @@ block css
 block content
   #fb-root
   script
-    (function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=#{ FB_APP_ID }";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
+    // (function(d, s, id) {
+    //   var js, fjs = d.getElementsByTagName(s)[0];
+    //   if (d.getElementById(id)) return;
+    //   js = d.createElement(s); js.id = id;
+    //   js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=#{ FB_APP_ID }";
+    //   fjs.parentNode.insertBefore(js, fjs);
+    // }(document, 'script', 'facebook-jssdk'));
     
+    window.fbAsyncInit = function() {
+       FB.init({
+         appId      : '#{ FB_APP_ID }',
+         channelUrl : '//' + window.location.hostname + '/public/channel',
+         status     : true,
+         cookie     : true,
+         xfbml      : true
+       });
+     };
+     (function(d, debug){
+        var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement('script'); js.id = id; js.async = true;
+        js.src = "//connect.facebook.net/en_US/all" + (debug ? "/debug" : "") + ".js";
+        ref.parentNode.insertBefore(js, ref);
+      }(document, /*debug*/ false));
+
   #input-container
     h1
       span.bold 
         | Top fan of
         span#site-name  this site
         |? 
-      |You have
-      span.balance-amount.bold  0 points
+      |You have 
+      span.balance-amount.bold 0 points
       |  to give and share your thoughts.
       //- TODO: Update buy more points URL
-      a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
+      a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get&nbsp;more&nbsp;points...
     #top-logo
-    .clear
-    .user-image
-    form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
-      input.comment-uuid(name="comment_uuid", type="hidden")
-      include partials/_button_standard.jade
-      textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
-      #pseudonym-container
-        label Give anonymously:
-        input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
+    #form-container.clear
+      .user-image
+      form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
+        input.comment-uuid(name="comment_uuid", type="hidden")
+        include partials/_button_standard.jade
+        #comment-container
+          textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
+        #pseudonym-container
+          label Give anonymously:
+          input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
+          .clear
         .clear
       .clear
-    .clear
   #feed-container
     #info-container
     #promote-container

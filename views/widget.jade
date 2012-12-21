@@ -9,8 +9,9 @@ html(lang="en")
     | </script>
 
     script
-      window.buttonUuid = "#{req.params.button_uuid}";
-      window.buttonUrl = "#{req.query.url}";
+      window.DEBUG_MODE = true;
+      window.buttonUuid = "#{req.params.button_uuid}" || '999';
+      window.buttonUrl = "#{req.query.url}" || '';
       window.sessionCsrf = "#{req.session._csrf}";
       window.assetsUrlBase = "#{ASSETS_URL_BASE}";
       window.usersUrlBase = "#{USERS_URL_BASE}";

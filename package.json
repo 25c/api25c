@@ -15,6 +15,7 @@
 		"airbrake": "0.2.9",
 		"nodemailer": "latest",
 		"querystring": "latest",
-		"crypto": "latest"
+		"crypto": "latest",
+		"request": "latest"
   }
 }
