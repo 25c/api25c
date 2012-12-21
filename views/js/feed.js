@@ -8,7 +8,6 @@ $(function() {
   var isExpanded = false;
   var user = {};
   var comments = [];
-  var promoteTips = {};
   
   // JQUERY OBJECTS
   var $commentInput = $('textarea#comment-input');
@@ -27,14 +26,6 @@ $(function() {
     comment: "Please enter a comment.",
     pseudonym: "Invalid pseudonym."
   }
-    
-  var fakeUser = {
-    uuid: 99,
-    name: 'Zed',
-    pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/0d6174d0ec9a012fc7f71231381d4d5a/thumb.jpg",
-    isTipper: true,
-    isWidgetOwner: false
-  };
   
   fakeComments = [
     {
@@ -111,11 +102,7 @@ $(function() {
       
       if (existingComment) {
         newComment = existingComment;
-        promoteTips[uuid] = {
-          originalCommentAmount: amount, 
-          originalPromoteAmount: 0,
-          sessionPromoteAmount: 0
-        }
+        newComment.originalAmount = amount;
       } else {
         newComment.uuid = uuid;
         newComment.owner = user;
@@ -132,11 +119,17 @@ $(function() {
         newComment.owner.pictureUrl = '';
       }
       
-    } else {
+    } else { 
       newComment = existingComment;
-      var newPromoter = user;
-      newPromoter.amount = amount;
-      newComment = updatePromoter(newComment, newPromoter);
+      setTimeout(function() {
+        $('#' + newComment.uuid + ' .item-promote-container').click();
+      }, 0);
+      if (newComment.originalAmount) {
+        newComment.amount = newComment.originalAmount + amount;
+      } else {
+        newComment.originalAmount = newComment.amount;
+        newComment.amount += amount;
+      }
     }
     
     if (!existingComment) {
@@ -165,17 +158,14 @@ $(function() {
 
   function initializeComments(data) {
 
-    if (window.DEBUG_MODE) {
-      user = fakeUser;
+    if (window.DEMO_MODE) {
       comments = fakeComments;
     } else {
-      user = data.user;
       comments = data.widget || [];
     }
     
-    // DEBUG DEBUG
-    // comments = [];
-                      
+    user = data.user;
+                          
     if (user && user.isTipper) {
       $('.user-image').css({
         'background-image': getUserPictureUrl(user)
@@ -240,7 +230,7 @@ $(function() {
   
   function getUserPictureUrl(user) {
     var pictureUrl = 'url("';
-    if (window.DEBUG_MODE) {
+    if (window.DEMO_MODE) {
       pictureUrl += user.pictureUrl ? user.pictureUrl : window.assetsUrlBase + '/users/pictures/no_pic.png';
     } else if (user.uuid) {
       pictureUrl += window.usersUrlBase + '/users/pictures/' + user.uuid + '/thumb.jpg';
@@ -397,14 +387,19 @@ $(function() {
     }
   }, '.item-hide').on({
     click: function() {
-      promoteVisible = !promoteVisible;
-      if (promoteVisible) {
-        var $item = $(this).parents('.feed-item');
-        var uuid = $item.attr('id');        
-        var existingTip = promoteTips[uuid];
+      var $this = $(this);
+      if ($this.hasClass('selected')) {
+        $this.removeClass('selected');
+        $promoteContainer.hide();
+      } else {
+        $('.item-promote-container.selected').removeClass('selected');
+        $this.addClass('selected');
+        var $item = $this.parents('.feed-item');
+        var uuid = $item.attr('id');
+        var comment = comments[findCommentIndexByUuid(uuid)];
         var showTip = 1;
-        if (existingTip && existingTip.sessionPromoteAmount > 0) {
-          showTip = existingTip.sessionPromoteAmount;
+        if (comment.originalAmount && comment.amount > comment.originalAmount) {
+          showTip = comment.amount - comment.originalAmount;
           $promoteContainer.find('.tip-confirm').show();
           $promoteContainer.find('.tip-send').hide();
         } else {
@@ -416,8 +411,6 @@ $(function() {
         $promoteContainer.insertAfter($item).css({
           display: 'block',
         }).find('.comment-uuid').val(uuid);
-      } else {
-        $promoteContainer.hide();
       }
       updateIframeHeight(isExpanded);
     }
@@ -446,6 +439,10 @@ $(function() {
   // INITIALIZATION
   getWidgetCache(initializeComments);
   updateIframeHeight(false);
+  
+  if (window.siteTitle) {
+    $('#site-title').text(window.siteTitle);
+  }
 });
 
 

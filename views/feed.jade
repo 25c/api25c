@@ -229,15 +229,7 @@ block css
 
 block content
   #fb-root
-  script
-    // (function(d, s, id) {
-    //   var js, fjs = d.getElementsByTagName(s)[0];
-    //   if (d.getElementById(id)) return;
-    //   js = d.createElement(s); js.id = id;
-    //   js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=#{ FB_APP_ID }";
-    //   fjs.parentNode.insertBefore(js, fjs);
-    // }(document, 'script', 'facebook-jssdk'));
-    
+  script    
     window.fbAsyncInit = function() {
        FB.init({
          appId      : '#{ FB_APP_ID }',
@@ -258,8 +250,8 @@ block content
   #input-container
     h1
       span.bold 
-        | Top fan of
-        span#site-name  this site
+        | Top fan of 
+        span#site-title this site
         |? 
       |You have 
       span.balance-amount.bold 0 points
@@ -290,8 +282,8 @@ block content
       #promote-text
         h1 
           .bold Add your points behind this top fan's!        
-          | You have
-          span.balance-amount.bold  0 points
+          | You have 
+          span.balance-amount.bold 0 points
           |  to give.
           a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
       .clear

@@ -28,6 +28,16 @@ $(function() {
       url: "/widget/" + buttonUuid + '?url=' + encodeURIComponent(buttonUrl),
       data: {referrer: parentUrl, _csrf: sessionCsrf},
       success: function(data) {
+        if (window.DEMO_MODE) {
+          data.user = {
+            balance: 100,
+            uuid: 99,
+            name: 'Zed',
+            pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/0d6174d0ec9a012fc7f71231381d4d5a/thumb.jpg",
+            isTipper: true,
+            isWidgetOwner: false
+          };
+        }
         if (data.user && data.user.isTipper) {
           maxTip = data.user.balance;          
           $('.balance-amount').text(pointString(maxTip));
@@ -197,7 +207,7 @@ $(function() {
       }
     }
     
-    if (window.DEBUG_MODE) {
+    if (window.DEMO_MODE) {
       console.log($form.serialize());
       tipSuccess({comment_uuid: 999, balance: maxTip - amount});
       return false;

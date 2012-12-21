@@ -9,9 +9,10 @@ html(lang="en", xmlns="http://www.w3.org/1999/xhtml", xmlns:fb="https://www.face
     | </script>
 
     script
-      window.DEBUG_MODE = false;
+      window.DEMO_MODE = "#{req.query.demo}" == 'true';
       window.buttonUuid = "#{req.params.button_uuid}" || '999';
       window.buttonUrl = "#{req.query.url}" || '';
+      window.siteTitle = "#{req.query.title}" || '';
       window.sessionCsrf = "#{req.session._csrf}";
       window.assetsUrlBase = "#{ASSETS_URL_BASE}";
       window.usersUrlBase = "#{USERS_URL_BASE}";

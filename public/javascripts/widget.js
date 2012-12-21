@@ -30,10 +30,12 @@ _tip25c_feed_jquery(document).ready(function($) {
     
     var $this = $(this);
     
+    var title = $this.attr("data-title");    
     var uuid = $this.attr("data-id");
     var url = $this.attr("data-url");
+    var demoMode = $this.attr("data-demo") == 'true';
     var widgetWidth = parseInt($this.attr("width")) || 600;
-    
+        
     $this.css({
       'min-height': 150,
       width: widgetWidth,
@@ -62,6 +64,14 @@ _tip25c_feed_jquery(document).ready(function($) {
     var src_url = (src.indexOf("localhost") > 0 ? "http:" : "https:") + src + '/' + widgetType 
     + '/' + uuid + "?url=" + encodeURIComponent(url) + '&width=' + widgetWidth;
     
+    if (demoMode) {
+      src_url += '&demo=true';
+    }
+    
+    if (title) {
+      src_url += '&title=' + title;
+    }
+    
     var $iframe = $('<iframe />', {
       id: uuid,
       src: src_url,
@@ -78,8 +88,6 @@ _tip25c_feed_jquery(document).ready(function($) {
     var iframeInserter = function() {
       if ($window.scrollTop() + $window.height() >= $this.offset().top) {
         $this.append($iframe).css({
-          'min-height': 150,
-          width: widgetWidth,
           'background-image': 'none',
           border: '0 none transparent'
         });
