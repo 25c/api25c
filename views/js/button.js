@@ -1,14 +1,11 @@
-// DEBUG
-window.testButton = true;
-
 $(function() {
 
   // SETTINGS
-  var MAX_TIP = 99.75;
-  var MIN_TIP = 0.25;
   var START_INTERVAL = 400;
   
   // STATE VARIABLES
+  var maxTip = 1;
+  var minTip = 1;
   var countState = 0;
   var timer = null;
   var interval = START_INTERVAL;
@@ -25,16 +22,51 @@ $(function() {
     return true;
   }
   
+  window.getWidgetCache = function(callback) {
+    $.ajax({
+      type: "POST",
+      url: "/widget/" + buttonUuid + '?url=' + encodeURIComponent(buttonUrl),
+      data: {referrer: parentUrl, _csrf: sessionCsrf},
+      success: function(data) {
+        if (window.DEMO_MODE) {
+          data.user = {
+            balance: 100,
+            uuid: 99,
+            name: 'Zed',
+            pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/0d6174d0ec9a012fc7f71231381d4d5a/thumb.jpg",
+            isTipper: true,
+            isWidgetOwner: false
+          };
+        }
+        if (data.user && data.user.isTipper) {
+          maxTip = data.user.balance;          
+          $('.balance-amount').text(pointString(maxTip));
+          if (maxTip <= 0) {
+            $('.tip-submit, input.tip-input, .tip-increase, .tip-decrease').addClass('disabled');
+            $('input.tip-input').val(0);
+          } else {
+            // NOT LOGGED IN AS TIPPER
+          }
+        }
+        callback(data);
+      },
+      dataType: "json",
+      async: false
+    });
+  }
+  
   function updateCount($form) {
     var $tipInput = $form.find('input.tip-input');
-    var newTip = parseFloat($tipInput.val().replace('$', ''));
-    newTip = Math.floor(newTip * 4 + countState) / 4;
-    if (newTip > MAX_TIP) {
-      newTip = MAX_TIP;
-    } else if (newTip < MIN_TIP) {
-      newTip = MIN_TIP;
+    var newTip = parseInt($tipInput.val());
+    newTip = newTip + countState;
+    if (maxTip <= 0) {
+      newTip = 0;
+    } else if (newTip > maxTip) {
+      newTip = maxTip;
+    } else if (newTip < minTip) {
+      newTip = minTip;
     }
-    $tipInput.val('$' + newTip.toFixed(2));
+    $tipInput.val(newTip);
   }
 
   function tipCounter($form) {
@@ -62,21 +94,32 @@ $(function() {
     return formData;
   }
   
-  // EVENT HANDLERS
+  function pointString(amount) {
+    amount = parseInt(amount);
+    var pointText = amount + ' point';
+    pointText += amount == 1 ? '' : 's';
+    return pointText;
+  }
   
+  function disableTip() {
+    $('.tip-submit, input.tip-input, .tip-increase, .tip-decrease').addClass('disabled');
+    $('input.tip-input').val(0);
+  }
+  
+  // EVENT HANDLERS
   $('input.tip-input').change(function() {
     var $this = $(this);
-    var newTip = parseFloat($this.val().replace('$', ''));
+    var newTip = parseInt($this.val());
     if (isNaN(newTip)) {
-      newTip = 0.25;
+      newTip = 1;
     } else {
-      if (newTip > MAX_TIP) {
-        newTip = MAX_TIP;
-      } else if (newTip < MIN_TIP) {
-        newTip = MIN_TIP;
+      if (newTip > maxTip) {
+        newTip = maxTip;
+      } else if (newTip < minTip) {
+        newTip = minTip;
       }
     }
-    $this.val('$' + newTip.toFixed(2));
+    $this.val(newTip);
   });
         
   $('.tip-increase, .tip-decrease').bind('mousedown touchstart', function() {
@@ -128,51 +171,57 @@ $(function() {
   $('form.tip-form').submit(function() {
     
     var $form = $(this);
-    var $tipInput = $form.find('input.tip-input');
-
+    
     if (!window.validateTipForm($form)) {
       return false;
     }
     
-    if (testButton) {
-      // populateUsers();
-      console.log($form.serialize());
-      $form.find('.tip-amount').text($tipInput.val());
-      $form.find('.tip-confirm').show();
-      $form.find('.tip-send').hide();
-      window.submitSuccessCallback(processFormData($form));
-      return false;
-    }
-    
-    $tipInput.val($tipInput.val().replace('$', ''));
+    var $tipInput = $form.find('input.tip-input');
+    var amount = parseInt($tipInput.val());
     var data = $form.serialize();
     
-    $.ajax({
-      type: 'POST',
-      url: $form.attr('action'),
-      data: data,
-      success: function(data) {
-        if (data.clear) {
-          //
-        } else if (data.redirect) {
+    var tipSuccess = function(data) {
+      if (data.error) {
+        // something went wrong
+      } else {
+        if (data.redirect) {
           var url = webUrlBase + '/tip/' + buttonUuid + '?referrer=' + encodeURIComponent(parentUrl);
-          if (data.overdraft) {
-            url = url + '&overdraft=true';
-          } else {
-            resetCount();
-          }
           var width = 480;
           var height = 358;
           var left = (screen.width / 2) - (width / 2);
           var top = (screen.height / 2) - (height / 2);
-          window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' + width + ',height=' + height + ',top=' + top + ',left=' + left);
+          window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' 
+            + width + ',height=' + height + ',top=' + top + ',left=' + left);
         } else {
-          //
+          window.submitSuccessCallback(processFormData($form), data);
+          $form.find('.tip-confirm').show();
+          $form.find('.tip-send').hide();
         }
-      },
+        $form.find('.tip-amount').text(pointString(amount));
+        maxTip = maxTip - amount;
+        if (maxTip <= 0) {
+          disableTip();
+        }
+        $('.balance-amount').text(pointString(data.balance));
+        $form.find('input.tip-input').val(amount);
+      }
+    }
+    
+    if (window.DEMO_MODE) {
+      console.log($form.serialize());
+      tipSuccess({comment_uuid: 999, balance: maxTip - amount});
+      return false;
+    }
+            
+    $.ajax({
+      type: 'POST',
+      url: $form.attr('action'),
+      data: data,
+      success: tipSuccess,
       dataType: 'json',
       async: false
     });
     return false;
   });
+  
 });

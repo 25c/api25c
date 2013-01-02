@@ -1,17 +1,19 @@
 input(type="hidden", name="_csrf", value=req.session._csrf)
 input(type="hidden", name="_referrer", value=referrer)
+input(type="hidden", name="_url", value=req.query.url)
 
 .tip-container
   .tip-send
-    input.tip-input(type="text", value="$0.25", name="amount")
+    .tip-submit GIVE
+    input.tip-input(type="text", value=1, name="amount")
     .tip-controls
       .tip-increase
-        .tip-arrow
+        .tip-change
       .tip-decrease
-        .tip-arrow
-    .tip-submit TIP
+        .tip-change
+    .clear
   .tip-confirm
     div
-      span You tipped 
-      span.tip-amount $0.25
+      span You gave 
+      span.tip-amount 1 point
     a.tip-update Update Tip

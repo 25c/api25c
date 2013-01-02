@@ -9,54 +9,109 @@ block scripts
 block css
   style(type="text/css")
     h1 {
-      margin: 0 0 10px 0;
+      margin: 0 0 20px 0;
     }
     h2 {
-      margin: 0 0 5px 0;
     }
-    #outer-container {
+    body {
       position: relative;
       border: 1px solid #d2cfcf;
-      width: 650px;
     }
     #input-container {
-      padding: 20px;
+      padding: 20px 20px 10px 20px;
       border-bottom: 1px solid #d2cfcf;
-      background-color: #eff5f7;
+      margin: 0 0 -1px 0;
+    }
+    #input-container > h1 {
+      margin: 0 48px 20px 0;
+    }
+    #top-logo {
+      position: absolute;
+      right: 20px;
+      top: 12px;
+      width: 43px;
+      height: 30px;
+      background-repeat: no-repeat;
+      background-image: url('#{ ASSETS_URL_BASE }/style/top-nav-logo.png');
+    }
+    #form-container {
+      position: relative;
+    }
+    .user-image {
+      display: none;
+      left: 0px;
+      top: 0px;
+    }
+    .user-image, .item-image {
+      position: absolute;
+      height: 50px;
+      width: 50px;
+      background-repeat: no-repeat;
+      background-size: 50px 50px;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.1em;
+      color: white;
+    }
+    form.tip-form {
+      width: 100%;
+    }
+    #comment-container {
+      margin: 0 0 0 157px;
     }
     textarea#comment-input {
       font: inherit;
-      float: left;
-      height: 40px;
-      width: 432px;
+      height: 39px;
+      width: 100%;
+      margin: 0 0 0 -10px;
       border: 1px solid #d2cfcf;
-      margin: 0;
-      padding: 10px;
+      padding: 5px;
       line-height: 14px;
       resize: none;
     }
-    textarea#comment-input.default {
+    textarea#comment-input.default, #pseudonym-container input.default {
       font-style: italic;
       color: #4c4c4c;
     }
     textarea#comment-input.error {
-      color: red;
+      color: #bf3a3a;
     }
-    textarea#comment-input:focus {
+    textarea#comment-input:focus, #pseudonym-container input:focus {
       outline: none;
       border: 1px solid #BAD7DF;
       -moz-box-shadow:    inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
       -webkit-box-shadow: inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
       box-shadow:         inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
     }
+    #pseudonym-container {
+      position: relative;
+      clear: both;
+      padding: 5px 0 0 0;
+    }
+    #pseudonym-container label {
+      float: left;
+      padding: 5px 5px 0 0;
+      font: normal normal normal 11px helvetica, arial, sans-serif;
+    }
+    #pseudonym-container input {
+      float: left;
+      padding: 0 0 1px 5px;
+      font: inherit;
+      font-size: 13px;
+      border: 1px solid #d2cfcf;
+    }
     #input-container .tip-container {
-      margin-top: 11px;
+      position: absolute;
+      top: 0;
+      left: 0px;
     }
     #feed-container {
+      display: none;
       position: relative;
-      margin: 20px 20px 30px 20px;
+      margin: 20px 0 0 0;
     }
     #feed-expand {
+      display: none;
       position: absolute;
       bottom: -1px;
       height: 30px;
@@ -71,37 +126,61 @@ block css
       line-height: 30px;
     }
     #promote-container {
-      position: absolute;
-      right: 0;
-      padding: 2px;
+      position: relative;
+      clear: both;
       display: none;
-      border: 1px solid #d2cfcf;
+      background-color: #eff5f7;
+      padding: 20px 0 20px 84px;
+    }
+    #promote-container .user-image {
+      top: 20px;
+      left: 85px;
+      width: 40px;
+      height: 40px;
+      background-size: 40px 40px;
+    }
+    #promote-container .tip-container {
+      position: absolute;
+      top: 20px;
+      left: 85px;
+      border: 0px none transparent;
+    }
+    #promote-container .tip-send {
+      padding: 0;
+    }
+    #promote-container #promote-text {
+      margin: 0 20px 0 150px;
+    }
+    #feed-title {
+      margin: 0 20px 5px 20px;
+    }
+    #feed-title + .feed-item {
+      border-top: 0 none transparent;
+    }
+    #feed-title + .feed-item .item-body, #feed-title + .feed-item .item-name {
+      font-size: 16px;
+      line-height: 19px;
     }
     .feed-item {
-      border-bottom: 1px solid #d2cfcf;
-      padding: 15px 0;
-    }
-    .feed-item:last-child {
-      border-bottom: 0 none transparent;
+      position: relative;
+      padding: 15px 20px;
+      border-top: 1px solid #d2cfcf;
     }
     .feed-item.initial {
-      background-color: #FFEAAB;
+      background-color: #fffde3;
     }
     .item-image {
-      float: left;
-      height: 50px;
-      width: 50px;
-      background-repeat: no-repeat;
-      background-size: 50px 50px;
-      text-align: center;
-      font-size: 11px;
-      line-height: 1.1em;
-      color: white;
+      left: 20px;
+      top: 15px;
     }
     .item-text {
-      float: left;
-      width: 470px;
-      margin: 1px 0 0 15px;
+      padding: 1px 0 0 65px;
+    }
+    .item-hide {
+      color: #bf3a3a;
+      position: absolute;
+      top: 0;
+      right: 0;
     }
     .item-controls {
       float: right;
@@ -109,65 +188,105 @@ block css
       height: 20px;
       cursor: pointer;
       color: white;
-      font: normal normal 600 12px helvetica, arial, sans-serif;
+      font: normal normal bold 12px helvetica, arial, sans-serif;
+    }
+    .item-footer {
+      background-color: #ddd;
+      margin: 20px 0 0 0;
+    }
+    .item-like {
+      float: left;
+      width: 85px;
+      height: 20px;
     }
     .item-total {
-      line-height: 20px;
-      display: none;
-      padding: 0 0 0 8px;
+      float: left;
+      margin-right: 10px;
+    }
+    .item-promote-container {
+      float: left;
+      height: 15px;
+      width: 15px;
+      background-color: #9aaeb4;
+      padding: 4px 0 0 5px;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      transition: background-color 0.25s;
+      -moz-transition: background-color 0.25s;
+      -webkit-transition: background-color 0.25s;
+      -o-transition: background-color 0.25s;
+    }
+    .item-promote-container:hover {
+      background-color: #62828c;
     }
     .item-promote {
-      float: right;
-      height: 5px;
+      height: 11px;
       width: 10px;
-      margin: 7px 7px 0 7px;
-      background-image: url('#{ ASSETS_URL_BASE }/style/button-arrows.png');
+      background-image: url('#{ ASSETS_URL_BASE }/style/button-plus-minus.png');
       background-repeat: no-repeat;
-    }
-    .item-promoters {
-      margin: 10px 0 0 0;
-    }
-    .item-promoted-title {
-      height: 20px;
-      line-height: 20px;
-      font-style: italic;
-      float: left;
-      margin: 0 10px 0 0;
-    }
-    .promoter-image {
-      float: left;
-      height: 20px;
-      width: 20px;
-      margin: 0;
-      background-repeat: no-repeat;
-      background-size: 20px 20px;
-      text-align: center;
-      font-size: 11px;
-      line-height: 1.1em;
-      color: white;
     }
 
 block content
-  h1 Want to sponsor this content? It's easy! Add a note and tip as little as $0.25.
-  #outer-container
-    #input-container
-      form.tip-form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
-        textarea#comment-input.default(name="message") What do you love about this content?
-        include partials/_button_standard.jade 
-      .clear
-    #feed-container
-      #info-container
-      #promote-container
-        form.tip-form(method="POST", target="_blank", action="/button/#{req.params.button_uuid}")
-          input#comment-uuid(name="comment_uuid", type="hidden")
-          include partials/_button_small.jade
-      h2 Top Notes
-      .feed-item#call-item
-        .item-image(href="", target="_blank", style="background-image:url('#{ ASSETS_URL_BASE }/users/pictures/no_pic.png')")
-          div YOUR FACE HERE
-        .item-text#call-text
-          .item-body Show your appreciation and be recognized for your support. 
-            a(href="#{ WEB_URL_BASE }/faq", target="_blank") Learn more about 25c...
+  #fb-root
+  script    
+    window.fbAsyncInit = function() {
+       FB.init({
+         appId      : '#{ FB_APP_ID }',
+         channelUrl : '//' + window.location.hostname + '/public/channel',
+         status     : true,
+         cookie     : true,
+         xfbml      : true
+       });
+     };
+     (function(d, debug){
+        var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement('script'); js.id = id; js.async = true;
+        js.src = "//connect.facebook.net/en_US/all" + (debug ? "/debug" : "") + ".js";
+        ref.parentNode.insertBefore(js, ref);
+      }(document, /*debug*/ false));
+
+  #input-container
+    h1
+      span.bold 
+        | Top fan of 
+        span#site-title this site
+        |? 
+      |You have 
+      span.balance-amount.bold 0 points
+      |  to give and share your thoughts.
+      //- TODO: Update buy more points URL
+      a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get&nbsp;more&nbsp;points...
+    #top-logo
+    #form-container.clear
+      .user-image
+      form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
+        input.comment-uuid(name="comment_uuid", type="hidden")
+        include partials/_button_standard.jade
+        #comment-container
+          textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
+        #pseudonym-container
+          label Give anonymously:
+          input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
+          .clear
         .clear
-    #feed-expand 
-      h3 Show All Notes
+      .clear
+  #feed-container
+    #info-container
+    #promote-container
+      .user-image
+      form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
+        input.comment-uuid(name="comment_uuid", type="hidden")
+        include partials/_button_standard.jade
+      #promote-text
+        h1 
+          .bold Add your points behind this top fan's!        
+          | You have 
+          span.balance-amount.bold 0 points
+          |  to give.
+          a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
+      .clear
+    h2#feed-title What some of our top fans are thinking:
+  #feed-expand
+    h3 Show All Notes
