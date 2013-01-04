@@ -96,7 +96,7 @@ $(function() {
   
   function pointString(amount) {
     amount = parseInt(amount);
-    if (amount.isNaN()) {
+    if (isNaN(amount)) {
       amount = 0;
     }
     var pointText = amount + ' point';
