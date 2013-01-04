@@ -96,6 +96,9 @@ $(function() {
   
   function pointString(amount) {
     amount = parseInt(amount);
+    if (amount.isNaN()) {
+      amount = 0;
+    }
     var pointText = amount + ' point';
     pointText += amount == 1 ? '' : 's';
     return pointText;
@@ -185,11 +188,11 @@ $(function() {
         // something went wrong
       } else {
         if (data.redirect) {
-          var url = webUrlBase + '/tip/' + buttonUuid + '?referrer=' + encodeURIComponent(parentUrl);
-          var width = 480;
-          var height = 358;
-          var left = (screen.width / 2) - (width / 2);
-          var top = (screen.height / 2) - (height / 2);
+          var url = webUrlBase + '/widget/sign-in';
+          var width = 520;
+          var height = 320;
+          var left = (screen.availWidth / 2) - (width / 2);
+          var top = (screen.availHeight / 2) - (height / 2);
           window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' 
             + width + ',height=' + height + ',top=' + top + ',left=' + left);
         } else {

@@ -97,7 +97,7 @@ $(function() {
     var newComment = {};
     var existingComment = comments[findCommentIndexByUuid(uuid)];
     var amount = parseInt(form.amount);
-            
+    
     if (form.comment_text) {
       
       if (existingComment) {
