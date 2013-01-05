@@ -260,10 +260,9 @@ block content
           | Top fan of 
           span#site-title this site
           |? 
-        a.sign-in(href="#") Sign up with Facebook 
-        | and get 10 free points to start!
-        #existing-user
-          a.sign-in(href="#") Sign in as existing user...
+        a.sign-in(href="#") Sign up now 
+        | and get 10 free points to start! 
+        a.sign-in(href="#") Sign in as existing user...
       #signed-in
         span.bold 
           | Top fan of 
@@ -281,7 +280,7 @@ block content
         input.comment-uuid(name="comment_uuid", type="hidden")
         include partials/_button_standard.jade
         #comment-container
-          textarea#comment-input.default(name="comment_text") Leave a note with your contribution...
+          textarea#comment-input.default(name="comment_text") Reward this content with points and leave a note with your contribution...
         #pseudonym-container
           label Give anonymously:
           input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
