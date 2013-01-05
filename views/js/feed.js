@@ -19,11 +19,12 @@ $(function() {
   
   // TEXT
   var DEFAULT_TEXT = {
-    comment: $commentInput.val(),
+    commentContent: 'I just gave #{amount} points!',
+    commentInput: $commentInput.val(),
     pseudonym: $pseudonymInput.val()
   }
   var ERROR_TEXT = {
-    comment: "Please enter a comment.",
+    commentInput: "Please enter a comment.",
     pseudonym: "Invalid pseudonym."
   }
   
@@ -43,7 +44,7 @@ $(function() {
     {
       uuid: 1002,
       amount: 40,
-      content: "Excellent job getting this info.",
+      content: " ",
       owner: {uuid: 102, amount: 25, name: "Carl", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/4fe81770f48b012f49af1231381554d7/thumb.jpg"},
     },
     {
@@ -72,9 +73,8 @@ $(function() {
   window.validateTipForm = function($form) {
     if ($form.find('textarea#comment-input').length) {
       var comment = $commentInput.val();
-      if (comment == DEFAULT_TEXT.comment || comment == ERROR_TEXT.comment || comment == '') {
-        $commentInput.addClass('error').val(ERROR_TEXT.comment);
-        return false;
+      if (comment == DEFAULT_TEXT.commentInput || comment == ERROR_TEXT.commentInput || comment == '') {
+        $commentInput.val(' ');
       }
     }
     if ($form.find('#pseudonym-container').length) {
@@ -116,7 +116,12 @@ $(function() {
         $pseudonymInput.val(DEFAULT_TEXT.pseudonym);
       } else {
         newComment.owner.name = $pseudonymInput.val();
+        newComment.owner.uuid = '';
         newComment.owner.pictureUrl = '';
+      }
+      
+      if (/^\s*$/.test($commentInput.val())) {
+        $commentInput.val(DEFAULT_TEXT.commentInput);
       }
       
     } else { 
@@ -252,9 +257,15 @@ $(function() {
       class: 'item-name'
     }).text('—' + comment.owner.name);
     
+    if (!comment.content || /^\s*$/.test(comment.content)) {
+      var content = DEFAULT_TEXT.commentContent.replace('#{amount}', comment.owner.amount);
+    } else {
+      var content = formatCommentText(comment.content);
+    }
+    
     var $itemBody = $('<div />', {
       class: 'item-body'
-    }).html(formatCommentText(comment.content));
+    }).html(content);
     
     var $itemLike = $('<div />', {
       class: 'item-like'
@@ -349,7 +360,7 @@ $(function() {
         command: 'set-height', 
         height: newHeight
       }),
-      parentUrl
+      window.parentUrl
     );
   }
   
@@ -368,7 +379,7 @@ $(function() {
         $.ajax({
           type: 'POST',
           url: '/hide/' + buttonUuid + '/' + commentUuid,
-          data: {referrer: parentUrl, _csrf: sessionCsrf},
+          data: {referrer: window.parentUrl, _csrf: sessionCsrf},
           success: function(data) {
             if (data.error) {
               // comment not removed
@@ -422,7 +433,7 @@ $(function() {
   
   $commentInput.add($pseudonymInput).focus(function() {
     var $this = $(this);
-    var type = $this.attr('id') == 'comment-input' ? 'comment' : 'pseudonym';
+    var type = $this.attr('id') == 'comment-input' ? 'commentInput' : 'pseudonym';
     var content = $this.val();
     if (content == DEFAULT_TEXT[type] || content == ERROR_TEXT[type]) {
       $this.val('');
@@ -430,7 +441,7 @@ $(function() {
     }
   }).blur(function() {
     var $this = $(this);
-    var type = $this.attr('id') == 'comment-input' ? 'comment' : 'pseudonym';
+    var type = $this.attr('id') == 'comment-input' ? 'commentInput' : 'pseudonym';
     if ($this.val() == '') {
       $this.val(DEFAULT_TEXT[type]).addClass('default');
     }

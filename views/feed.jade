@@ -17,6 +17,12 @@ block css
       position: relative;
       border: 1px solid #d2cfcf;
     }
+    #signed-in {
+      display: none;
+    }
+    #existing-user {
+      margin-top: 5px;
+    }
     #input-container {
       padding: 20px 20px 10px 20px;
       border-bottom: 1px solid #d2cfcf;
@@ -249,15 +255,25 @@ block content
 
   #input-container
     h1
-      span.bold 
-        | Top fan of 
-        span#site-title this site
-        |? 
-      |You have 
-      span.balance-amount.bold 0 points
-      |  to give and share your thoughts.
-      //- TODO: Update buy more points URL
-      a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get&nbsp;more&nbsp;points...
+      #signed-out
+        span.bold 
+          | Top fan of 
+          span#site-title this site
+          |? 
+        a.sign-in(href="#") Sign up with Facebook 
+        | and get 10 free points to start!
+        #existing-user
+          a.sign-in(href="#") Sign in as existing user...
+      #signed-in
+        span.bold 
+          | Top fan of 
+          span#site-title this site
+          |? 
+        |You have 
+        span.balance-amount.bold 0 points
+        |  to give and share your thoughts.
+        //- TODO: Update buy more points URL
+        a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get&nbsp;more&nbsp;points...
     #top-logo
     #form-container.clear
       .user-image
