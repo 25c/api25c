@@ -300,7 +300,7 @@ $(function() {
       class: 'item-text'
     }).append($itemBody, $itemName, $itemFooter);
     
-    if (user.isWidgetOwner) {
+    if (user && user.isWidgetOwner) {
       $itemText.append($('<a />', {
         class: 'item-hide'
       }).text('Remove'));
