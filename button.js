@@ -75,19 +75,19 @@ if (pgDataUrl == undefined) {
 
 if (process.env.NODE_ENV == "production") {
   var WEB_URL_BASE = "https://www.25c.com";
-	var ASSETS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
-	var USERS_URL_BASE = "https://d12af7yp6qjhyn.cloudfront.net";
+	var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
+	var USERS_URL_BASE = "https://s3.amazonaws.com/assets.25c.com";
 	var DATA25C_URL_BASE = "https://data.25c.com";
 	var FB_APP_ID = "403609836335934";
 } else if (process.env.NODE_ENV == "staging") {
   var WEB_URL_BASE = "https://www.plus25c.com";
-  var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
-  var USERS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
+  var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
+  var USERS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
   var DATA25C_URL_BASE = "data.plus25c.com";
   var FB_APP_ID = "303875413052772";
 } else {
   var WEB_URL_BASE = "http://localhost:3000";
-  var ASSETS_URL_BASE = "https://d1y0s23xz5cgse.cloudfront.net";
+  var ASSETS_URL_BASE = "https://s3.amazonaws.com/assets.plus25c.com";
   var USERS_URL_BASE = "http://localhost:3000/s3";
   var DATA25C_URL_BASE = "http://localhost:5300";
   var FB_APP_ID = "180097582134534";
@@ -323,6 +323,9 @@ app.post('/widget/:button_uuid', function(req, res) {
         res.json({ error: true });
       } else {
         var cache = JSON.parse(widget_data);
+        
+        console.log(cache);
+        
         res.json({ widget: cache, user: current_user });
       }
     });
