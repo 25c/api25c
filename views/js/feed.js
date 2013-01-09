@@ -19,7 +19,7 @@ $(function() {
   
   // TEXT
   var DEFAULT_TEXT = {
-    commentContent: 'I just gave #{amount} points!',
+    commentContent: 'I just gave points. Yay!',
     commentInput: $commentInput.val(),
     pseudonym: $pseudonymInput.val()
   }
@@ -97,6 +97,8 @@ $(function() {
     var newComment = {};
     var existingComment = comments[findCommentIndexByUuid(uuid)];
     var amount = parseInt(form.amount);
+    
+    console.log(form);
     
     if (form.comment_text) {
       
