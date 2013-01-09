@@ -1,3 +1,0 @@
-<img alt="Thumb" class="img-circle" src="https://s3.amazonaws.com/assets.25c.com/users/pictures/72eff5103c280130d5c022000a8f82b3/thumb.jpg?1357761212">
-
-<div class="user-image" style="background-image: url(https://d12af7yp6qjhyn.cloudfront.net/users/pictures/72eff5103c280130d5c022000a8f82b3/thumb.jpg); display: block;"></div>
