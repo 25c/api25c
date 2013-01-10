@@ -67,6 +67,7 @@ block css
     }
     textarea#comment-input {
       font: inherit;
+      font-size: 13px;
       height: 39px;
       width: 100%;
       margin: 0 0 0 -10px;
@@ -89,15 +90,18 @@ block css
       -webkit-box-shadow: inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
       box-shadow:         inset 0 0px 2px #ceecf6, 0 0 4px #ceecf6;;
     }
+    #info-container {
+      margin: 5px 0 0 0;
+    }
     #pseudonym-container {
+      //- display: none;
       position: relative;
       clear: both;
-      padding: 5px 0 0 0;
     }
     #pseudonym-container label {
       float: left;
       padding: 5px 5px 0 0;
-      font: normal normal normal 11px helvetica, arial, sans-serif;
+      font: normal normal normal 11px Raleway, helvetica, arial, sans-serif;
     }
     #pseudonym-container input {
       float: left;
@@ -105,6 +109,12 @@ block css
       font: inherit;
       font-size: 13px;
       border: 1px solid #d2cfcf;
+    }
+    #confirm-container {
+      display: none;
+      padding: 5px 10px 6px 10px;
+      background-color: #fffde3;
+      font: normal normal normal 11px Raleway, helvetica, arial, sans-serif;
     }
     #input-container .tip-container {
       position: absolute;
@@ -164,7 +174,7 @@ block css
       border-top: 0 none transparent;
     }
     #feed-title + .feed-item .item-body, #feed-title + .feed-item .item-name {
-      font-size: 16px;
+      font-size: 17px;
       line-height: 19px;
     }
     .feed-item {
@@ -185,8 +195,11 @@ block css
     .item-hide {
       color: #bf3a3a;
       position: absolute;
-      top: 0;
-      right: 0;
+      top: 15px;
+      right: 20px;
+      padding: 2px 5px;
+      background-color: white;
+      font: normal normal bold 12px Raleway, helvetica, arial, sans-serif;
     }
     .item-controls {
       float: right;
@@ -194,7 +207,7 @@ block css
       height: 20px;
       cursor: pointer;
       color: white;
-      font: normal normal bold 12px helvetica, arial, sans-serif;
+      font: normal normal bold 12px Raleway, helvetica, arial, sans-serif;
     }
     .item-footer {
       background-color: #ddd;
@@ -281,14 +294,17 @@ block content
         include partials/_button_standard.jade
         #comment-container
           textarea#comment-input.default(name="comment_text") Reward this content with points and leave a note with your contribution...
-        #pseudonym-container
-          label Give anonymously:
-          input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
-          .clear
-        .clear
+        #info-container
+          #pseudonym-container
+            label Give anonymously:
+            input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
+            .clear
+          #confirm-container 
+            span#top-comment Note added! Add more points to see it rise to the top. 
+            span#lower-comment Note added! Add more points to keep it at the top. 
+            a#view-comment(href="#", data-uuid="") Click&nbsp;here&nbsp;to&nbsp;scroll&nbsp;to&nbsp;your&nbsp;note...
       .clear
   #feed-container
-    #info-container
     #promote-container
       .user-image
       form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")

@@ -188,7 +188,7 @@ app.post('/tip/:button_uuid', function(req, res) {
               		  req.session.commentUuids[comment_uuid] = comment_uuid;
               		  if (comment_text) {
               		    click.comment_text = comment_text;
-            		    }
+            		    }            		    
             		    if (comment_pseudonym) {
             		      click.comment_pseudonym = comment_pseudonym;
           		      }
@@ -322,10 +322,7 @@ app.post('/widget/:button_uuid', function(req, res) {
         airbrake.notify(err);
         res.json({ error: true });
       } else {
-        var cache = JSON.parse(widget_data);
-        
-        console.log(cache);
-        
+        var cache = JSON.parse(widget_data);        
         res.json({ widget: cache, user: current_user });
       }
     });

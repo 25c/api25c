@@ -22,6 +22,10 @@ $(function() {
     return true;
   }
   
+  window.tipUpdate = function() {
+    return true;
+  }
+  
   window.openSignInPopUp = function() {
     var url = webUrlBase + '/widget/sign-in';
     var width = 520;
@@ -184,6 +188,7 @@ $(function() {
     var $form = $(this).parents('form.tip-form');
     $form.find('.tip-send').show();
     $form.find('.tip-confirm').hide();
+    window.tipUpdate();
   });
   
   $('.tip-submit').click(function() {
@@ -224,7 +229,7 @@ $(function() {
     }
     
     if (window.DEMO_MODE) {
-      console.log($form.serialize());
+      // console.log($form.serialize());
       tipSuccess({comment_uuid: 999, balance: maxTip - amount});
       return false;
     }

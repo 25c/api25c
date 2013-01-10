@@ -22,6 +22,11 @@ _tip25c_feed_jquery(document).ready(function($) {
             $iframe.height('');
           }
           break;
+        case "scroll-to":
+          if (data.position) {
+            $('html, body').animate({scrollTop: data.position + $iframe.offset().top}, 'slow');
+          }
+          break;
       }
     }
   }, (src.indexOf("localhost") > 0 ? "http:" : "https:") + src);
@@ -39,7 +44,7 @@ _tip25c_feed_jquery(document).ready(function($) {
     $this.css({
       'min-height': 150,
       width: widgetWidth,
-      background: '#fff url("https://d12af7yp6qjhyn.cloudfront.net/style/loader.gif") no-repeat center center',
+      background: '#fff url("https://s3.amazonaws.com/assets.25c.com/style/loader.gif") no-repeat center center',
       border: '1px solid #d2cfcf'
     });
     

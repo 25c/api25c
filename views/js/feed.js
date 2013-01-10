@@ -11,11 +11,13 @@ $(function() {
   
   // JQUERY OBJECTS
   var $commentInput = $('textarea#comment-input');
-  var $pseudonymInput = $('#pseudonym-container input');
+  var $pseudonymContainer = $('#pseudonym-container');
+  var $pseudonymInput = $pseudonymContainer.find('input');
+  var $confirmContainer = $('#confirm-container');
+  var $viewComment = $confirmContainer.find('a#view-comment');
   var $feedExpand = $('#feed-expand');
   var $promoteContainer = $('#promote-container');
   var $feedContainer = $('#feed-container');
-  var $infoContainer = $('info-container');
   
   // TEXT
   var DEFAULT_TEXT = {
@@ -55,7 +57,7 @@ $(function() {
     },
     {
       uuid: 1004,
-      amount: 100,
+      amount: 20,
       content: "Check out my great response to this article on my personal blog: http://www.something.com/",
       owner: {uuid: 104, amount: 25, name: "Eric", pictureUrl: "https://s3.amazonaws.com/assets.plus25c.com/users/pictures/71711960b355012f1c90123139080545/thumb.jpg"},
     },
@@ -97,9 +99,7 @@ $(function() {
     var newComment = {};
     var existingComment = comments[findCommentIndexByUuid(uuid)];
     var amount = parseInt(form.amount);
-    
-    console.log(form);
-    
+        
     if (form.comment_text) {
       
       if (existingComment) {
@@ -125,7 +125,10 @@ $(function() {
       if (/^\s*$/.test($commentInput.val())) {
         $commentInput.val(DEFAULT_TEXT.commentInput);
       }
-      
+      $pseudonymContainer.hide();
+      $confirmContainer.show().find('a').attr('data-uuid', newComment.uuid);
+      $commentInput.attr('disabled', true);
+
     } else { 
       newComment = existingComment;
       setTimeout(function() {
@@ -146,6 +149,12 @@ $(function() {
         
     updateComments(newComment);
   }
+  
+  window.tipUpdate = function() {
+    $pseudonymContainer.show();
+    $confirmContainer.hide();
+    $commentInput.removeAttr('disabled');
+  };
   
   function findCommentIndexByUuid(uuid, comment) {
     for (i in comments) {
@@ -172,13 +181,13 @@ $(function() {
     }
     
     user = data.user;
-                          
+                            
     if (user && user.isTipper) {
       $('.user-image').css({
         'background-image': getUserPictureUrl(user)
       }).show();
       $('#comment-container').css('margin-left', 222);
-      $('#form-container .tip-container, #pseudonym-container').css('left', 65);
+      $('#form-container .tip-container, #info-container').css('left', 65);
       $('#promote-container .tip-container').css('left', 135);
       $('#promote-container #promote-text').css('margin-left', 200);
     } else {
@@ -205,7 +214,7 @@ $(function() {
     for (i in comments) {
       if (newComment.amount > comments[i].amount && comments[i].uuid != newComment.uuid) {
         nextCommentUuid = comments[i].uuid;
-        position = i;
+        position = i - 1;
         break;
       }
     }
@@ -218,8 +227,10 @@ $(function() {
       var $nextComment = $('#' + nextCommentUuid);
       $nextComment.before($feedItem);
     } else if (comments.length > 1) {
+      position = comments.length - 1;
       $('.feed-item:last').after($feedItem);
     } else {
+      position = 0;
       $feedContainer.append($feedItem);
     }
         
@@ -229,9 +240,19 @@ $(function() {
     
     $feedItem.addClass('initial').delay(3000).animate({ backgroundColor: "transparent" }, "slow");
     FB.XFBML.parse($feedItem.get(0));
+        
     if (position > DEFAULT_SHOW) {
       isExpanded = true;
     }
+        
+    if (position == 0) {
+      $confirmContainer.find('#top-comment').show();
+      $confirmContainer.find('#lower-comment').add($viewComment).hide();
+    } else {
+      $confirmContainer.find('#top-comment').hide();
+      $confirmContainer.find('#lower-comment').add($viewComment).show();
+    }
+    
     updateIframeHeight(isExpanded);
   }
   
@@ -301,7 +322,7 @@ $(function() {
     var $itemText = $('<div />', {
       class: 'item-text'
     }).append($itemBody, $itemName, $itemFooter);
-    
+        
     if (user && user.isWidgetOwner) {
       $itemText.append($('<a />', {
         class: 'item-hide'
@@ -383,7 +404,7 @@ $(function() {
           url: '/hide/' + buttonUuid + '/' + commentUuid,
           data: {referrer: window.parentUrl, _csrf: sessionCsrf},
           success: function(data) {
-            if (data.error) {
+            if (data.error && !window.DEMO_MODE) {
               // comment not removed
             } else {
               comments.splice(findCommentIndexByUuid, 1);
@@ -446,6 +467,21 @@ $(function() {
     var type = $this.attr('id') == 'comment-input' ? 'commentInput' : 'pseudonym';
     if ($this.val() == '') {
       $this.val(DEFAULT_TEXT[type]).addClass('default');
+    }
+  });
+  
+  $viewComment.click(function() {
+    var uuid = $(this).attr('data-uuid');
+    if (uuid) {
+      var newPosition = $('#' + uuid).offset().top || 0;
+      $.postMessage(
+        JSON.stringify({
+          uuid: buttonUuid,
+          command: 'scroll-to', 
+          position: newPosition
+        }),
+        window.parentUrl
+      );
     }
   });
       
