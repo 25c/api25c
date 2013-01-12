@@ -6,6 +6,7 @@ $(function() {
   // STATE VARIABLES
   var promoteVisible = false;
   var isExpanded = false;
+  var facebookExpandHeight = 0;
   var user = {};
   var comments = [];
   
@@ -16,6 +17,7 @@ $(function() {
   var $confirmContainer = $('#confirm-container');
   var $viewComment = $confirmContainer.find('a#view-comment');
   var $feedExpand = $('#feed-expand');
+  var $expandTitle = $feedExpand.find('#expand-title');
   var $promoteContainer = $('#promote-container');
   var $feedContainer = $('#feed-container');
   
@@ -353,7 +355,8 @@ $(function() {
           $feedExpand.css({
             'top': '',
             'bottom': ''
-          }).html('<h3>Show Fewer Notes</h3>');
+          });
+          $expandTitle.text('Show Fewer Notes');
         } else {
           isExpanded = false;
           var $lastDefaultShown = $('.feed-item:eq(4)');
@@ -364,7 +367,8 @@ $(function() {
           $feedExpand.css({
             'top': newHeight - 32,
             'bottom': 'auto'
-          }).html('<h3>Show All Notes</h3>');
+          })
+          $expandTitle.text('Show All Notes');
         }
       } else {
         var newHeight = $feedContainer.outerHeight(true) + $('#input-container').outerHeight(true) + 2;
@@ -375,6 +379,10 @@ $(function() {
     } else {
       $feedContainer.hide();
       var newHeight = $('#input-container').outerHeight(true) + 2;
+    }
+    
+    if (facebookExpandHeight) {
+      newHeight += facebookExpandHeight;
     }
         
     $.postMessage(
@@ -484,6 +492,18 @@ $(function() {
       );
     }
   });
+  
+  setTimeout(function() {
+    FB.Event.subscribe('edge.create', function(response) {
+      var uuid = response.substring(response.indexOf('/notes/') + 7);
+      var index = findCommentIndexByUuid(uuid);
+      if ((index == comments.length - 1 && isExpanded)
+        || (index == DEFAULT_SHOW - 1 && !isExpanded)) {
+          facebookExpandHeight = $('#' + uuid + ' .fb-like iframe:first').height() - 60;
+          updateIframeHeight(isExpanded);
+        }
+    });
+  }, 1000);
       
   // INITIALIZATION
   getWidgetCache(initializeComments);
