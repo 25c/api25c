@@ -175,7 +175,7 @@ $(function() {
   }
 
   function initializeComments(data) {
-
+    
     if (window.DEMO_MODE) {
       comments = fakeComments;
     } else {
@@ -205,6 +205,7 @@ $(function() {
     
     if (comments.length) {
       $feedContainer.show();
+      updateIframeHeight(false);
     }
   }
 
@@ -506,8 +507,7 @@ $(function() {
   }, 1000);
       
   // INITIALIZATION
-  getWidgetCache(initializeComments);
-  updateIframeHeight(false);
+  window.getWidgetCache(initializeComments);
   
   if (window.siteTitle) {
     $('#site-title').text(window.siteTitle);

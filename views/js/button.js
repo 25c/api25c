@@ -34,7 +34,7 @@ $(function() {
     var top = (screen.availHeight / 2) - (height / 2);
     var popUp = window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' 
       + width + ',height=' + height + ',top=' + top + ',left=' + left);
-    var timer = setInterval(function() {   
+    var timer = setInterval(function() {
       if (popUp.closed) {
         window.location.reload();
       }
@@ -46,7 +46,7 @@ $(function() {
       type: "POST",
       url: "/widget/" + buttonUuid + '?url=' + encodeURIComponent(buttonUrl),
       data: {referrer: window.parentUrl, _csrf: sessionCsrf},
-      success: function(data) {
+      success: function(data) {        
         if (window.DEMO_MODE) {
           data.user = {
             balance: 100,
@@ -58,7 +58,7 @@ $(function() {
           };
         }
         if (data.user && data.user.isTipper) {
-          maxTip = data.user.balance;          
+          maxTip = data.user.balance;                  
           $('.balance-amount').text(pointString(maxTip));
           $('#signed-in').show();
           $('#signed-out').hide();
@@ -73,7 +73,7 @@ $(function() {
         callback(data);
       },
       dataType: "json",
-      async: false
+      async: true
     });
   }
   
@@ -192,7 +192,9 @@ $(function() {
   });
   
   $('.tip-submit').click(function() {
-    $(this).parents('form.tip-form').submit();
+    if ($('input.tip-input').val() > 0) {
+      $(this).parents('form.tip-form').submit();
+    }
   });
   
   $('form.tip-form').submit(function() {
@@ -240,7 +242,7 @@ $(function() {
       data: data,
       success: tipSuccess,
       dataType: 'json',
-      async: false
+      async: true
     });
     return false;
   });
