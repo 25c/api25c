@@ -345,9 +345,8 @@ $(function() {
   }
     
   function updateIframeHeight(expandIframe) {
-  
+    
     if (comments.length) {
-                  
       if (comments.length > DEFAULT_SHOW) {
         $feedContainer.css('margin-bottom', 30);
         var newHeight = $feedContainer.outerHeight(true) + $('#input-container').outerHeight(true) + 2;
@@ -363,6 +362,9 @@ $(function() {
           var $lastDefaultShown = $('.feed-item:eq(4)');
           if ($lastDefaultShown.length) {
             newHeight = $lastDefaultShown.offset().top + $lastDefaultShown.height() + 63;
+            if ($lastDefaultShown.next('#promote-container:visible').length) {
+              newHeight += $promoteContainer.outerHeight(true);
+            }
             $feedExpand.show();
           }
           $feedExpand.css({
