@@ -4,7 +4,7 @@ $(function() {
   var START_INTERVAL = 400;
   
   // STATE VARIABLES
-  var maxTip = 1;
+  var maxTip = 10;
   var minTip = 1;
   var countState = 0;
   var timer = null;
@@ -22,11 +22,26 @@ $(function() {
     return true;
   }
   
+  window.openSignInPopUp = function() {
+    var url = webUrlBase + '/widget/sign-in';
+    var width = 520;
+    var height = 320;
+    var left = (screen.availWidth / 2) - (width / 2);
+    var top = (screen.availHeight / 2) - (height / 2);
+    var popUp = window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' 
+      + width + ',height=' + height + ',top=' + top + ',left=' + left);
+    var timer = setInterval(function() {   
+      if (popUp.closed) {
+        window.location.reload();
+      }
+    }, 500);
+  }
+  
   window.getWidgetCache = function(callback) {
     $.ajax({
       type: "POST",
       url: "/widget/" + buttonUuid + '?url=' + encodeURIComponent(buttonUrl),
-      data: {referrer: parentUrl, _csrf: sessionCsrf},
+      data: {referrer: window.parentUrl, _csrf: sessionCsrf},
       success: function(data) {
         if (window.DEMO_MODE) {
           data.user = {
@@ -41,12 +56,15 @@ $(function() {
         if (data.user && data.user.isTipper) {
           maxTip = data.user.balance;          
           $('.balance-amount').text(pointString(maxTip));
+          $('#signed-in').show();
+          $('#signed-out').hide();
           if (maxTip <= 0) {
             $('.tip-submit, input.tip-input, .tip-increase, .tip-decrease').addClass('disabled');
             $('input.tip-input').val(0);
-          } else {
-            // NOT LOGGED IN AS TIPPER
           }
+        } else {
+          // NOT SIGNED IN AS TIPPER
+          $('.tip-submit, .tip-increase, .tip-decrease').bind('click', window.openSignInPopUp);
         }
         callback(data);
       },
@@ -96,6 +114,9 @@ $(function() {
   
   function pointString(amount) {
     amount = parseInt(amount);
+    if (isNaN(amount)) {
+      amount = 0;
+    }
     var pointText = amount + ' point';
     pointText += amount == 1 ? '' : 's';
     return pointText;
@@ -107,6 +128,7 @@ $(function() {
   }
   
   // EVENT HANDLERS
+  
   $('input.tip-input').change(function() {
     var $this = $(this);
     var newTip = parseInt($this.val());
@@ -185,13 +207,7 @@ $(function() {
         // something went wrong
       } else {
         if (data.redirect) {
-          var url = webUrlBase + '/tip/' + buttonUuid + '?referrer=' + encodeURIComponent(parentUrl);
-          var width = 480;
-          var height = 358;
-          var left = (screen.width / 2) - (width / 2);
-          var top = (screen.height / 2) - (height / 2);
-          window.open(url, '25c', 'menubar=no,resizable=no,scrollbars=no,toolbar=no,width=' 
-            + width + ',height=' + height + ',top=' + top + ',left=' + left);
+          // window.openSignInPopUp();
         } else {
           window.submitSuccessCallback(processFormData($form), data);
           $form.find('.tip-confirm').show();
@@ -222,6 +238,10 @@ $(function() {
       async: false
     });
     return false;
+  });
+  
+  $('.sign-in').click(function() {
+    window.openSignInPopUp();
   });
   
 });
