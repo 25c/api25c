@@ -16,7 +16,7 @@ html(lang="en", xmlns="http://www.w3.org/1999/xhtml", xmlns:fb="https://www.face
       window.sessionCsrf = "#{req.session._csrf}";
       window.assetsUrlBase = "#{ASSETS_URL_BASE}";
       window.usersUrlBase = "#{USERS_URL_BASE}";
-      window.parentUrl = "#{req.header('Referer')}";
+      window.parentUrl = "#{referrer}";
       window.webUrlBase = "#{WEB_URL_BASE}";
       window.testButton = window.location.pathname.indexOf('/publisher/widgets') != -1;
       var _gaq = _gaq || [];

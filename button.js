@@ -245,7 +245,12 @@ app.get('/belt/:button_uuid', function(req, res) {
 });
 
 app.get('/feed/:button_uuid', function(req, res) {
-	referrer = req.header('referrer');
+  var referrer = req.header('referrer');
+  if (req.session.parentReferrer && referrer.indexOf(req.url) != -1) {
+	  referrer = req.session.parentReferrer;
+  } else {
+    req.session.parentReferrer = referrer;
+  }  
 	req.session.clickUuids = {};
   req.session.commentUuids = {};
 	res.render("feed.jade", {

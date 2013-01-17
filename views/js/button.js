@@ -36,6 +36,7 @@ $(function() {
       + width + ',height=' + height + ',top=' + top + ',left=' + left);
     var timer = setInterval(function() {
       if (popUp.closed) {
+        clearInterval(timer);
         window.location.reload();
       }
     }, 500);
