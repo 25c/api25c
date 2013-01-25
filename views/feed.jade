@@ -9,7 +9,8 @@ block scripts
 block css
   style(type="text/css")
     h1 {
-      margin: 0 0 20px 0;
+      font-size: 16px;
+      margin: 0 0 20px 0;      
     }
     h2 {
     }
@@ -29,7 +30,14 @@ block css
       margin: 0 0 -1px 0;
     }
     #input-container > h1 {
-      margin: 0 48px 20px 0;
+      margin: 0 48px 8px 0;
+      float: left;
+    }
+    #input-container > h2 {
+      float: left;
+      margin-top: 3px;
+      position: absolute;
+      left: 180px;
     }
     #top-logo {
       position: absolute;
@@ -62,15 +70,75 @@ block css
     form.tip-form {
       width: 100%;
     }
-    #comment-container {
+    #sponsors-container {
       margin: 0 0 0 157px;
+      height: 51px;
+      overflow: hidden;
     }
-    textarea#comment-input {
+    .sponsor-item {
+      float: left;
+      margin-left: 5px;
+    }
+    .sponsor-image {
+      width: 50px;
+      height: 50px;
+    }
+    #comment-container {
+      display: none;
+      position: absolute;
+      border: 1px solid #d2cfcf;
+      width: 100%;
+      background: white;
+      z-index: 1000;
+      margin-top: 2px;
+    }
+    #comment-container h2 {
+      margin-top: 0;
+    }
+    #comment-container .comment-cancel {
+      float: right;
+      margin-right: 10px;
+      font: normal normal bold 11px Raleway, helvetica, arial, sans-serif;
+      height: 19px;
+      line-height: 20px;
+      width: 80px;
+      text-align: center;
+      background-color: #999;
+      color: white;
+      padding: 0 5px;
+      cursor: pointer;
+      transition: background-color 0.25s;
+      -moz-transition: background-color 0.25s;
+      -webkit-transition: background-color 0.25s;
+      -o-transition: background-color 0.25s;
+    }
+    #comment-container .comment-cancel:hover {
+      background-color: #416b76;
+    }
+    #comment-container .comment-cancel.active {
+      background-color: #365a63;
+      -moz-box-shadow:    inset 0 3px 4px #284249;
+      -webkit-box-shadow: inset 0 3px 4px #284249;
+      box-shadow:         inset 0 3px 4px #284249;
+    }
+    #comment-container .comment-cancel.disabled {
+      color: #999;
+      background-color: #ddd;
+      cursor: default;
+    }
+    #comment-container .tip-submit {
+      float: right;
+      height: 19px;
+      line-height: 20px;
+      margin-right: -11px;
+      width: 80px;
+      text-align: center;
+    }
+    textarea#comment-input {      
       font: inherit;
       font-size: 13px;
       height: 39px;
       width: 100%;
-      margin: 0 0 0 -10px;
       border: 1px solid #d2cfcf;
       padding: 5px;
       line-height: 14px;
@@ -97,15 +165,18 @@ block css
       //- display: none;
       position: relative;
       clear: both;
+      font: normal normal normal 13px Raleway, helvetica, arial, sans-serif;
     }
     #pseudonym-container label {
-      float: left;
-      padding: 5px 5px 0 0;
+      float: right;
+      padding: 2px 5px 0 0;
       font: normal normal normal 11px Raleway, helvetica, arial, sans-serif;
     }
     #pseudonym-container input {
-      float: left;
+      float: right;
       padding: 0 0 1px 5px;
+      margin-right: 0;
+      margin-top: 0;
       font: inherit;
       font-size: 13px;
       border: 1px solid #d2cfcf;
@@ -199,7 +270,7 @@ block css
       top: 15px;
     }
     .item-text {
-      padding: 1px 0 0 65px;
+      padding: 1px 0 0 0;
     }
     .item-hide {
       color: #bf3a3a;
@@ -276,37 +347,40 @@ block content
       }(document, /*debug*/ false));
 
   #input-container
-    h1
-      #signed-out
-        span.bold 
-          | Top fan of 
-          span#site-title this site
-          |? 
-        a.sign-in(href="#") Sign up now 
-        | and get 10 free points to start! 
-        a.sign-in(href="#") Sign in as existing user...
-      #signed-in
-        span.bold 
-          | Top fan of 
-          span#site-title this site
-          |? 
-        |You have 
-        span.balance-amount.bold 0 points
-        |  to give and share your thoughts.
-        //- TODO: Update buy more points URL
-        a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get&nbsp;more&nbsp;points...
+    h1 
+      span.bold Sponsor us!
+    h2
+      span.bold Top Sponsors
     #top-logo
     #form-container.clear
       .user-image
       form.tip-form(method="POST", target="_blank", action="/tip/#{req.params.button_uuid}")
         input.comment-uuid(name="comment_uuid", type="hidden")
         include partials/_button_standard.jade
+        #sponsors-container
         #comment-container
-          textarea#comment-input.default(name="comment_text") Share your thoughts and give points...
+          div(style='padding:10px 22px 10px 10px')
+            h2
+              | Thank you for supporting us!
+              span.normal &nbsp;&nbsp;Want to leave a note with your tip?
+            textarea#comment-input.default(name="comment_text") Type a note here to tell people what you think...
+            .tip-submit SUBMIT
+            .comment-cancel SKIP
+            .clear
         #info-container
           #pseudonym-container
-            label Give anonymously:
-            input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
+            #signed-out
+              a.sign-in(href="#") Sign up now 
+              | and get 10 free points to start! 
+              a.sign-in(href="#") Sign in as existing user...
+            #signed-in
+              |You have 
+              span.balance-amount.bold 0 points
+              |  to give.&nbsp;
+              //- TODO: Update buy more points URL
+              a(href="#{WEB_URL_BASE}/tipper/points", target="_blank") Buy&nbsp;more&nbsp;25c&nbsp;points...
+              input.default(name="comment_pseudonym", type="text", value="Enter a pseudonym...")
+              label Give anonymously:
             .clear
           #confirm-container 
             span#top-comment Note added! Add more points to see it rise to the top. 
@@ -327,7 +401,7 @@ block content
           |  to give.
           a(href="#{WEB_URL_BASE}/tipper/points", target="_blank")  Get more points...
       .clear
-    h2#feed-title What some of our top fans are thinking:
+    h2#feed-title What some of our top sponsors are thinking:
   #feed-expand
     #expand-mask
     h3#expand-title Show All Notes

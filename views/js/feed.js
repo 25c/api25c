@@ -20,10 +20,12 @@ $(function() {
   var $expandTitle = $feedExpand.find('#expand-title');
   var $promoteContainer = $('#promote-container');
   var $feedContainer = $('#feed-container');
+  var $sponsorsContainer = $("#sponsors-container");
+  var $commentContainer = $("#comment-container");
   
   // TEXT
   var DEFAULT_TEXT = {
-    commentContent: 'I just gave points. Yay!',
+    commentContent: "", //'I just gave points. Yay!',
     commentInput: $commentInput.val(),
     pseudonym: $pseudonymInput.val()
   }
@@ -129,7 +131,6 @@ $(function() {
       }
       $pseudonymContainer.hide();
       $confirmContainer.show().find('a').attr('data-uuid', newComment.uuid);
-      $commentInput.attr('disabled', true);
 
     } else { 
       newComment = existingComment;
@@ -144,6 +145,8 @@ $(function() {
       }
     }
     
+    $commentContainer.toggle();
+    
     if (!existingComment) {
       comments.push(newComment);
       comments.sort(sortFunction);
@@ -155,7 +158,6 @@ $(function() {
   window.tipUpdate = function() {
     $pseudonymContainer.show();
     $confirmContainer.hide();
-    $commentInput.removeAttr('disabled');
   };
   
   function findCommentIndexByUuid(uuid, comment) {
@@ -188,7 +190,8 @@ $(function() {
       $('.user-image').css({
         'background-image': getUserPictureUrl(user)
       }).show();
-      $('#comment-container').css('margin-left', 222);
+      $('#sponsors-container').css('margin-left', 222);
+      $('#input-container > h2').css('left', 245);
       $('#form-container .tip-container, #info-container').css('left', 65);
       $('#promote-container .tip-container').css('left', 135);
       $('#promote-container #promote-text').css('margin-left', 200);
@@ -199,8 +202,13 @@ $(function() {
     comments.sort(sortFunction);
   
     for (i in comments) {
-      var $feedItem = createFeedItem(comments[i]);
-      $feedContainer.append($feedItem);
+      if (comments[i].content && $.trim(comments[i].content) != "") {
+        var $feedItem = createFeedItem(comments[i]);
+        $feedContainer.append($feedItem);
+      }
+      
+      var $sponsorItem = createSponsorItem(comments[i]);
+      $sponsorsContainer.append($sponsorItem);
     }
     
     if (comments.length) {
@@ -223,37 +231,58 @@ $(function() {
     }
     
     $('#' + newComment.uuid).remove();
+    $('#sponsor-' + newComment.uuid).remove();
         
-    $feedItem = createFeedItem(newComment);
+    var $feedItem = null;
+    if (newComment.content && $.trim(newComment.content) != "") {
+      $feedItem = createFeedItem(newComment);
+    }
+    var $sponsorItem = createSponsorItem(newComment);
           
     if (nextCommentUuid) {
-      var $nextComment = $('#' + nextCommentUuid);
-      $nextComment.before($feedItem);
+      if ($feedItem != null) {
+        var $nextComment = $('#' + nextCommentUuid);
+        $nextComment.before($feedItem);
+      }
+      var $nextSponsor = $('#sponsor-' + nextCommentUuid);
+      $nextSponsor.before($sponsorItem);
     } else if (comments.length > 1) {
       position = comments.length - 1;
-      $('.feed-item:last').after($feedItem);
+      if ($feedItem != null) {
+        $('.feed-item:last').after($feedItem);
+      }
+      $('.sponsor-item:last').after($sponsorItem);
     } else {
       position = 0;
-      $feedContainer.append($feedItem);
+      if ($feedItem != null) {
+        $feedContainer.append($feedItem);
+      }
+      $sponsorsContainer.append($sponsorItem);
     }
         
-    if (promoteVisible) {
+    if ($feedItem != null && promoteVisible) {
       $feedItem.after($promoteContainer);
     }
     
-    $feedItem.addClass('initial').delay(3000).animate({ backgroundColor: "transparent" }, "slow");
-    FB.XFBML.parse($feedItem.get(0));
+    if ($feedItem != null) {
+      $feedItem.addClass('initial').delay(3000).animate({ backgroundColor: "transparent" }, "slow");
+      FB.XFBML.parse($feedItem.get(0));
+    }
         
     if (position > DEFAULT_SHOW) {
       isExpanded = true;
     }
         
-    if (position == 0) {
-      $confirmContainer.find('#top-comment').show();
-      $confirmContainer.find('#lower-comment').add($viewComment).hide();
+    if ($feedItem != null) {
+      if (position == 0) {
+        $confirmContainer.find('#top-comment').show();
+        $confirmContainer.find('#lower-comment').add($viewComment).hide();
+      } else {
+        $confirmContainer.find('#top-comment').hide();
+        $confirmContainer.find('#lower-comment').add($viewComment).show();
+      }
     } else {
-      $confirmContainer.find('#top-comment').hide();
-      $confirmContainer.find('#lower-comment').add($viewComment).show();
+      $confirmContainer.hide();
     }
     
     updateIframeHeight(isExpanded);
@@ -271,14 +300,24 @@ $(function() {
     return pictureUrl + '")';
   }
   
-  function createFeedItem(comment) {    
-    var $itemImage = $('<div />', {
-      class: 'item-image',
+  function createSponsorItem(comment) {
+    var $sponsorImage = $('<div />', {
+      class: 'sponsor-image',
       css: {
         'background-image': getUserPictureUrl(comment.owner)
       }
-    });
-    
+    });    
+    var $sponsorItem = $('<div />', {
+      id: 'sponsor-' + comment.uuid,
+      class: 'sponsor-item'
+    }).append(
+      $sponsorImage,
+      $('<div class="clear"></div>')
+    );        
+    return $sponsorItem;    
+  }
+  
+  function createFeedItem(comment) {    
     var $itemName = $('<div />', {
       class: 'item-name'
     }).text('—' + comment.owner.name);
@@ -336,7 +375,6 @@ $(function() {
       id: comment.uuid,
       class: 'feed-item'
     }).append(
-      $itemImage, 
       $itemText,
       $('<div class="clear"></div>')
     );
@@ -405,6 +443,10 @@ $(function() {
   }
   
   // HANDLERS
+  
+  $commentContainer.on('click', '.comment-cancel', function() {
+    $commentContainer.hide();
+  })
   
   $feedContainer.on({ 
     click: function() {
