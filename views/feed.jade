@@ -39,6 +39,9 @@ block css
       position: absolute;
       left: 180px;
     }
+    #top-sponsors-header {
+      padding-left: 88px;
+    }
     #top-logo {
       position: absolute;
       right: 20px;
@@ -66,6 +69,7 @@ block css
       font-size: 11px;
       line-height: 1.1em;
       color: white;
+      background: #365A63;
     }
     form.tip-form {
       width: 100%;
@@ -82,15 +86,18 @@ block css
     .sponsor-image {
       width: 50px;
       height: 50px;
+      background: #9AAEB4;
     }
     #comment-container {
       display: none;
       position: absolute;
-      border: 1px solid #d2cfcf;
+      border: 3px solid #d2cfcf;
       width: 100%;
       background: white;
       z-index: 1000;
       margin-top: 2px;
+      box-shadow: 0 0 35px rgba(0,0,0,.2);
+      box-sizing: border-box;
     }
     #comment-container h2 {
       margin-top: 0;
@@ -349,7 +356,7 @@ block content
   #input-container
     h1 
       span.bold Sponsor us!
-    h2
+    h1#top-sponsors-header
       span.bold Top Sponsors
     #top-logo
     #form-container.clear
@@ -395,7 +402,7 @@ block content
         include partials/_button_standard.jade
       #promote-text
         h1 
-          .bold Add your points behind this!        
+          .bold Add your points behind sponsor!        
           | You have 
           span.balance-amount.bold 0 points
           |  to give.

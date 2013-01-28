@@ -421,11 +421,18 @@ $(function() {
       $feedContainer.hide();
       var newHeight = $('#input-container').outerHeight(true) + 2;
     }
-    
+
     if (facebookExpandHeight) {
       newHeight += facebookExpandHeight;
     }
-        
+
+    var commentContainerVisible = $commentContainer.is(':visible');
+    if (commentContainerVisible) {
+      // If the add comment container is visible, make sure the height is 250 minimum.
+      // (Number can change with design changes)
+      newHeight = Math.max(newHeight, 250);
+    }
+
     $.postMessage(
       JSON.stringify({
         uuid: buttonUuid,
@@ -505,6 +512,9 @@ $(function() {
     
   $feedExpand.click(function() {
     updateIframeHeight(!isExpanded);
+  });
+  $('.tip-update').click(function() {
+    updateIframeHeight(isExpanded);
   });
   
   $commentInput.add($pseudonymInput).focus(function() {
