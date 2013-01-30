@@ -246,7 +246,7 @@ app.get('/belt/:button_uuid', function(req, res) {
 
 app.get('/feed/:button_uuid', function(req, res) {
   var referrer = req.header('referrer');
-  if (req.session.parentReferrer && referrer.indexOf(req.url) != -1) {
+  if (req.session.parentReferrer && ((referrer !== undefined) && referrer.indexOf(req.url) != -1)) {
 	  referrer = req.session.parentReferrer;
   } else {
     req.session.parentReferrer = referrer;
