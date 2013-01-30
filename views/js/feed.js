@@ -579,5 +579,3 @@ $(function() {
     $('#site-title').text(window.siteTitle);
   }
 });
-
-
