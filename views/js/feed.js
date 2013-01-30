@@ -215,6 +215,7 @@ $(function() {
     if (comments.length) {
       $feedContainer.show();
       updateIframeHeight(false);
+      $('#sponsors-prompt').remove();
     }
   }
 
@@ -239,6 +240,7 @@ $(function() {
       $feedItem = createFeedItem(newComment);
     }
     var $sponsorItem = createSponsorItem(newComment);
+    $('#sponsors-prompt').remove();
           
     if (nextCommentUuid) {
       if ($feedItem != null) {
@@ -305,7 +307,8 @@ $(function() {
     var $sponsorImage = $('<div />', {
       class: 'sponsor-image',
       css: {
-        'background-image': getUserPictureUrl(comment.owner)
+        'background-image': getUserPictureUrl(comment.owner),
+        'background-size': '50px 50px'
       }
     });    
     var $sponsorItem = $('<div />', {

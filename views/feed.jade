@@ -79,6 +79,12 @@ block css
       height: 51px;
       overflow: hidden;
     }
+    #sponsors-prompt {
+      background-image: url('#{ ASSETS_URL_BASE }/no-sponsors.png');
+      width: 285px;
+      height: 50px;
+      margin-left: 5px;
+    }
     .sponsor-item {
       float: left;
       margin-left: 5px;
@@ -365,6 +371,7 @@ block content
         input.comment-uuid(name="comment_uuid", type="hidden")
         include partials/_button_standard.jade
         #sponsors-container
+          #sponsors-prompt            
         #comment-container
           div(style='padding:10px 22px 10px 10px')
             h2
