@@ -190,6 +190,7 @@ $(function() {
       $('.user-image').css({
         'background-image': getUserPictureUrl(user)
       }).show();
+      $('#top-sponsors-header').css('padding-left', 88);
       $('#sponsors-container').css('margin-left', 222);
       $('#input-container > h2').css('left', 245);
       $('#form-container .tip-container, #info-container').css('left', 65);
