@@ -145,7 +145,9 @@ $(function() {
       }
     }
     
-    $commentContainer.toggle();
+    if (!window.HIDE_NOTES) {
+      $commentContainer.toggle();
+    }
     
     if (!existingComment) {
       comments.push(newComment);
@@ -213,8 +215,10 @@ $(function() {
     }
     
     if (comments.length) {
-      $feedContainer.show();
-      updateIframeHeight(false);
+      if (!window.HIDE_NOTES) {
+        $feedContainer.show();
+        updateIframeHeight(false);
+      }
       $('#sponsors-prompt').remove();
     }
   }
@@ -288,7 +292,9 @@ $(function() {
       $confirmContainer.hide();
     }
     
-    updateIframeHeight(isExpanded);
+    if (!window.HIDE_NOTES) {
+      updateIframeHeight(isExpanded);
+    }
   }
   
   function getUserPictureUrl(user) {
@@ -518,7 +524,9 @@ $(function() {
     updateIframeHeight(!isExpanded);
   });
   $('.tip-update').click(function() {
-    updateIframeHeight(isExpanded);
+    if (!window.HIDE_NOTES) {
+      updateIframeHeight(isExpanded);
+    }
   });
   
   $commentInput.add($pseudonymInput).focus(function() {

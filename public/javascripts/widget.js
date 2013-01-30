@@ -39,6 +39,7 @@ _tip25c_feed_jquery(document).ready(function($) {
     var uuid = $this.attr("data-id");
     var url = $this.attr("data-url");
     var demoMode = $this.attr("data-demo") == 'true';
+    var hideNotes = $this.attr("data-hide-notes") == 'true';
     var widgetWidth = parseInt($this.attr("width")) || 600;
         
     $this.css({
@@ -71,6 +72,10 @@ _tip25c_feed_jquery(document).ready(function($) {
     
     if (demoMode) {
       src_url += '&demo=true';
+    }
+    
+    if (hideNotes) {
+      src_url += '&hide_notes=true';
     }
     
     if (title) {
