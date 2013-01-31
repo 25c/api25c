@@ -10,6 +10,7 @@ html(lang="en", xmlns="http://www.w3.org/1999/xhtml", xmlns:fb="https://www.face
 
     script
       window.DEMO_MODE = "#{req.query.demo}" == 'true';
+      window.HIDE_NOTES = "#{req.query.hide_notes}" == 'true';
       window.buttonUuid = "#{req.params.button_uuid}" || '999';
       window.buttonUrl = "#{req.query.url}" || '';
       window.siteTitle = "#{req.query.title}" || '';

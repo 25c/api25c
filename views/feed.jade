@@ -79,6 +79,12 @@ block css
       height: 51px;
       overflow: hidden;
     }
+    #sponsors-prompt {
+      background-image: url('#{ ASSETS_URL_BASE }/no-sponsors.png');
+      width: 285px;
+      height: 50px;
+      margin-left: 5px;
+    }
     .sponsor-item {
       float: left;
       margin-left: 5px;
@@ -105,6 +111,7 @@ block css
     #comment-container .comment-cancel {
       float: right;
       margin-right: 10px;
+      margin-top: 6px;
       font: normal normal bold 11px Raleway, helvetica, arial, sans-serif;
       height: 19px;
       line-height: 20px;
@@ -138,6 +145,7 @@ block css
       height: 19px;
       line-height: 20px;
       margin-right: -11px;
+      margin-top: 6px;
       width: 80px;
       text-align: center;
     }
@@ -365,6 +373,7 @@ block content
         input.comment-uuid(name="comment_uuid", type="hidden")
         include partials/_button_standard.jade
         #sponsors-container
+          #sponsors-prompt            
         #comment-container
           div(style='padding:10px 22px 10px 10px')
             h2

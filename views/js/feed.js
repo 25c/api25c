@@ -145,7 +145,9 @@ $(function() {
       }
     }
     
-    $commentContainer.toggle();
+    if (!window.HIDE_NOTES) {
+      $commentContainer.toggle();
+    }
     
     if (!existingComment) {
       comments.push(newComment);
@@ -213,8 +215,11 @@ $(function() {
     }
     
     if (comments.length) {
-      $feedContainer.show();
-      updateIframeHeight(false);
+      if (!window.HIDE_NOTES) {
+        $feedContainer.show();
+        updateIframeHeight(false);
+      }
+      $('#sponsors-prompt').remove();
     }
   }
 
@@ -239,6 +244,7 @@ $(function() {
       $feedItem = createFeedItem(newComment);
     }
     var $sponsorItem = createSponsorItem(newComment);
+    $('#sponsors-prompt').remove();
           
     if (nextCommentUuid) {
       if ($feedItem != null) {
@@ -286,7 +292,9 @@ $(function() {
       $confirmContainer.hide();
     }
     
-    updateIframeHeight(isExpanded);
+    if (!window.HIDE_NOTES) {
+      updateIframeHeight(isExpanded);
+    }
   }
   
   function getUserPictureUrl(user) {
@@ -305,7 +313,8 @@ $(function() {
     var $sponsorImage = $('<div />', {
       class: 'sponsor-image',
       css: {
-        'background-image': getUserPictureUrl(comment.owner)
+        'background-image': getUserPictureUrl(comment.owner),
+        'background-size': '50px 50px'
       }
     });    
     var $sponsorItem = $('<div />', {
@@ -515,7 +524,9 @@ $(function() {
     updateIframeHeight(!isExpanded);
   });
   $('.tip-update').click(function() {
-    updateIframeHeight(isExpanded);
+    if (!window.HIDE_NOTES) {
+      updateIframeHeight(isExpanded);
+    }
   });
   
   $commentInput.add($pseudonymInput).focus(function() {
@@ -568,5 +579,3 @@ $(function() {
     $('#site-title').text(window.siteTitle);
   }
 });
-
-
